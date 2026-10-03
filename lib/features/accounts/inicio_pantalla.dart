@@ -152,9 +152,9 @@ class InicioPantalla extends ConsumerWidget {
                         runSpacing: 10,
                         children: [
                           AccionBro(
-                            'Mis cuentas',
-                            Icons.account_balance_wallet_outlined,
-                            () => context.go('/cuentas'),
+                            'Pagar QR',
+                            Icons.qr_code_scanner_rounded,
+                            () => context.go('/qr'),
                           ),
                           AccionBro(
                             'Divisas',
@@ -162,9 +162,9 @@ class InicioPantalla extends ConsumerWidget {
                             () => context.push('/divisas'),
                           ),
                           AccionBro(
-                            'Mi perfil',
-                            Icons.person_outline_rounded,
-                            () => context.go('/perfil'),
+                            'Mis metas',
+                            Icons.savings_outlined,
+                            () => context.go('/metas'),
                           ),
                         ],
                       ),

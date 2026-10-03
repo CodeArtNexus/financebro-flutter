@@ -1,3 +1,8 @@
+import '../features/payments/pagos.dart';
+import '../features/payments/firebase_pagos.dart';
+import '../features/savings/metas.dart';
+import '../features/savings/firebase_metas.dart';
+
 import 'package:dio/dio.dart';
 
 import '../core/configuracion.dart';
@@ -124,6 +129,20 @@ final historialNotificacionesProvider = StreamProvider<List<AvisoCliente>>((
   return ref.watch(notificacionesRepositorioProvider).historial(usuario.uid);
 });
 
-final recuerdoAccesoProvider = Provider<RecuerdoAcceso?>(
-  (ref) => RecuerdoAcceso.leer(ref.watch(preferenciasLocalesProvider)),
+final recuerdoAccesoProvider = Provider<RecuerdoAcceso?>((ref) {
+  ref.watch(sesionProvider);
+  return RecuerdoAcceso.leer(ref.watch(preferenciasLocalesProvider));
+});
+
+final pagosRepositorioProvider = Provider<RepositorioPagos>(
+  (ref) => FirebasePagos(ref.watch(datosProvider)),
 );
+final metasRepositorioProvider = Provider<RepositorioMetas>(
+  (ref) => FirebaseMetas(ref.watch(datosProvider)),
+);
+final metasProvider = StreamProvider.autoDispose<List<MetaAhorro>>((ref) {
+  final uid = ref.watch(sesionProvider).value?.uid;
+  return uid == null
+      ? const Stream.empty()
+      : ref.watch(metasRepositorioProvider).observar(uid);
+});

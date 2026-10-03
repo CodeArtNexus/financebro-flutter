@@ -2,20 +2,101 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function propietario(uid) { return request.auth != null && request.auth.uid == uid; }
+    function administrador() { return request.auth != null && request.auth.token.get('financebroAdmin', false) == true; }
     function perfilValido() {
       return request.resource.data.keys().hasOnly(['nombre', 'segmento', 'mostrarSaldo', 'actualizado'])
         && request.resource.data.nombre is string
         && request.resource.data.nombre.size() >= 2 && request.resource.data.nombre.size() <= 60
         && request.resource.data.segmento in ['equilibrio', 'ahorro', 'viajes']
-        && request.resource.data.mostrarSaldo is bool
-        && request.resource.data.actualizado == request.time;
+        && request.resource.data.mostrarSaldo is bool && request.resource.data.actualizado == request.time;
+    }
+    function referenciaValida(id) { return id is string && id.matches('^[a-zA-Z0-9_-]{8,80}$'); }
+    function rutaCuenta(uid, cuenta) { return /databases/$(database)/documents/usuarios/$(uid)/cuentas/$(cuenta); }
+    function rutaMovimiento(uid, cuenta, id) { return /databases/$(database)/documents/usuarios/$(uid)/cuentas/$(cuenta)/movimientos/$(id); }
+    function rutaPago(uid, id) { return /databases/$(database)/documents/usuarios/$(uid)/pagos/$(id); }
+    function saldoVinculado(uid, cuenta, id, delta) {
+      return exists(rutaCuenta(uid, cuenta))
+        && getAfter(rutaCuenta(uid, cuenta)).data.ultimoMovimiento == id
+        && getAfter(rutaCuenta(uid, cuenta)).data.saldoCentavos == get(rutaCuenta(uid, cuenta)).data.saldoCentavos + delta
+        && getAfter(rutaCuenta(uid, cuenta)).data.actualizado == request.time;
+    }
+    function cuentaNuevaValida() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['nombre','numero','saldoCentavos','actualizado','tarjetaUltimos4','tarjetaRed'])
+        && d.nombre is string && d.nombre.size() >= 2 && d.nombre.size() <= 60
+        && d.numero is string && d.numero.matches('^•••• [0-9]{4}$')
+        && d.tarjetaUltimos4 is string && d.tarjetaUltimos4.matches('^[0-9]{4}$')
+        && d.numero == '•••• ' + d.tarjetaUltimos4 && d.tarjetaRed == 'BRO'
+        && d.saldoCentavos == 0 && d.actualizado == request.time;
+    }
+    function ajusteCuentaValido(uid, cuenta) {
+      let d = request.resource.data;
+      let movimiento = rutaMovimiento(uid, cuenta, d.ultimoMovimiento);
+      return d.diff(resource.data).affectedKeys().hasOnly(['saldoCentavos','actualizado','ultimoMovimiento'])
+        && referenciaValida(d.ultimoMovimiento) && !exists(movimiento)
+        && d.saldoCentavos is int && d.saldoCentavos >= 0 && d.saldoCentavos <= 100000000
+        && d.actualizado == request.time
+        && getAfter(movimiento).data.actor == request.auth.uid
+        && getAfter(movimiento).data.fecha == request.time
+        && d.saldoCentavos == resource.data.saldoCentavos + getAfter(movimiento).data.centavos;
+    }
+    function movimientoValido(uid, cuenta, id) {
+      let d = request.resource.data;
+      return referenciaValida(id) && d.actor == request.auth.uid && d.fecha == request.time
+        && d.centavos is int && d.centavos != 0 && d.centavos >= -100000000 && d.centavos <= 100000000
+        && saldoVinculado(uid, cuenta, id, d.centavos)
+        && ((administrador() && d.tipo == 'ajuste'
+          && d.keys().hasOnly(['descripcion','centavos','categoria','tipo','actor','motivo','fecha'])
+          && d.categoria == 'Ajuste de fondos' && d.descripcion == 'Ajuste de fondos · ' + d.motivo
+          && d.motivo is string && d.motivo.size() >= 5 && d.motivo.size() <= 120)
+        || (propietario(uid) && d.tipo == 'qr'
+          && d.keys().hasOnly(['descripcion','centavos','categoria','tipo','actor','comercio','referencia','fecha'])
+          && d.centavos < 0 && d.centavos >= -1000000 && d.referencia == id && d.categoria == 'Pago QR'
+          && d.comercio is string && d.comercio.matches('^[a-z0-9-]{2,60}$')
+          && get(/databases/$(database)/documents/comercios/$(d.comercio)).data.activo == true
+          && d.descripcion == 'Pago QR · ' + get(/databases/$(database)/documents/comercios/$(d.comercio)).data.nombre
+          && !exists(rutaPago(uid, id)) && getAfter(rutaPago(uid, id)).data.cuenta == cuenta
+          && getAfter(rutaPago(uid, id)).data.centavos == -d.centavos
+          && getAfter(rutaPago(uid, id)).data.comercio == d.comercio));
     }
     match /usuarios/{uid} {
-      allow read: if propietario(uid);
+      allow read: if propietario(uid) || administrador();
       allow create, update: if propietario(uid) && perfilValido();
       match /cuentas/{cuenta} {
-        allow read: if propietario(uid);
-        match /movimientos/{movimiento} { allow read: if propietario(uid); }
+        allow read: if propietario(uid) || administrador();
+        allow create: if administrador() && exists(/databases/$(database)/documents/usuarios/$(uid)) && cuentaNuevaValida();
+        allow update: if (propietario(uid) || administrador()) && ajusteCuentaValido(uid, cuenta);
+        match /movimientos/{movimiento} {
+          allow read: if propietario(uid) || administrador();
+          allow create: if movimientoValido(uid, cuenta, movimiento);
+        }
+      }
+      match /pagos/{id} {
+        allow read: if propietario(uid) || administrador();
+        allow create: if propietario(uid) && referenciaValida(id)
+          && request.resource.data.keys().hasOnly(['cuenta','comercio','nombre','centavos','fecha'])
+          && request.resource.data.cuenta is string && request.resource.data.cuenta.matches('^[a-zA-Z0-9_-]{1,80}$')
+          && request.resource.data.comercio is string && request.resource.data.comercio.matches('^[a-z0-9-]{2,60}$')
+          && request.resource.data.centavos is int && request.resource.data.centavos > 0 && request.resource.data.centavos <= 1000000
+          && request.resource.data.fecha == request.time
+          && request.resource.data.nombre == get(/databases/$(database)/documents/comercios/$(request.resource.data.comercio)).data.nombre
+          && getAfter(rutaMovimiento(uid, request.resource.data.cuenta, id)).data.comercio == request.resource.data.comercio
+          && getAfter(rutaMovimiento(uid, request.resource.data.cuenta, id)).data.centavos == -request.resource.data.centavos
+          && getAfter(rutaMovimiento(uid, request.resource.data.cuenta, id)).data.fecha == request.time
+          && !exists(rutaMovimiento(uid, request.resource.data.cuenta, id))
+          && saldoVinculado(uid, request.resource.data.cuenta, id, -request.resource.data.centavos);
+      }
+      match /metas/{meta} {
+        allow read, delete: if propietario(uid);
+        allow create, update: if propietario(uid)
+          && request.resource.data.keys().hasOnly(['nombre','cuenta','objetivoCentavos','aporteMensualCentavos','fechaObjetivo','actualizado'])
+          && request.resource.data.nombre is string && request.resource.data.nombre.size() >= 2 && request.resource.data.nombre.size() <= 60
+          && request.resource.data.cuenta is string && request.resource.data.cuenta.matches('^[a-zA-Z0-9_-]{1,80}$')
+          && exists(rutaCuenta(uid, request.resource.data.cuenta))
+          && request.resource.data.objetivoCentavos is int && request.resource.data.objetivoCentavos >= 100 && request.resource.data.objetivoCentavos <= 100000000
+          && request.resource.data.aporteMensualCentavos is int && request.resource.data.aporteMensualCentavos >= 100 && request.resource.data.aporteMensualCentavos <= request.resource.data.objetivoCentavos
+          && request.resource.data.fechaObjetivo is timestamp && request.resource.data.fechaObjetivo > request.time && request.resource.data.fechaObjetivo <= request.time + duration.value(3653, 'd')
+          && request.resource.data.actualizado == request.time;
       }
       match /dispositivos/{dispositivo} {
         allow read, delete: if propietario(uid);
@@ -26,7 +107,10 @@ service cloud.firestore {
       }
       match /notificaciones/{notificacion} { allow read: if propietario(uid); }
     }
+    match /comercios/{id} { allow read: if request.auth != null; }
     match /experiencias/{version} { allow read: if request.auth != null; }
+    match /{path=**}/movimientos/{id} { allow read: if administrador(); }
+    match /{path=**}/cuentas/{id} { allow read: if administrador(); }
     match /{document=**} { allow read, write: if false; }
   }
 }

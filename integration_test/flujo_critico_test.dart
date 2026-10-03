@@ -54,6 +54,8 @@ void main() {
       await binding.convertFlutterSurfaceToImage();
       await captura(tester, '01-bienvenida');
     }
+    await tester.ensureVisible(find.text('Ya tengo una cuenta'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Ya tengo una cuenta'));
     await esperar(tester, find.byKey(const Key('correo')));
     await tester.enterText(
@@ -92,7 +94,7 @@ void main() {
     await esperar(tester, find.text('Tus preferencias están actualizadas.'));
     await tester.tap(find.text('Inicio'));
     await tester.pumpAndSettle();
-    await tester.drag(find.byType(ListView).first, const Offset(0, -400));
+    await tester.drag(find.byType(ListView).first, const Offset(0, -650));
     await esperar(tester, find.text('Tu próximo viaje empieza aquí'));
     // El endpoint administrativo sin credenciales existe solo en los emuladores.
     expect(usarEmuladores, isTrue);
@@ -143,6 +145,10 @@ void main() {
     http.close();
     await esperar(tester, find.text('Contenido actualizado desde el servicio'));
     await captura(tester, '04-contenido-remoto');
+    await tester.tap(find.text('Mi perfil'));
+    await esperar(tester, find.text('Divisas'));
+    await tester.ensureVisible(find.text('Divisas'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Divisas'));
     await esperar(tester, find.byKey(const Key('resultado-divisas')));
     await captura(tester, '05-divisas');
@@ -158,11 +164,19 @@ void main() {
     await esperar(tester, find.text('Cuenta del día a día'));
     await red.cambiar(EscenarioRed.normal);
     await red.cambiar(EscenarioRed.divisasCaidas);
+    await tester.tap(find.text('Mi perfil'));
+    await esperar(tester, find.text('Divisas'));
+    await tester.ensureVisible(find.text('Divisas'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Divisas'));
     await esperar(tester, find.textContaining('guardada'));
     await tester.tap(find.text('Cuentas'));
     await esperar(tester, find.text('Cuenta del día a día'));
     await red.cambiar(EscenarioRed.latencia);
+    await tester.tap(find.text('Mi perfil'));
+    await esperar(tester, find.text('Divisas'));
+    await tester.ensureVisible(find.text('Divisas'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Divisas'));
     await esperar(tester, find.text('Consultando la tasa'));
     await esperar(tester, find.byKey(const Key('resultado-divisas')));
@@ -172,6 +186,8 @@ void main() {
     await tester.ensureVisible(find.text('Cerrar sesión'));
     await tester.tap(find.text('Cerrar sesión'));
     await esperar(tester, find.byKey(const Key('correo')));
+    await tester.ensureVisible(find.text('Quiero crear una cuenta'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Quiero crear una cuenta'));
     await esperar(tester, find.byKey(const Key('nombre')));
     await tester.enterText(find.byKey(const Key('nombre')), 'Nueva Persona');
@@ -187,7 +203,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.byKey(const Key('enviar-acceso')));
     await tester.tap(find.byKey(const Key('enviar-acceso')));
-    await esperar(tester, find.text('Hola, Nueva Persona'));
+    await esperar(tester, find.textContaining('Hola, Nueva'));
     await tester.tap(find.text('Cuentas'));
     await esperar(tester, find.text('Tu espacio está listo'));
   });

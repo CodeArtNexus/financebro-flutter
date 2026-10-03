@@ -29,7 +29,10 @@ class FirebaseIdentidad implements RepositorioIdentidad {
     if (usuario == null) {
       throw StateError('Ingresa con tu correo y contraseña primero.');
     }
-    await usuario.getIdToken().timeout(const Duration(seconds: 10));
+    final token = await usuario
+        .getIdToken(true)
+        .timeout(const Duration(seconds: 10));
+    if (token == null) throw StateError('Tu sesión necesita un nuevo ingreso.');
     _desbloqueada = true;
     _preparada.add(null);
   }

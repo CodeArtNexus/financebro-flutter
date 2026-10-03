@@ -142,6 +142,22 @@ class _PerfilEstado extends ConsumerState<PerfilPantalla> {
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Semantics(liveRegion: true, child: Text(_mensaje!)),
           ),
+        ListTile(
+          title: const Text('Divisas'),
+          leading: const Icon(Icons.currency_exchange_rounded),
+          onTap: () => context.push('/divisas'),
+        ),
+        ListTile(
+          title: const Text('Olvidar mi saludo en este dispositivo'),
+          leading: const Icon(Icons.person_remove_outlined),
+          onTap: () async {
+            await ref.read(preferenciasLocalesProvider).remove('saludo_bro_v1');
+            ref.invalidate(recuerdoAccesoProvider);
+            if (mounted) {
+              setState(() => _mensaje = 'Tu saludo recordado se ha eliminado.');
+            }
+          },
+        ),
         if (habilitarLaboratorio)
           ListTile(
             title: const Text('Laboratorio de conexión'),

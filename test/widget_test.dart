@@ -1,6 +1,7 @@
 import 'package:financebro/app/financebro_app.dart';
 import 'package:financebro/app/proveedores.dart';
 import 'package:financebro/app/rutas.dart';
+import 'package:financebro/app/tema.dart';
 import 'package:financebro/features/experience/experiencia.dart';
 import 'package:financebro/features/accounts/movimientos_pantalla.dart';
 import 'package:financebro/features/accounts/cuentas_pantalla.dart';
@@ -20,6 +21,29 @@ void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     preferencias = await SharedPreferences.getInstance();
+  });
+  testWidgets('La navegación conserva sus cinco acciones con texto ampliado', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 780);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: crearTema(),
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: const TextScaler.linear(1.6)),
+          child: child!,
+        ),
+        home: const NavegacionPantalla('/qr', SizedBox()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('QR'), findsOneWidget);
+    expect(find.text('Metas'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
   testWidgets('El inicio no interpreta una caché vacía como saldo cero', (
     tester,

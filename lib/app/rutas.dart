@@ -1,4 +1,6 @@
 import '../features/exchange/divisas_pantalla.dart';
+import '../features/payments/qr_pantalla.dart';
+import '../features/savings/metas_pantalla.dart';
 import '../features/notifications/notificaciones_pantalla.dart';
 import '../core/laboratorio_pantalla.dart';
 import '../core/configuracion.dart';
@@ -65,6 +67,8 @@ final rutasProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/inicio', builder: (_, _) => const InicioPantalla()),
           GoRoute(path: '/cuentas', builder: (_, _) => const CuentasPantalla()),
           GoRoute(path: '/divisas', builder: (_, _) => const DivisasPantalla()),
+          GoRoute(path: '/qr', builder: (_, _) => const QrPantalla()),
+          GoRoute(path: '/metas', builder: (_, _) => const MetasPantalla()),
           GoRoute(path: '/perfil', builder: (_, _) => const PerfilPantalla()),
         ],
       ),
@@ -100,7 +104,7 @@ class NavegacionPantalla extends StatelessWidget {
   final Widget child;
   @override
   Widget build(BuildContext context) {
-    const destinos = ['/inicio', '/cuentas', '/divisas', '/perfil'];
+    const destinos = ['/inicio', '/cuentas', '/qr', '/metas', '/perfil'];
     return Scaffold(
       body: child,
       bottomNavigationBar: SafeArea(
@@ -113,7 +117,7 @@ class NavegacionPantalla extends StatelessWidget {
             elevation: 0,
             height: 74,
             indicatorColor: naranjaFinanceBro.withValues(alpha: .45),
-            selectedIndex: destinos.indexOf(ruta).clamp(0, 3),
+            selectedIndex: destinos.indexOf(ruta).clamp(0, 4),
             onDestinationSelected: (i) => context.go(destinos[i]),
             destinations: const [
               NavigationDestination(
@@ -126,8 +130,12 @@ class NavegacionPantalla extends StatelessWidget {
                 label: 'Cuentas',
               ),
               NavigationDestination(
-                icon: Icon(Icons.currency_exchange_rounded),
-                label: 'Divisas',
+                icon: Icon(Icons.qr_code_scanner_rounded),
+                label: 'QR',
+              ),
+              NavigationDestination(
+                icon: Icon(Icons.savings_outlined),
+                label: 'Metas',
               ),
               NavigationDestination(
                 icon: Icon(Icons.person_outline_rounded),

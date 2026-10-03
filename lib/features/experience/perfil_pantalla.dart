@@ -23,6 +23,18 @@ class _PerfilEstado extends ConsumerState<PerfilPantalla> {
   bool? _mostrar;
   bool _guardando = false;
   String? _mensaje;
+  Future<void> _salir() async {
+    setState(() => _guardando = true);
+    try {
+      await ref.read(notificacionesRepositorioProvider).desconectar();
+      await ref.read(identidadProvider).salir();
+    } catch (e) {
+      if (mounted) setState(() => _mensaje = mensajeError(e));
+    } finally {
+      if (mounted) setState(() => _guardando = false);
+    }
+  }
+
   Future<void> _guardar(Perfil perfil) async {
     setState(() {
       _guardando = true;
@@ -136,11 +148,14 @@ class _PerfilEstado extends ConsumerState<PerfilPantalla> {
             leading: const Icon(Icons.science_outlined),
             onTap: () => context.push('/laboratorio'),
           ),
+        ListTile(
+          title: const Text('Notificaciones'),
+          leading: const Icon(Icons.notifications_outlined),
+          onTap: () => context.push('/notificaciones'),
+        ),
         const SizedBox(height: 32),
         OutlinedButton(
-          onPressed: _guardando
-              ? null
-              : () => ref.read(identidadProvider).salir(),
+          onPressed: _guardando ? null : _salir,
           child: const Text('Cerrar sesión'),
         ),
       ],

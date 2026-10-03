@@ -1,4 +1,5 @@
 import '../features/exchange/divisas_pantalla.dart';
+import '../features/notifications/notificaciones_pantalla.dart';
 import '../core/laboratorio_pantalla.dart';
 import '../core/configuracion.dart';
 import '../features/experience/perfil_pantalla.dart';
@@ -70,6 +71,10 @@ final rutasProvider = Provider<GoRouter>((ref) {
           path: '/laboratorio',
           builder: (_, _) => const LaboratorioPantalla(),
         ),
+      GoRoute(
+        path: '/notificaciones',
+        builder: (_, _) => const NotificacionesPantalla(),
+      ),
       GoRoute(
         path: '/cuentas/:cuenta',
         builder: (_, state) =>
@@ -190,7 +195,16 @@ class InicioPantalla extends ConsumerWidget {
     final mostrarSaldo =
         ref.watch(perfilProvider).value?.valor.mostrarSaldo ?? false;
     return Scaffold(
-      appBar: AppBar(title: const Text('FinanceBro')),
+      appBar: AppBar(
+        title: const Text('FinanceBro'),
+        actions: [
+          IconButton(
+            tooltip: 'Notificaciones',
+            onPressed: () => context.push('/notificaciones'),
+            icon: const Icon(Icons.notifications_outlined),
+          ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [

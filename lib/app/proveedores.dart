@@ -1,5 +1,9 @@
 import 'package:dio/dio.dart';
 
+import '../core/configuracion.dart';
+import '../features/notifications/notificaciones.dart';
+import '../features/notifications/firebase_notificaciones.dart';
+
 import '../core/control_red.dart';
 import '../features/exchange/divisas.dart';
 import '../features/exchange/http_divisas.dart';
@@ -96,3 +100,22 @@ final cotizacionProvider = FutureProvider.autoDispose
     .family<Cotizacion, String>(
       (ref, moneda) => ref.watch(divisasRepositorioProvider).consultar(moneda),
     );
+
+final notificacionesRepositorioProvider = Provider<RepositorioNotificaciones>((
+  ref,
+) {
+  if (usarEmuladores) return NotificacionesEmuladas();
+  final repositorio = FirebaseNotificaciones(
+    ref.watch(datosProvider),
+    ref.watch(preferenciasLocalesProvider),
+  );
+  ref.onDispose(repositorio.dispose);
+  return repositorio;
+});
+final historialNotificacionesProvider = StreamProvider<List<AvisoCliente>>((
+  ref,
+) {
+  final usuario = ref.watch(sesionProvider).value;
+  if (usuario == null) return const Stream.empty();
+  return ref.watch(notificacionesRepositorioProvider).historial(usuario.uid);
+});

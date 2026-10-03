@@ -224,37 +224,40 @@ class InicioPantalla extends ConsumerWidget {
                 data: (datos) => Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Card(
-                      color: naranjaFinanceBro,
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Tu saldo total',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              mostrarSaldo
-                                  ? dinero(
-                                      datos.valor.fold(
-                                        0,
-                                        (s, c) => s + c.saldoCentavos,
-                                      ),
-                                    )
-                                  : "••••••",
-                              style: Theme.of(context).textTheme.headlineMedium
-                                  ?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                          ],
+                    if (datos.valor.isNotEmpty)
+                      Card(
+                        color: naranjaFinanceBro,
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Tu saldo total',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                mostrarSaldo
+                                    ? dinero(
+                                        datos.valor.fold(
+                                          0,
+                                          (s, c) => s + c.saldoCentavos,
+                                        ),
+                                      )
+                                    : "••••••",
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineMedium
+                                    ?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
                     if (datos.desdeCache) AvisoCache(datos.actualizado),
                     const SizedBox(height: 16),
                     Text(
@@ -262,9 +265,13 @@ class InicioPantalla extends ConsumerWidget {
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     if (datos.valor.isEmpty)
-                      const PanelEstado(
-                        titulo: 'Tu espacio está listo',
-                        mensaje: 'Todavía no tienes cuentas asignadas.',
+                      PanelEstado(
+                        titulo: datos.desdeCache
+                            ? 'Necesitamos conexión'
+                            : 'Tu espacio está listo',
+                        mensaje: datos.desdeCache
+                            ? 'Todavía no hay cuentas guardadas en este dispositivo. Recupera la conexión para consultarlas.'
+                            : 'Todavía no tienes cuentas asignadas.',
                       ),
                     for (final cuenta in datos.valor) TarjetaCuenta(cuenta),
                   ],

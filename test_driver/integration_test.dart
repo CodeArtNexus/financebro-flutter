@@ -18,8 +18,10 @@ Future<void> main() async {
           return true;
         },
     responseDataCallback: (datos) async {
+      final resultado = Map<String, dynamic>.of(datos ?? {})
+        ..remove('screenshots');
       await writeResponseData(
-        datos,
+        resultado,
         destinationDirectory: destino.path,
         testOutputFilename: 'resultado-e2e',
       );

@@ -1,5 +1,7 @@
 import 'package:financebro/app/financebro_app.dart';
 import 'package:financebro/app/proveedores.dart';
+import 'package:financebro/app/rutas.dart';
+import 'package:financebro/features/experience/experiencia.dart';
 import 'package:financebro/features/accounts/movimientos_pantalla.dart';
 import 'package:financebro/features/accounts/cuentas_pantalla.dart';
 import 'package:financebro/features/accounts/cuentas.dart';
@@ -12,6 +14,46 @@ import 'package:flutter_test/flutter_test.dart';
 import 'apoyos.dart';
 
 void main() {
+  testWidgets('El inicio no interpreta una caché vacía como saldo cero', (
+    tester,
+  ) async {
+    final identidad = IdentidadPrueba()
+      ..usuario = const Identidad('usuario-prueba', 'Sebastian');
+    addTearDown(identidad.controlador.close);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          identidadProvider.overrideWithValue(identidad),
+          cuentasProvider.overrideWith(
+            (ref) => Stream.value(
+              DatosGuardados<List<Cuenta>>(
+                [],
+                desdeCache: true,
+                actualizado: DateTime(1970),
+              ),
+            ),
+          ),
+          perfilProvider.overrideWith(
+            (ref) => Stream.value(
+              DatosGuardados<Perfil>(
+                const Perfil(nombre: 'Sebastian'),
+                desdeCache: true,
+                actualizado: DateTime(1970),
+              ),
+            ),
+          ),
+          contenidoProvider.overrideWith(
+            (ref) => Stream.value(experienciaBase),
+          ),
+        ],
+        child: const MaterialApp(home: InicioPantalla()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Necesitamos conexión'), findsOneWidget);
+    expect(find.text('Tu saldo total'), findsNothing);
+    expect(find.text('Tu espacio está listo'), findsNothing);
+  });
   testWidgets('Las cuentas muestran carga mientras espera el servicio', (
     tester,
   ) async {

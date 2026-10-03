@@ -25,6 +25,9 @@ if (local) {
   if (!usuario) usuario = await nube(`https://identitytoolkit.googleapis.com/v1/projects/${proyecto}/accounts`, { method: 'POST', body: { email: correo, password: acceso.clave, displayName: 'Sebastian Demo', emailVerified: true } });
   acceso.uid = usuario.localId;
   await writeFile(archivo, JSON.stringify(acceso, null, 2), { mode: 0o600 });
+  await writeFile('.secrets/prueba-real.json', JSON.stringify({
+    DEMO_EMAIL: acceso.correo, DEMO_PASSWORD: acceso.clave, DEMO_UID: acceso.uid,
+  }, null, 2), { mode: 0o600 });
 }
 const uid = usuario.localId;
 await escribir(`usuarios/${uid}`, { nombre: 'Sebastian Demo', segmento: 'equilibrio', mostrarSaldo: true, actualizado: new Date() });

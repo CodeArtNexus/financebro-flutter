@@ -18,6 +18,11 @@ export async function nube(url, { method = 'GET', body } = {}) {
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
   const resultado = await respuesta.json();
-  if (!respuesta.ok) throw new Error(`Servicio remoto (${respuesta.status}): ${resultado.error?.message ?? 'solicitud rechazada'}`);
+  if (!respuesta.ok) {
+    const error = new Error(`Servicio remoto (${respuesta.status}): ${resultado.error?.message ?? 'solicitud rechazada'}`);
+    error.estado = respuesta.status;
+    error.codigo = resultado.error?.details?.find(d => d.errorCode)?.errorCode;
+    throw error;
+  }
   return resultado;
 }

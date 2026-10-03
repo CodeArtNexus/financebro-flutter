@@ -35,6 +35,9 @@ void main() {
   const guardarCapturas = bool.fromEnvironment('CAPTURE_EVIDENCE');
   Future<void> captura(WidgetTester tester, String nombre) async {
     if (!guardarCapturas) return;
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(seconds: 2)),
+    );
     await tester.pump(const Duration(milliseconds: 500));
     await binding.takeScreenshot(nombre);
   }

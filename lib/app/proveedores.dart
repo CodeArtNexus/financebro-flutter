@@ -1,3 +1,8 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../features/experience/experiencia.dart';
+import '../features/experience/firebase_experiencia.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -40,3 +45,26 @@ final movimientosProvider = StreamProvider.autoDispose
           .watch(cuentasRepositorioProvider)
           .observarMovimientos(usuario.uid, cuenta);
     });
+
+final preferenciasLocalesProvider = Provider<SharedPreferences>(
+  (ref) => throw StateError(
+    'Las preferencias locales deben inicializarse al arrancar.',
+  ),
+);
+final experienciaRepositorioProvider = Provider<RepositorioExperiencia>(
+  (ref) => FirebaseExperiencia(
+    ref.watch(datosProvider),
+    ref.watch(preferenciasLocalesProvider),
+  ),
+);
+final perfilProvider = StreamProvider<DatosGuardados<Perfil>>((ref) {
+  final usuario = ref.watch(sesionProvider).value;
+  if (usuario == null) return const Stream.empty();
+  return ref.watch(experienciaRepositorioProvider).observarPerfil(usuario.uid);
+});
+final contenidoProvider = StreamProvider<Experiencia>((ref) {
+  if (ref.watch(sesionProvider).value == null) {
+    return Stream.value(experienciaBase);
+  }
+  return ref.watch(experienciaRepositorioProvider).observarContenido();
+});

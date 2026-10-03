@@ -1,3 +1,5 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -36,7 +38,12 @@ Future<Widget> prepararAplicacion() async {
   };
   return ProviderScope(
     retry: (int intento, Object error) => null,
-    overrides: [firebaseAppProvider.overrideWithValue(app)],
+    overrides: [
+      firebaseAppProvider.overrideWithValue(app),
+      preferenciasLocalesProvider.overrideWithValue(
+        await SharedPreferences.getInstance(),
+      ),
+    ],
     child: const FinanceBroApp(),
   );
 }

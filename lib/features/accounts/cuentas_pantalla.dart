@@ -46,7 +46,9 @@ class TarjetaCuenta extends ConsumerWidget {
       contentPadding: const EdgeInsets.all(20),
       leading: const Icon(Icons.account_balance_outlined),
       title: Text(cuenta.nombre),
-      subtitle: Text('${cuenta.numero}\n${dinero(cuenta.saldoCentavos)}'),
+      subtitle: Text(
+        '${cuenta.numero}\n${(ref.watch(perfilProvider).value?.valor.mostrarSaldo ?? false) ? dinero(cuenta.saldoCentavos) : "••••••"}',
+      ),
       trailing: const Icon(Icons.chevron_right),
       onTap: () => context.push('/cuentas/${cuenta.id}'),
     ),

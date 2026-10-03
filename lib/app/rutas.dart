@@ -1,3 +1,6 @@
+import '../features/experience/perfil_pantalla.dart';
+import '../features/experience/tarjeta_remota.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -59,10 +62,7 @@ final rutasProvider = Provider<GoRouter>((ref) {
             path: '/divisas',
             builder: (_, _) => const _PendientePantalla('Divisas'),
           ),
-          GoRoute(
-            path: '/perfil',
-            builder: (_, _) => const PerfilInicialPantalla(),
-          ),
+          GoRoute(path: '/perfil', builder: (_, _) => const PerfilPantalla()),
         ],
       ),
       GoRoute(
@@ -182,6 +182,8 @@ class InicioPantalla extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final usuario = ref.watch(sesionProvider).value;
+    final mostrarSaldo =
+        ref.watch(perfilProvider).value?.valor.mostrarSaldo ?? false;
     return Scaffold(
       appBar: AppBar(title: const Text('FinanceBro')),
       body: ListView(
@@ -216,12 +218,14 @@ class InicioPantalla extends ConsumerWidget {
                             ),
                             const SizedBox(height: 12),
                             Text(
-                              dinero(
-                                datos.valor.fold(
-                                  0,
-                                  (s, c) => s + c.saldoCentavos,
-                                ),
-                              ),
+                              mostrarSaldo
+                                  ? dinero(
+                                      datos.valor.fold(
+                                        0,
+                                        (s, c) => s + c.saldoCentavos,
+                                      ),
+                                    )
+                                  : "••••••",
                               style: Theme.of(context).textTheme.headlineMedium
                                   ?.copyWith(
                                     color: Colors.white,
@@ -247,32 +251,33 @@ class InicioPantalla extends ConsumerWidget {
                   ],
                 ),
               ),
+          const SizedBox(height: 24),
+          Text('Para ti', style: Theme.of(context).textTheme.titleLarge),
+          ref
+              .watch(contenidoProvider)
+              .when(
+                loading: () => const LinearProgressIndicator(),
+                error: (e, _) =>
+                    PanelError(e, () => ref.invalidate(contenidoProvider)),
+                data: (experiencia) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final tarjeta in experiencia.paraPerfil(
+                      ref.watch(perfilProvider).value?.valor.segmento ??
+                          'equilibrio',
+                    ))
+                      TarjetaContenido(tarjeta),
+                    if (experiencia.respaldo)
+                      const Text(
+                        'Mostramos el contenido disponible mientras actualizamos tu experiencia.',
+                      ),
+                  ],
+                ),
+              ),
         ],
       ),
     );
   }
-}
-
-class PerfilInicialPantalla extends ConsumerWidget {
-  const PerfilInicialPantalla({super.key});
-  @override
-  Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(title: const Text('Mi perfil')),
-    body: ListView(
-      padding: const EdgeInsets.all(24),
-      children: [
-        const PanelEstado(
-          titulo: 'FinanceBro te acompaña',
-          mensaje: 'Tu espacio financiero personal.',
-        ),
-        const SizedBox(height: 20),
-        OutlinedButton(
-          onPressed: () => ref.read(identidadProvider).salir(),
-          child: const Text('Cerrar sesión'),
-        ),
-      ],
-    ),
-  );
 }
 
 class _PendientePantalla extends StatelessWidget {

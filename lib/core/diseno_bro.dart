@@ -79,7 +79,7 @@ class CristalBro extends StatelessWidget {
             borderRadius: BorderRadius.circular(radio),
             border: Border.all(color: Colors.white.withValues(alpha: .9)),
           ),
-          child: child,
+          child: Material(type: MaterialType.transparency, child: child),
         ),
       ),
     ),
@@ -100,10 +100,16 @@ class MarcaBro extends StatelessWidget {
           color: naranjaFinanceBro,
           borderRadius: BorderRadius.circular(15),
         ),
-        child: Icon(
-          Icons.account_balance_wallet_rounded,
-          size: compacta ? 20 : 25,
-          color: tintaBro,
+        child: Center(
+          child: Text(
+            'fb.',
+            style: TextStyle(
+              fontSize: compacta ? 20 : 25,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -2,
+              color: tintaBro,
+            ),
+          ),
         ),
       ),
       const SizedBox(width: 10),

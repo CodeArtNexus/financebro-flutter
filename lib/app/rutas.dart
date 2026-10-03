@@ -1,3 +1,11 @@
+import 'dart:ui';
+
+import '../features/auth/acceso_rapido.dart';
+import '../features/banking/apertura_pantallas.dart';
+import '../features/banking/contactos_pantalla.dart';
+import '../features/banking/pagos_pantalla.dart';
+import '../features/banking/tarjetas_pantalla.dart';
+import '../features/banking/historial_pantalla.dart';
 import '../features/exchange/divisas_pantalla.dart';
 import '../features/payments/qr_pantalla.dart';
 import '../features/savings/metas_pantalla.dart';
@@ -8,7 +16,6 @@ import '../features/experience/perfil_pantalla.dart';
 import '../features/accounts/inicio_pantalla.dart';
 export '../features/accounts/inicio_pantalla.dart';
 import '../features/auth/bienvenida_pantalla.dart';
-import '../core/diseno_bro.dart';
 
 import 'dart:async';
 
@@ -18,7 +25,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/auth/acceso_pantalla.dart';
 import '../features/accounts/cuentas_pantalla.dart';
-import '../features/accounts/movimientos_pantalla.dart';
+
 import 'proveedores.dart';
 import 'tema.dart';
 
@@ -38,16 +45,27 @@ final rutasProvider = Provider<GoRouter>((ref) {
   final identidad = ref.watch(identidadProvider);
   final actualizar = _ActualizarSesion(identidad.cambios);
   final router = GoRouter(
-    initialLocation: '/bienvenida',
+    initialLocation:
+        RecuerdoAcceso.leer(ref.read(preferenciasLocalesProvider)) == null
+        ? '/bienvenida'
+        : '/ingresar',
     refreshListenable: actualizar,
     redirect: (context, state) {
       final acceso = [
         '/bienvenida',
         '/ingresar',
         '/registrar',
+        '/qr-acceso',
       ].contains(state.matchedLocation);
       if (identidad.actual == null && !acceso) return '/ingresar';
-      if (identidad.actual != null && acceso) return '/inicio';
+      if (identidad.actual != null && acceso) {
+        final preferencias = ref.read(preferenciasLocalesProvider);
+        if (preferencias.containsKey('qr_pendiente')) return '/qr';
+        if (preferencias.getBool('abrir_ahorros_pendiente') == true) {
+          return '/apertura/ahorros';
+        }
+        return '/inicio';
+      }
       return null;
     },
     routes: [
@@ -60,6 +78,43 @@ final rutasProvider = Provider<GoRouter>((ref) {
         path: '/registrar',
         builder: (_, _) => const AccesoPantalla(registro: true),
       ),
+      GoRoute(
+        path: '/qr-acceso',
+        builder: (_, _) => const QrPantalla(accesoRapido: true),
+      ),
+      GoRoute(
+        path: '/apertura/ahorros',
+        builder: (_, _) => const AperturaAhorrosPantalla(),
+      ),
+      GoRoute(
+        path: '/apertura/corriente',
+        builder: (_, _) => const AperturaCorrientePantalla(),
+      ),
+      GoRoute(path: '/contactos', builder: (_, _) => const ContactosPantalla()),
+      GoRoute(path: '/tarjetas', builder: (_, _) => const TarjetasPantalla()),
+      GoRoute(
+        path: '/historial',
+        builder: (_, s) => HistorialPantalla(
+          tipo: s.uri.queryParameters['tipo'],
+          destino: s.uri.queryParameters['id'],
+        ),
+      ),
+      GoRoute(
+        path: '/transferir',
+        builder: (_, s) =>
+            QrPantalla(numeroInicial: s.uri.queryParameters['numero']),
+      ),
+      GoRoute(
+        path: '/pagar-externo',
+        builder: (_, s) => PagoExternoPantalla(
+          tipo: s.uri.queryParameters['tipo'] ?? 'contacto',
+          destino: s.uri.queryParameters['id'] ?? '',
+        ),
+      ),
+      GoRoute(
+        path: '/pagos/:servicio',
+        builder: (_, s) => ServicioPagoPantalla(s.pathParameters['servicio']!),
+      ),
       ShellRoute(
         builder: (context, state, child) =>
             NavegacionPantalla(state.uri.path, child),
@@ -67,7 +122,13 @@ final rutasProvider = Provider<GoRouter>((ref) {
           GoRoute(path: '/inicio', builder: (_, _) => const InicioPantalla()),
           GoRoute(path: '/cuentas', builder: (_, _) => const CuentasPantalla()),
           GoRoute(path: '/divisas', builder: (_, _) => const DivisasPantalla()),
-          GoRoute(path: '/qr', builder: (_, _) => const QrPantalla()),
+          GoRoute(
+            path: '/qr',
+            builder: (_, s) => QrPantalla(
+              recibirInicial: s.uri.queryParameters['recibir'] == 'true',
+            ),
+          ),
+          GoRoute(path: '/pagos', builder: (_, _) => const PagosPantalla()),
           GoRoute(path: '/metas', builder: (_, _) => const MetasPantalla()),
           GoRoute(path: '/perfil', builder: (_, _) => const PerfilPantalla()),
         ],
@@ -84,7 +145,7 @@ final rutasProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/cuentas/:cuenta',
         builder: (_, state) =>
-            MovimientosPantalla(state.pathParameters['cuenta']!),
+            HistorialPantalla(cuenta: state.pathParameters['cuenta']!),
       ),
     ],
     errorBuilder: (_, _) => const Scaffold(
@@ -104,44 +165,57 @@ class NavegacionPantalla extends StatelessWidget {
   final Widget child;
   @override
   Widget build(BuildContext context) {
-    const destinos = ['/inicio', '/cuentas', '/qr', '/metas', '/perfil'];
+    const destinos = ['/inicio', '/cuentas', '/qr', '/pagos', '/perfil'];
     return Scaffold(
-      body: child,
-      bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-        child: CristalBro(
-          radio: 28,
-          padding: EdgeInsets.zero,
-          child: NavigationBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            height: 74,
-            indicatorColor: naranjaFinanceBro.withValues(alpha: .45),
-            selectedIndex: destinos.indexOf(ruta).clamp(0, 4),
-            onDestinationSelected: (i) => context.go(destinos[i]),
-            destinations: const [
-              NavigationDestination(
-                icon: Icon(Icons.home_outlined),
-                selectedIcon: Icon(Icons.home_rounded),
-                label: 'Inicio',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.account_balance_wallet_outlined),
-                label: 'Cuentas',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.qr_code_scanner_rounded),
-                label: 'QR',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.savings_outlined),
-                label: 'Metas',
-              ),
-              NavigationDestination(
-                icon: Icon(Icons.person_outline_rounded),
-                label: 'Mi perfil',
-              ),
-            ],
+      extendBody: true,
+      body: Padding(
+        padding: EdgeInsets.only(
+          bottom: 84 + MediaQuery.paddingOf(context).bottom,
+        ),
+        child: child,
+      ),
+      bottomNavigationBar: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: MediaQuery.highContrastOf(context)
+                  ? Colors.white
+                  : Colors.white.withValues(alpha: .82),
+              border: const Border(top: BorderSide(color: Colors.white)),
+            ),
+            child: NavigationBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              height: 80,
+              indicatorColor: naranjaFinanceBro.withValues(alpha: .42),
+              selectedIndex: destinos.indexOf(ruta).clamp(0, 4),
+              onDestinationSelected: (i) => context.go(destinos[i]),
+              destinations: const [
+                NavigationDestination(
+                  icon: Icon(Icons.home_outlined),
+                  selectedIcon: Icon(Icons.home_rounded),
+                  label: 'Inicio',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.account_balance_outlined),
+                  label: 'Cuentas',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.qr_code_scanner_rounded),
+                  label: 'QR',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.receipt_long_outlined),
+                  label: 'Pagos',
+                ),
+                NavigationDestination(
+                  icon: Icon(Icons.person_outline_rounded),
+                  label: 'Mi perfil',
+                ),
+              ],
+            ),
           ),
         ),
       ),

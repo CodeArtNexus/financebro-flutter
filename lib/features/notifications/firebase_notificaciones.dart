@@ -63,6 +63,17 @@ class FirebaseNotificaciones implements RepositorioNotificaciones {
     _suscripciones.add(
       FirebaseMessaging.onMessage.listen((m) async {
         if (m.data['uid'] != _uid) return;
+        final evento = m.data['evento'] as String?;
+        if (evento != null) {
+          final vistos =
+              preferencias.getStringList('avisos_vistos_$_uid') ?? [];
+          if (vistos.contains(evento)) return;
+          vistos.add(evento);
+          await preferencias.setStringList(
+            'avisos_vistos_$_uid',
+            vistos.skip(vistos.length > 100 ? vistos.length - 100 : 0).toList(),
+          );
+        }
         final aviso = AvisoCliente(
           m.notification?.title ?? 'FinanceBro',
           m.notification?.body ?? 'Hay una novedad para ti.',
@@ -203,7 +214,7 @@ class FirebaseNotificaciones implements RepositorioNotificaciones {
             .map(
               (d) => AvisoCliente(
                 d.data()['titulo'] as String,
-                d.data()['texto'] as String,
+                (d.data()['texto'] ?? d.data()['cuerpo']) as String,
                 (d.data()['fecha'] as Timestamp).toDate(),
                 destinoPush(d.data()),
               ),
@@ -213,10 +224,28 @@ class FirebaseNotificaciones implements RepositorioNotificaciones {
 }
 
 class NotificacionesEmuladas implements RepositorioNotificaciones {
+  NotificacionesEmuladas(this.datos);
+  final FirebaseFirestore datos;
   @override
   Stream<AvisoCliente> get recibidas => const Stream.empty();
   @override
-  Stream<List<AvisoCliente>> historial(String uid) => Stream.value([]);
+  Stream<List<AvisoCliente>> historial(String uid) => datos
+      .collection('usuarios/$uid/notificaciones')
+      .orderBy('fecha', descending: true)
+      .limit(50)
+      .snapshots()
+      .map(
+        (s) => s.docs
+            .map(
+              (d) => AvisoCliente(
+                d.data()['titulo'] as String,
+                (d.data()['texto'] ?? d.data()['cuerpo']) as String,
+                (d.data()['fecha'] as Timestamp).toDate(),
+                destinoPush(d.data()),
+              ),
+            )
+            .toList(),
+      );
   @override
   Future<void> conectar(String uid, void Function(String) abrir) async {}
   @override

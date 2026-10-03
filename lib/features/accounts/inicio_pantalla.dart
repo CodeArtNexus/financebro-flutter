@@ -3,21 +3,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/proveedores.dart';
-import '../../app/tema.dart';
 import '../../core/componentes.dart';
 import '../../core/diseno_bro.dart';
+import '../banking/banca.dart';
+import '../banking/tarjetas_pantalla.dart';
 import '../experience/tarjeta_remota.dart';
 import 'cuentas.dart';
-import 'cuentas_pantalla.dart';
 
 class InicioPantalla extends ConsumerWidget {
   const InicioPantalla({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final usuario = ref.watch(sesionProvider).value;
-    final nombre = usuario?.nombre.split(' ').first ?? 'Bro';
-    final mostrar =
-        ref.watch(perfilProvider).value?.valor.mostrarSaldo ?? false;
+    final usuario = ref.watch(sesionProvider).value,
+        nombre = usuario?.nombre.split(' ').first ?? 'Bro',
+        mostrar = ref.watch(perfilProvider).value?.valor.mostrarSaldo ?? false;
     return Scaffold(
       appBar: AppBar(
         title: const MarcaBro(compacta: true),
@@ -30,7 +29,7 @@ class InicioPantalla extends ConsumerWidget {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(22, 4, 22, 28),
+        padding: const EdgeInsets.fromLTRB(22, 8, 22, 32),
         children: [
           EntradaBro(
             child: Column(
@@ -39,16 +38,16 @@ class InicioPantalla extends ConsumerWidget {
                 Text(
                   'Hola, $nombre ✨',
                   style: const TextStyle(
-                    fontSize: 26,
+                    fontSize: 28,
                     fontWeight: FontWeight.w600,
-                    letterSpacing: -.9,
+                    letterSpacing: -1,
                   ),
                 ),
                 const Text(
-                  'Tu dinero, tus planes. Vamos a cuidarlos.',
+                  'Aquí tienes a tu financebro de confianza.',
                   style: TextStyle(fontSize: 12, color: Color(0xFF6E7181)),
                 ),
-                const SizedBox(height: 22),
+                const SizedBox(height: 8),
               ],
             ),
           ),
@@ -59,137 +58,199 @@ class InicioPantalla extends ConsumerWidget {
                 error: (e, _) =>
                     PanelError(e, () => ref.invalidate(cuentasProvider)),
                 data: (datos) {
-                  final tarjetas = datos.valor
-                      .where((c) => c.tarjetaUltimos4 != null)
-                      .toList();
+                  if (datos.desdeCache && datos.valor.isEmpty) {
+                    return const PanelEstado(
+                      titulo: 'Necesitamos conexión',
+                      mensaje: 'Todavía no hay cuentas guardadas. Conéctate para consultarlas.',
+                    );
+                  }
+                  final ahorro = datos.valor
+                          .where((c) => c.tipo == 'ahorro')
+                          .firstOrNull,
+                      corriente = datos.valor
+                          .where((c) => c.tipo == 'corriente')
+                          .firstOrNull;
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      if (datos.valor.isNotEmpty)
-                        CristalBro(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Row(
-                                children: [
-                                  Icon(
-                                    Icons.account_balance_wallet_outlined,
-                                    size: 16,
-                                    color: naranjaTextoBro,
+                      const EncabezadoBro('Tu dinero, a tu manera'),
+                      LayoutBuilder(
+                        builder: (context, medidas) {
+                          final compactas =
+                              medidas.maxWidth >= 300 &&
+                              MediaQuery.textScalerOf(context).scale(1) <= 1.3;
+                          final cuentas = [
+                            CuentaInicioBro(
+                              ahorro,
+                              tipo: 'ahorro',
+                              mostrar: mostrar,
+                              compacta: compactas,
+                            ),
+                            CuentaInicioBro(
+                              corriente,
+                              tipo: 'corriente',
+                              mostrar: mostrar,
+                              compacta: compactas,
+                            ),
+                          ];
+                          return compactas
+                              ? IntrinsicHeight(
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Expanded(child: cuentas[0]),
+                                      const SizedBox(width: 12),
+                                      Expanded(child: cuentas[1]),
+                                    ],
                                   ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Tu saldo total',
-                                    style: TextStyle(fontSize: 12),
-                                  ),
-                                  Spacer(),
-                                  Text(
-                                    'USD',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: Color(0xFF757989),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              FittedBox(
-                                alignment: Alignment.centerLeft,
-                                fit: BoxFit.scaleDown,
-                                child: Text(
-                                  mostrar
-                                      ? dinero(
-                                          datos.valor.fold(
-                                            0,
-                                            (s, c) => s + c.saldoCentavos,
-                                          ),
-                                        )
-                                      : '••••••',
-                                  style: const TextStyle(
-                                    fontSize: 34,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: -1.5,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              const Text(
-                                'Disponible en tus cuentas',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Color(0xFF6E7181),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                                )
+                              : Column(
+                                  children: [
+                                    cuentas[0],
+                                    const SizedBox(height: 12),
+                                    cuentas[1],
+                                  ],
+                                );
+                        },
+                      ),
                       if (datos.desdeCache) AvisoCache(datos.actualizado),
-                      if (tarjetas.isNotEmpty) ...[
-                        const EncabezadoBro(
-                          'Mis tarjetas',
-                          subtitulo: 'Siempre a mano',
-                        ),
-                        SizedBox(
-                          height:
-                              150 +
-                              72 * MediaQuery.textScalerOf(context).scale(1),
-                          child: PageView.builder(
-                            itemCount: tarjetas.length,
-                            itemBuilder: (context, i) => Padding(
-                              padding: const EdgeInsets.only(right: 10),
-                              child: TarjetaBro(
-                                tarjetas[i],
-                                nombre: usuario?.nombre ?? 'Bro',
-                                indice: i,
-                              ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AccionBro(
+                              'Transferir',
+                              Icons.arrow_outward,
+                              () => context.push('/transferir'),
                             ),
                           ),
-                        ),
-                      ],
-                      const SizedBox(height: 18),
-                      Wrap(
-                        spacing: 10,
-                        runSpacing: 10,
-                        children: [
-                          AccionBro(
-                            'Pagar QR',
-                            Icons.qr_code_scanner_rounded,
-                            () => context.go('/qr'),
+                          Expanded(
+                            child: AccionBro('Mi QR', Icons.qr_code, () {
+                              context.go('/qr?recibir=true');
+                            }),
                           ),
-                          AccionBro(
-                            'Divisas',
-                            Icons.currency_exchange_rounded,
-                            () => context.push('/divisas'),
+                          Expanded(
+                            child: AccionBro(
+                              'Contactos',
+                              Icons.people_outline,
+                              () => context.push('/contactos'),
+                            ),
                           ),
-                          AccionBro(
-                            'Mis metas',
-                            Icons.savings_outlined,
-                            () => context.go('/metas'),
+                          Expanded(
+                            child: AccionBro(
+                              'Mis metas',
+                              Icons.savings_outlined,
+                              () => context.push('/metas'),
+                            ),
                           ),
                         ],
                       ),
                       EncabezadoBro(
-                        'Tus cuentas',
+                        'Mis tarjetas',
+                        subtitulo: 'Tu estilo, tus bancos',
                         accion: TextButton(
-                          onPressed: () => context.go('/cuentas'),
-                          child: const Text('Ver todas'),
+                          onPressed: () => context.push('/tarjetas'),
+                          child: const Text('Gestionar'),
                         ),
                       ),
-                      if (datos.valor.isEmpty)
-                        PanelEstado(
-                          titulo: datos.desdeCache
-                              ? 'Necesitamos conexión'
-                              : 'Tu espacio está listo',
-                          mensaje: datos.desdeCache
-                              ? 'Todavía no hay cuentas guardadas. Conéctate para consultarlas.'
-                              : 'Todavía no tienes cuentas asignadas.',
-                        ),
-                      for (final cuenta in datos.valor) TarjetaCuenta(cuenta),
+                      ref
+                          .watch(tarjetasBroProvider)
+                          .when(
+                            loading: () => const LinearProgressIndicator(),
+                            error: (e, _) => PanelError(
+                              e,
+                              () => ref.invalidate(tarjetasBroProvider),
+                            ),
+                            data: (tarjetas) {
+                              final todas = tarjetas.isEmpty
+                                  ? datos.valor
+                                        .where(
+                                          (c) =>
+                                              c.tarjetaUltimos4 != null &&
+                                              c.activa,
+                                        )
+                                        .map(
+                                          (c) => <String, dynamic>{
+                                            'nombre': c.nombre,
+                                            'banco': 'FinanceBro',
+                                            'ultimos4': c.tarjetaUltimos4,
+                                            'color': c.color,
+                                          },
+                                        )
+                                        .toList()
+                                  : tarjetas;
+                              if (todas.isEmpty) {
+                                return CristalBro(
+                                  child: Column(
+                                    children: [
+                                      const Text(
+                                        'Dale tu estilo a una tarjeta FinanceBro.',
+                                      ),
+                                      TextButton(
+                                        onPressed: () =>
+                                            context.push('/tarjetas'),
+                                        child: const Text('Asociar tarjeta'),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                              return SizedBox(
+                                height:
+                                    220 +
+                                    130 *
+                                        (MediaQuery.textScalerOf(context)
+                                                .scale(1) -
+                                            1),
+                                child: PageView.builder(
+                                  itemCount: todas.length,
+                                  itemBuilder: (c, i) => Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: TarjetaVisualBro(
+                                      todas[i],
+                                      compacta: true,
+                                      titular: usuario?.nombre ?? 'Bro',
+                                      onTap: () => context.push('/tarjetas'),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                     ],
                   );
                 },
               ),
-          const EncabezadoBro('Para ti', subtitulo: 'Ideas que van contigo'),
+          const SizedBox(height: 20),
+          CristalBro(
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.receipt_long_outlined),
+              title: const Text('Todos tus movimientos'),
+              subtitle: const Text(
+                'Transferencias, pagos y ajustes en un lugar.',
+                style: TextStyle(fontSize: 11),
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.push('/historial'),
+            ),
+          ),
+          const SizedBox(height: 12),
+          CristalBro(
+            child: ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.bolt_outlined),
+              title: const Text('Tus servicios, al día'),
+              subtitle: const Text(
+                'Consulta una planilla o activa un pago mensual.',
+                style: TextStyle(fontSize: 11),
+              ),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.go('/pagos'),
+            ),
+          ),
+          const EncabezadoBro('Para tus próximos planes'),
           ref
               .watch(contenidoProvider)
               .when(
@@ -197,22 +258,122 @@ class InicioPantalla extends ConsumerWidget {
                 error: (e, _) =>
                     PanelError(e, () => ref.invalidate(contenidoProvider)),
                 data: (experiencia) => Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    for (final t in experiencia.paraPerfil(
-                      ref.watch(perfilProvider).value?.valor.segmento ??
-                          'equilibrio',
+                    for (final tarjeta in experiencia.tarjetas.where(
+                      (t) =>
+                          t.segmento == 'todos' ||
+                          t.segmento ==
+                              ref.watch(perfilProvider).value?.valor.segmento,
                     ))
-                      TarjetaContenido(t),
-                    if (experiencia.respaldo)
-                      const Text(
-                        'Tu contenido disponible mientras conectamos.',
-                        style: TextStyle(fontSize: 11),
-                      ),
+                      TarjetaContenido(tarjeta),
                   ],
                 ),
               ),
+          const SizedBox(height: 16),
+          TextButton.icon(
+            onPressed: () => context.push('/divisas'),
+            icon: const Icon(Icons.currency_exchange),
+            label: const Text('Explorar divisas'),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class CuentaInicioBro extends StatelessWidget {
+  const CuentaInicioBro(
+    this.cuenta, {
+    super.key,
+    required this.tipo,
+    required this.mostrar,
+    this.compacta = false,
+  });
+  final Cuenta? cuenta;
+  final String tipo;
+  final bool mostrar, compacta;
+  @override
+  Widget build(BuildContext context) {
+    final corriente = tipo == 'corriente';
+    return EntradaBro(
+      child: CristalBro(
+        padding: EdgeInsets.all(compacta ? 16 : 22),
+        color: corriente
+            ? const Color(0xFFEEEAFB).withValues(alpha: .78)
+            : const Color(0xFFFFE9DA).withValues(alpha: .8),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(24),
+          onTap: () => context.push(
+            cuenta == null
+                ? '/apertura/${corriente ? 'corriente' : 'ahorros'}'
+                : '/cuentas/${cuenta!.id}',
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    corriente
+                        ? Icons.business_outlined
+                        : Icons.savings_outlined,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      corriente ? 'Cuenta corriente' : 'Cuenta de ahorros',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  if (!compacta) const Icon(Icons.arrow_outward, size: 18),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (cuenta == null) ...[
+                Text(
+                  corriente
+                      ? (compacta ? 'Tu empresa' : 'Un espacio para tu empresa')
+                      : 'Empieza con tus ahorros',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  corriente
+                      ? (compacta
+                            ? 'Abre tu solicitud'
+                            : 'Abre tu solicitud y guarda cada paso.')
+                      : 'Ábrela cuando quieras. Tú decides.',
+                  style: const TextStyle(fontSize: 11),
+                ),
+              ] else ...[
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    mostrar ? dinero(cuenta!.saldoCentavos) : '••••••',
+                    style: const TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -1,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  '${cuenta!.numero} · ${cuenta!.activa ? 'Disponible' : 'Temporal · depósito inicial'}',
+                  style: const TextStyle(fontSize: 11),
+                ),
+              ],
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -224,132 +385,30 @@ class AccionBro extends StatelessWidget {
   final IconData icono;
   final VoidCallback accion;
   @override
-  Widget build(BuildContext context) => Semantics(
-    button: true,
-    child: InkWell(
-      onTap: accion,
-      borderRadius: BorderRadius.circular(20),
-      child: CristalBro(
-        radio: 20,
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icono, size: 19, color: naranjaTextoBro),
-            const SizedBox(width: 8),
-            Text(
-              texto,
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
-      ),
+  Widget build(BuildContext context) => TextButton(
+    onPressed: accion,
+    style: TextButton.styleFrom(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
     ),
-  );
-}
-
-class TarjetaBro extends StatelessWidget {
-  const TarjetaBro(
-    this.cuenta, {
-    super.key,
-    required this.nombre,
-    this.indice = 0,
-  });
-  final Cuenta cuenta;
-  final String nombre;
-  final int indice;
-  @override
-  Widget build(BuildContext context) => Semantics(
-    label:
-        'Tarjeta de demostración ${cuenta.tarjetaRed}, termina en ${cuenta.tarjetaUltimos4}',
-    button: true,
-    child: InkWell(
-      onTap: () => context.push('/cuentas/${cuenta.id}'),
-      borderRadius: BorderRadius.circular(26),
-      child: Container(
-        padding: const EdgeInsets.all(22),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(26),
-          border: Border.all(color: Colors.white),
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: indice.isEven
-                ? [
-                    const Color(0xFFFFE9D9),
-                    const Color(0xFFFFC29F),
-                    const Color(0xFFFFDEC8),
-                  ]
-                : [
-                    const Color(0xFFEEECFA),
-                    const Color(0xFFCDC8EB),
-                    const Color(0xFFE7E4F6),
-                  ],
+    child: Column(
+      children: [
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: .7),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white),
           ),
+          child: Icon(icono, size: 22),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Text(
-                  'financebro',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 18,
-                    letterSpacing: -.8,
-                  ),
-                ),
-                const Spacer(),
-                Text(
-                  cuenta.tarjetaRed,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontStyle: FontStyle.italic,
-                    fontSize: 17,
-                  ),
-                ),
-              ],
-            ),
-            const Spacer(),
-            const Row(
-              children: [
-                Icon(Icons.memory_rounded, size: 30, color: Color(0xFF987A55)),
-                SizedBox(width: 9),
-                Icon(Icons.contactless_outlined, size: 22),
-              ],
-            ),
-            const SizedBox(height: 12),
-            FittedBox(
-              child: Text(
-                '••••  ••••  ••••  ${cuenta.tarjetaUltimos4}',
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 1.3,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    nombre.toUpperCase(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 10, letterSpacing: 1),
-                  ),
-                ),
-                const Text(
-                  'DEMO',
-                  style: TextStyle(fontSize: 9, letterSpacing: 1),
-                ),
-              ],
-            ),
-          ],
+        const SizedBox(height: 6),
+        Text(
+          texto,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 11),
         ),
-      ),
+      ],
     ),
   );
 }

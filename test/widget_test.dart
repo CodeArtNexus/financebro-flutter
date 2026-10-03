@@ -1,3 +1,4 @@
+import 'package:financebro/features/banking/banca.dart';
 import 'package:financebro/app/financebro_app.dart';
 import 'package:financebro/app/proveedores.dart';
 import 'package:financebro/app/rutas.dart';
@@ -42,7 +43,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text('QR'), findsOneWidget);
-    expect(find.text('Metas'), findsOneWidget);
+    expect(find.text('Pagos'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
   testWidgets('El inicio no interpreta una caché vacía como saldo cero', (
@@ -54,6 +55,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          tarjetasBroProvider.overrideWith((ref) => Stream.value([])),
           identidadProvider.overrideWithValue(identidad),
           cuentasProvider.overrideWith(
             (ref) => Stream.value(
@@ -140,6 +142,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          tarjetasBroProvider.overrideWith((ref) => Stream.value([])),
           identidadProvider.overrideWithValue(identidad),
           preferenciasLocalesProvider.overrideWithValue(preferencias),
         ],
@@ -165,6 +168,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          tarjetasBroProvider.overrideWith((ref) => Stream.value([])),
           identidadProvider.overrideWithValue(identidad),
           cuentasRepositorioProvider.overrideWithValue(CuentasPrueba()),
         ],

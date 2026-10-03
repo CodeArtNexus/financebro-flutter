@@ -113,7 +113,7 @@ final cotizacionProvider = FutureProvider.autoDispose
 final notificacionesRepositorioProvider = Provider<RepositorioNotificaciones>((
   ref,
 ) {
-  if (usarEmuladores) return NotificacionesEmuladas();
+  if (usarEmuladores) return NotificacionesEmuladas(ref.watch(datosProvider));
   final repositorio = FirebaseNotificaciones(
     ref.watch(datosProvider),
     ref.watch(preferenciasLocalesProvider),

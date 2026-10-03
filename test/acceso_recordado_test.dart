@@ -50,10 +50,8 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.textContaining('Hola, Sebastian.'), findsOneWidget);
-    await tester.ensureVisible(find.text('Volver a mi espacio'));
-    await tester.tap(find.text('Volver a mi espacio'));
-    await tester.pumpAndSettle();
+    expect(find.textContaining('Hola, Sebastian'), findsOneWidget);
+    expect(find.text('Pagar con QR'), findsOneWidget);
     final boton = tester.widget<OutlinedButton>(
       find.widgetWithText(OutlinedButton, 'Face ID · demo'),
     );

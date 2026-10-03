@@ -30,9 +30,31 @@ class CuentasPantalla extends ConsumerWidget {
                           : 'Tu espacio está listo',
                       mensaje: datos.desdeCache
                           ? 'Todavía no hay cuentas guardadas en este dispositivo. Recupera la conexión para consultarlas.'
-                          : 'Aún no tienes cuentas asignadas. Aparecerán aquí cuando estén disponibles.',
+                          : 'Abre una cuenta para transferir, pagar y empezar tus planes.',
                     ),
                   for (final cuenta in datos.valor) TarjetaCuenta(cuenta),
+                  TextButton.icon(
+                    onPressed: () => context.push('/apertura/ahorros'),
+                    icon: const Icon(Icons.savings_outlined),
+                    label: const Text('Abrir cuenta de ahorros'),
+                  ),
+                  TextButton.icon(
+                    onPressed: () => context.push('/apertura/corriente'),
+                    icon: const Icon(Icons.business_outlined),
+                    label: const Text('Solicitar cuenta corriente'),
+                  ),
+                  TextButton(
+                    onPressed: () => context.push('/contactos'),
+                    child: const Text('Mis contactos'),
+                  ),
+                  TextButton(
+                    onPressed: () => context.push('/tarjetas'),
+                    child: const Text('Gestionar tarjetas'),
+                  ),
+                  TextButton(
+                    onPressed: () => context.push('/historial'),
+                    child: const Text('Todos mis movimientos'),
+                  ),
                 ],
               ),
             ),
@@ -48,10 +70,14 @@ class TarjetaCuenta extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) => Card(
     child: ListTile(
       contentPadding: const EdgeInsets.all(20),
-      leading: const Icon(Icons.account_balance_outlined),
+      leading: Icon(
+        cuenta.tipo == 'corriente'
+            ? Icons.business_outlined
+            : Icons.savings_outlined,
+      ),
       title: Text(cuenta.nombre),
       subtitle: Text(
-        '${cuenta.numero}\n${(ref.watch(perfilProvider).value?.valor.mostrarSaldo ?? false) ? dinero(cuenta.saldoCentavos) : "••••••"}',
+        '${cuenta.numero} · ${cuenta.activa ? 'Activa' : 'Temporal'}\n${(ref.watch(perfilProvider).value?.valor.mostrarSaldo ?? false) ? dinero(cuenta.saldoCentavos) : "••••••"}',
       ),
       trailing: const Icon(Icons.chevron_right),
       onTap: () => context.push('/cuentas/${cuenta.id}'),

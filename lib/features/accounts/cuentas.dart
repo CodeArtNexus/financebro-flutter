@@ -6,6 +6,10 @@ class Cuenta {
     required this.saldoCentavos,
     this.tarjetaUltimos4,
     this.tarjetaRed = 'BRO',
+    this.numeroCuenta,
+    this.tipo = 'ahorro',
+    this.estado = 'activa',
+    this.color = 'durazno',
   });
   final String id;
   final String nombre;
@@ -13,6 +17,9 @@ class Cuenta {
   final int saldoCentavos;
   final String? tarjetaUltimos4;
   final String tarjetaRed;
+  final String? numeroCuenta;
+  final String tipo, estado, color;
+  bool get activa => estado == 'activa';
   factory Cuenta.desdeMapa(String id, Map<String, dynamic> m) => Cuenta(
     id: id,
     nombre: m['nombre'] as String,
@@ -20,6 +27,10 @@ class Cuenta {
     saldoCentavos: (m['saldoCentavos'] as num).toInt(),
     tarjetaUltimos4: m['tarjetaUltimos4'] as String?,
     tarjetaRed: m['tarjetaRed'] as String? ?? 'BRO',
+    numeroCuenta: m['numeroCuenta'] as String?,
+    tipo: m['tipo'] as String? ?? 'ahorro',
+    estado: m['estado'] as String? ?? 'activa',
+    color: m['color'] as String? ?? 'durazno',
   );
 }
 

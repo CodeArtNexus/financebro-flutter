@@ -1,9 +1,20 @@
 import '../../features/experience/experiencia.dart';
 
-String destinoPush(Map<String, dynamic> datos) =>
-    destinosPermitidos.contains(datos['ruta'])
-    ? datos['ruta'] as String
-    : '/notificaciones';
+String destinoPush(Map<String, dynamic> datos) {
+  final ruta = datos['ruta'] ?? datos['destino'];
+  if (ruta is! String) return '/notificaciones';
+  if (destinosPermitidos.contains(ruta) ||
+      [
+        '/pagos',
+        '/contactos',
+        '/historial',
+        '/apertura/corriente',
+      ].contains(ruta) ||
+      RegExp(r'^/cuentas/[a-zA-Z0-9_-]{1,80}$').hasMatch(ruta)) {
+    return ruta;
+  }
+  return '/notificaciones';
+}
 
 class AvisoCliente {
   const AvisoCliente(this.titulo, this.texto, this.fecha, this.destino);

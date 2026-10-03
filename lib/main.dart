@@ -34,6 +34,7 @@ Future<Widget> prepararAplicacion() async {
                 : '1:1:android:1',
             messagingSenderId: '1',
             projectId: 'demo-financebro',
+            storageBucket: 'demo-financebro.appspot.com',
           ),
         )
       : await Firebase.initializeApp(
@@ -41,10 +42,10 @@ Future<Widget> prepararAplicacion() async {
         );
   if (usarEmuladores) {
     await FirebaseAuth.instanceFor(app: app)
-        .useAuthEmulator(servidorEmuladores, 9099);
+        .useAuthEmulator(servidorEmuladores, puertoAuth);
     final datos = FirebaseFirestore.instanceFor(app: app);
     datos.settings = const Settings(persistenceEnabled: false);
-    datos.useFirestoreEmulator(servidorEmuladores, 8080);
+    datos.useFirestoreEmulator(servidorEmuladores, puertoFirestore);
   } else {
     FirebaseMessaging.onBackgroundMessage(recibirEnSegundoPlano);
   }

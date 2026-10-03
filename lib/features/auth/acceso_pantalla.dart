@@ -21,6 +21,7 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
   final _nombre = TextEditingController();
   bool _cargando = false;
   bool _ocultar = true;
+  bool _abrirAhorros = false;
   String? _error;
   @override
   void dispose() {
@@ -39,6 +40,9 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
     try {
       final repositorio = ref.read(identidadProvider);
       if (widget.registro) {
+        await ref
+            .read(preferenciasLocalesProvider)
+            .setBool('abrir_ahorros_pendiente', _abrirAhorros);
         await repositorio.registrar(_nombre.text, _correo.text, _clave.text);
       } else {
         await repositorio.ingresar(_correo.text, _clave.text);
@@ -208,6 +212,22 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
                             ),
                           ),
                         ),
+                      if (widget.registro)
+                        SwitchListTile(
+                          contentPadding: EdgeInsets.zero,
+                          value: _abrirAhorros,
+                          onChanged: _cargando
+                              ? null
+                              : (v) => setState(() => _abrirAhorros = v),
+                          title: const Text(
+                            'Quiero abrir mi cuenta de ahorros',
+                            style: TextStyle(fontSize: 13),
+                          ),
+                          subtitle: const Text(
+                            'Opcional. Completarás tus datos y aceptarás los términos en el siguiente paso.',
+                            style: TextStyle(fontSize: 11),
+                          ),
+                        ),
                       FilledButton(
                         key: const Key('enviar-acceso'),
                         onPressed: _cargando ? null : _enviar,
@@ -242,6 +262,15 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
                         TextButton(
                           onPressed: _cargando ? null : _recuperar,
                           child: const Text('Olvidé mi contraseña'),
+                        ),
+                      if (!widget.registro &&
+                          ref.watch(recuerdoAccesoProvider) != null)
+                        OutlinedButton.icon(
+                          onPressed: _cargando
+                              ? null
+                              : () => context.push('/qr-acceso'),
+                          icon: const Icon(Icons.qr_code_scanner),
+                          label: const Text('Pagar con QR'),
                         ),
                       if (!widget.registro) ...[
                         const SizedBox(height: 16),

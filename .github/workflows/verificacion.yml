@@ -48,7 +48,7 @@ jobs:
       - name: Instalar dependencias fijadas
         run: npm ci --prefix tooling
       - name: Probar reglas sin credenciales de nube
-        run: tooling/node_modules/.bin/firebase emulators:exec --only firestore --project demo-financebro-reglas 'npm --prefix tooling test'
+        run: tooling/node_modules/.bin/firebase emulators:exec --only firestore,storage --project demo-financebro-reglas 'npm --prefix tooling test'
   administracion:
     name: Panel web y cálculo de importes
     runs-on: ubuntu-latest
@@ -67,3 +67,26 @@ jobs:
         run: npm --prefix admin test
       - name: Compilar panel
         run: npm --prefix admin run build
+
+  servidor:
+    name: Operaciones bancarias y pagos mensuales
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22.20.0'
+          cache: npm
+          cache-dependency-path: functions/package-lock.json
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Instalar dependencias fijadas
+        run: npm ci --prefix functions && npm ci --prefix tooling
+      - name: Probar validaciones
+        run: npm --prefix functions test
+      - name: Probar operaciones con los emuladores
+        run: tooling/node_modules/.bin/firebase emulators:exec --only auth,firestore,functions,storage --project demo-financebro 'npm --prefix functions run test:integracion'

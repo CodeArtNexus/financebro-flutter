@@ -17,7 +17,15 @@
       "host": "127.0.0.1",
       "port": 4000
     },
-    "singleProjectMode": true
+    "singleProjectMode": true,
+    "functions": {
+      "host": "127.0.0.1",
+      "port": 5001
+    },
+    "storage": {
+      "host": "127.0.0.1",
+      "port": 9199
+    }
   },
   "flutter": {
     "platforms": {
@@ -83,5 +91,20 @@
         ]
       }
     ]
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "banca",
+      "runtime": "nodejs22",
+      "ignore": [
+        "node_modules",
+        "test",
+        "*.log"
+      ]
+    }
+  ],
+  "storage": {
+    "rules": "storage.rules"
   }
 }

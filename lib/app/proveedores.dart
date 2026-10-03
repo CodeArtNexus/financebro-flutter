@@ -1,3 +1,9 @@
+import 'package:dio/dio.dart';
+
+import '../core/control_red.dart';
+import '../features/exchange/divisas.dart';
+import '../features/exchange/http_divisas.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../features/experience/experiencia.dart';
@@ -68,3 +74,25 @@ final contenidoProvider = StreamProvider<Experiencia>((ref) {
   }
   return ref.watch(experienciaRepositorioProvider).observarContenido();
 });
+
+final controlRedProvider = Provider<ControlRed>((ref) {
+  final control = ControlRed.conFirestore(ref.watch(datosProvider));
+  ref.onDispose(control.dispose);
+  return control;
+});
+final divisasRepositorioProvider = Provider<RepositorioDivisas>(
+  (ref) => HttpDivisas(
+    Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 5),
+        receiveTimeout: const Duration(seconds: 5),
+      ),
+    ),
+    CacheDivisas(ref.watch(preferenciasLocalesProvider)),
+    ref.watch(controlRedProvider),
+  ),
+);
+final cotizacionProvider = FutureProvider.autoDispose
+    .family<Cotizacion, String>(
+      (ref, moneda) => ref.watch(divisasRepositorioProvider).consultar(moneda),
+    );

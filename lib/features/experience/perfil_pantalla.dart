@@ -1,3 +1,7 @@
+import 'package:go_router/go_router.dart';
+
+import '../../core/configuracion.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -125,6 +129,12 @@ class _PerfilEstado extends ConsumerState<PerfilPantalla> {
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
             child: Semantics(liveRegion: true, child: Text(_mensaje!)),
+          ),
+        if (habilitarLaboratorio)
+          ListTile(
+            title: const Text('Laboratorio de conexión'),
+            leading: const Icon(Icons.science_outlined),
+            onTap: () => context.push('/laboratorio'),
           ),
         const SizedBox(height: 32),
         OutlinedButton(

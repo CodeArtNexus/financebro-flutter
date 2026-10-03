@@ -1,3 +1,6 @@
+import '../features/exchange/divisas_pantalla.dart';
+import '../core/laboratorio_pantalla.dart';
+import '../core/configuracion.dart';
 import '../features/experience/perfil_pantalla.dart';
 import '../features/experience/tarjeta_remota.dart';
 
@@ -58,13 +61,15 @@ final rutasProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(path: '/inicio', builder: (_, _) => const InicioPantalla()),
           GoRoute(path: '/cuentas', builder: (_, _) => const CuentasPantalla()),
-          GoRoute(
-            path: '/divisas',
-            builder: (_, _) => const _PendientePantalla('Divisas'),
-          ),
+          GoRoute(path: '/divisas', builder: (_, _) => const DivisasPantalla()),
           GoRoute(path: '/perfil', builder: (_, _) => const PerfilPantalla()),
         ],
       ),
+      if (habilitarLaboratorio)
+        GoRoute(
+          path: '/laboratorio',
+          builder: (_, _) => const LaboratorioPantalla(),
+        ),
       GoRoute(
         path: '/cuentas/:cuenta',
         builder: (_, state) =>
@@ -278,17 +283,4 @@ class InicioPantalla extends ConsumerWidget {
       ),
     );
   }
-}
-
-class _PendientePantalla extends StatelessWidget {
-  const _PendientePantalla(this.nombre);
-  final String nombre;
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: Text(nombre)),
-    body: const PanelEstado(
-      titulo: 'En construcción',
-      mensaje: 'Esta funcionalidad se integra en la siguiente etapa.',
-    ),
-  );
 }

@@ -80,7 +80,8 @@ class Experiencia {
       ]) {
         if (entrada[campo] is! String ||
             (entrada[campo] as String).isEmpty ||
-            (entrada[campo] as String).length > (campo == 'texto' ? 300 : 100)) {
+            (entrada[campo] as String).length >
+                (campo == 'texto' ? 300 : 100)) {
           throw const FalloApp('El contenido remoto no es válido.');
         }
       }

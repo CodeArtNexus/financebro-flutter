@@ -13,7 +13,14 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'apoyos.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 void main() {
+  late SharedPreferences preferencias;
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    preferencias = await SharedPreferences.getInstance();
+  });
   testWidgets('El inicio no interpreta una caché vacía como saldo cero', (
     tester,
   ) async {
@@ -108,13 +115,18 @@ void main() {
     addTearDown(identidad.controlador.close);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [identidadProvider.overrideWithValue(identidad)],
+        overrides: [
+          identidadProvider.overrideWithValue(identidad),
+          preferenciasLocalesProvider.overrideWithValue(preferencias),
+        ],
         child: const FinanceBroApp(),
       ),
     );
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Ya tengo una cuenta'));
     await tester.tap(find.text('Ya tengo una cuenta'));
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('enviar-acceso')));
     await tester.tap(find.byKey(const Key('enviar-acceso')));
     await tester.pumpAndSettle();
     expect(find.text('Ingresa un correo válido.'), findsOneWidget);

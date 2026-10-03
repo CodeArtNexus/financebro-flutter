@@ -4,16 +4,22 @@ class Cuenta {
     required this.nombre,
     required this.numero,
     required this.saldoCentavos,
+    this.tarjetaUltimos4,
+    this.tarjetaRed = 'BRO',
   });
   final String id;
   final String nombre;
   final String numero;
   final int saldoCentavos;
+  final String? tarjetaUltimos4;
+  final String tarjetaRed;
   factory Cuenta.desdeMapa(String id, Map<String, dynamic> m) => Cuenta(
     id: id,
     nombre: m['nombre'] as String,
     numero: m['numero'] as String,
     saldoCentavos: (m['saldoCentavos'] as num).toInt(),
+    tarjetaUltimos4: m['tarjetaUltimos4'] as String?,
+    tarjetaRed: m['tarjetaRed'] as String? ?? 'BRO',
   );
 }
 

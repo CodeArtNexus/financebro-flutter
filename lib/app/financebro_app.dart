@@ -9,6 +9,7 @@ import 'rutas.dart';
 import 'tema.dart';
 import 'proveedores.dart';
 import '../core/errores.dart';
+import '../core/diseno_bro.dart';
 
 final mensajero = GlobalKey<ScaffoldMessengerState>();
 
@@ -50,6 +51,7 @@ class FinanceBroApp extends ConsumerWidget {
       supportedLocales: const [Locale('es', 'EC')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       routerConfig: ref.watch(rutasProvider),
+      builder: (context, child) => FondoBro(child: child!),
     );
   }
 }

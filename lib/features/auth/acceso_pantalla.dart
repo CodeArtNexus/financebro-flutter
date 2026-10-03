@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/proveedores.dart';
 import '../../core/errores.dart';
+import '../../core/diseno_bro.dart';
 import 'identidad.dart';
 
 class AccesoPantalla extends ConsumerStatefulWidget {
@@ -72,127 +73,199 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
     }
   }
 
+  Future<void> _biometriaDemo() async {
+    final continuar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.face_retouching_natural_rounded, size: 54),
+        title: const Text('Tu acceso, más fácil'),
+        content: const Text(
+          'Esta es una demostración de Face ID. Reanuda tu sesión de Firebase; no reconoce tu rostro ni usa el sensor del teléfono.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Continuar demo'),
+          ),
+        ],
+      ),
+    );
+    if (continuar != true || !mounted) return;
+    setState(() {
+      _cargando = true;
+      _error = null;
+    });
+    try {
+      await ref.read(identidadProvider).reanudarDemostracion();
+    } catch (e) {
+      if (mounted) setState(() => _error = mensajeError(e));
+    } finally {
+      if (mounted) setState(() => _cargando = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('FinanceBro')),
+    appBar: AppBar(title: const MarcaBro(compacta: true)),
     body: SafeArea(
       child: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 480),
-            child: Form(
-              key: _formulario,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    widget.registro
-                        ? 'Tu próximo paso empieza aquí'
-                        : 'Qué bueno verte de nuevo',
-                    style: Theme.of(context).textTheme.headlineMedium
-                        ?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    widget.registro
-                        ? 'Crea tu espacio financiero en unos minutos.'
-                        : 'Ingresa para continuar con tus finanzas.',
-                  ),
-                  const SizedBox(height: 28),
-                  if (widget.registro) ...[
-                    TextFormField(
-                      key: const Key('nombre'),
-                      controller: _nombre,
-                      decoration: const InputDecoration(labelText: 'Tu nombre'),
-                      textCapitalization: TextCapitalization.words,
-                      validator: (v) =>
-                          (v?.trim().length ?? 0) < 2 || (v?.length ?? 0) > 60
-                          ? 'Escribe un nombre entre 2 y 60 caracteres.'
-                          : null,
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                  TextFormField(
-                    key: const Key('correo'),
-                    controller: _correo,
-                    keyboardType: TextInputType.emailAddress,
-                    autofillHints: const [AutofillHints.email],
-                    decoration: const InputDecoration(
-                      labelText: 'Correo electrónico',
-                    ),
-                    validator: validarCorreo,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    key: const Key('clave'),
-                    controller: _clave,
-                    obscureText: _ocultar,
-                    autofillHints: [
-                      widget.registro
-                          ? AutofillHints.newPassword
-                          : AutofillHints.password,
-                    ],
-                    decoration: InputDecoration(
-                      labelText: 'Contraseña',
-                      suffixIcon: IconButton(
-                        tooltip: _ocultar
-                            ? 'Mostrar contraseña'
-                            : 'Ocultar contraseña',
-                        onPressed: () => setState(() => _ocultar = !_ocultar),
-                        icon: Icon(
-                          _ocultar
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
+            child: EntradaBro(
+              child: CristalBro(
+                child: Form(
+                  key: _formulario,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        widget.registro
+                            ? 'Tu próximo paso empieza aquí'
+                            : (ref.watch(recuerdoAccesoProvider)?.saludo == null
+                                  ? 'Qué bueno verte de nuevo'
+                                  : 'Hola, ${ref.watch(recuerdoAccesoProvider)!.saludo} 👋'),
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        widget.registro
+                            ? 'Crea tu espacio financiero en unos minutos.'
+                            : 'Aquí tienes a tu financebro de confianza. Vamos a tus planes.',
+                      ),
+                      const SizedBox(height: 28),
+                      if (widget.registro) ...[
+                        TextFormField(
+                          key: const Key('nombre'),
+                          controller: _nombre,
+                          decoration: const InputDecoration(
+                            labelText: 'Tu nombre',
+                          ),
+                          textCapitalization: TextCapitalization.words,
+                          validator: (v) =>
+                              (v?.trim().length ?? 0) < 2 ||
+                                  (v?.length ?? 0) > 60
+                              ? 'Escribe un nombre entre 2 y 60 caracteres.'
+                              : null,
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                      TextFormField(
+                        key: const Key('correo'),
+                        controller: _correo,
+                        keyboardType: TextInputType.emailAddress,
+                        autofillHints: const [AutofillHints.email],
+                        decoration: const InputDecoration(
+                          labelText: 'Correo electrónico',
+                        ),
+                        validator: validarCorreo,
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        key: const Key('clave'),
+                        controller: _clave,
+                        obscureText: _ocultar,
+                        autofillHints: [
+                          widget.registro
+                              ? AutofillHints.newPassword
+                              : AutofillHints.password,
+                        ],
+                        decoration: InputDecoration(
+                          labelText: 'Contraseña',
+                          suffixIcon: IconButton(
+                            tooltip: _ocultar
+                                ? 'Mostrar contraseña'
+                                : 'Ocultar contraseña',
+                            onPressed: () =>
+                                setState(() => _ocultar = !_ocultar),
+                            icon: Icon(
+                              _ocultar
+                                  ? Icons.visibility_outlined
+                                  : Icons.visibility_off_outlined,
+                            ),
+                          ),
+                        ),
+                        validator: validarClave,
+                        onFieldSubmitted: (_) {
+                          if (!_cargando) _enviar();
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      if (_error != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Semantics(
+                            liveRegion: true,
+                            child: Text(
+                              _error!,
+                              key: const Key('error-acceso'),
+                            ),
+                          ),
+                        ),
+                      FilledButton(
+                        key: const Key('enviar-acceso'),
+                        onPressed: _cargando ? null : _enviar,
+                        child: _cargando
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                widget.registro
+                                    ? 'Crear mi cuenta'
+                                    : 'Ingresar',
+                              ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextButton(
+                        onPressed: _cargando
+                            ? null
+                            : () => context.go(
+                                widget.registro ? '/ingresar' : '/registrar',
+                              ),
+                        child: Text(
+                          widget.registro
+                              ? 'Ya tengo una cuenta'
+                              : 'Quiero crear una cuenta',
                         ),
                       ),
-                    ),
-                    validator: validarClave,
-                    onFieldSubmitted: (_) {
-                      if (!_cargando) _enviar();
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  if (_error != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Semantics(
-                        liveRegion: true,
-                        child: Text(_error!, key: const Key('error-acceso')),
-                      ),
-                    ),
-                  FilledButton(
-                    key: const Key('enviar-acceso'),
-                    onPressed: _cargando ? null : _enviar,
-                    child: _cargando
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(
-                            widget.registro ? 'Crear mi cuenta' : 'Ingresar',
+                      if (!widget.registro)
+                        TextButton(
+                          onPressed: _cargando ? null : _recuperar,
+                          child: const Text('Olvidé mi contraseña'),
+                        ),
+                      if (!widget.registro) ...[
+                        const SizedBox(height: 16),
+                        OutlinedButton.icon(
+                          onPressed:
+                              _cargando ||
+                                  !ref.watch(identidadProvider).sesionGuardada
+                              ? null
+                              : _biometriaDemo,
+                          icon: const Icon(
+                            Icons.face_retouching_natural_rounded,
                           ),
+                          label: const Text('Face ID · demo'),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Acceso simulado con una sesión previa. Ingresa una vez para probarlo.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 11),
+                        ),
+                      ],
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  TextButton(
-                    onPressed: _cargando
-                        ? null
-                        : () => context.go(
-                            widget.registro ? '/ingresar' : '/registrar',
-                          ),
-                    child: Text(
-                      widget.registro
-                          ? 'Ya tengo una cuenta'
-                          : 'Quiero crear una cuenta',
-                    ),
-                  ),
-                  if (!widget.registro)
-                    TextButton(
-                      onPressed: _cargando ? null : _recuperar,
-                      child: const Text('Olvidé mi contraseña'),
-                    ),
-                ],
+                ),
               ),
             ),
           ),

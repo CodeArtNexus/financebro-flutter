@@ -4,17 +4,36 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'identidad.dart';
+import 'acceso_rapido.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 class FirebaseIdentidad implements RepositorioIdentidad {
-  FirebaseIdentidad(this.auth, this.datos);
+  FirebaseIdentidad(this.auth, this.datos, this.preferencias);
   final FirebaseAuth auth;
   final FirebaseFirestore datos;
+  final SharedPreferences preferencias;
+  bool _desbloqueada = false;
   bool _preparando = false;
   final _preparada = StreamController<void>.broadcast();
   Identidad? _identidad(User? u) =>
       u == null ? null : Identidad(u.uid, u.displayName ?? 'Tu espacio');
   @override
-  Identidad? get actual => _preparando ? null : _identidad(auth.currentUser);
+  Identidad? get actual =>
+      _preparando || !_desbloqueada ? null : _identidad(auth.currentUser);
+  @override
+  bool get sesionGuardada => auth.currentUser != null;
+  @override
+  Future<void> reanudarDemostracion() async {
+    final usuario = auth.currentUser;
+    if (usuario == null) {
+      throw StateError('Ingresa con tu correo y contraseña primero.');
+    }
+    await usuario.getIdToken().timeout(const Duration(seconds: 10));
+    _desbloqueada = true;
+    _preparada.add(null);
+  }
+
   @override
   Stream<Identidad?> get cambios => Stream<Identidad?>.multi((controlador) {
     controlador.add(actual);
@@ -53,6 +72,11 @@ class FirebaseIdentidad implements RepositorioIdentidad {
             .timeout(const Duration(seconds: 10));
       }
       if (nombre != null) await usuario.updateDisplayName(nombre.trim());
+      await RecuerdoAcceso(
+        usuario.uid,
+        nombre?.trim() ?? usuario.displayName ?? 'Bro',
+      ).guardar(preferencias);
+      _desbloqueada = true;
     } catch (_) {
       await auth.signOut();
       rethrow;
@@ -87,5 +111,8 @@ class FirebaseIdentidad implements RepositorioIdentidad {
   Future<void> recuperar(String correo) =>
       auth.sendPasswordResetEmail(email: correo.trim());
   @override
-  Future<void> salir() => auth.signOut();
+  Future<void> salir() async {
+    _desbloqueada = false;
+    await auth.signOut();
+  }
 }

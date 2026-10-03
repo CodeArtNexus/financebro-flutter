@@ -37,11 +37,11 @@ const operaciones = [
   { id: 'cafe', descripcion: 'Café de prueba', centavos: -450, categoria: 'Alimentación', dias: 2 },
   { id: 'servicio', descripcion: 'Servicio de prueba', centavos: -3980, categoria: 'Servicios', dias: 3 },
 ];
-await escribir(`usuarios/${uid}/cuentas/principal`, { nombre: 'Cuenta del día a día', numero: '•••• 2048', saldoCentavos: operaciones.reduce((s, m) => s + m.centavos, 0), actualizado: new Date() });
+await escribir(`usuarios/${uid}/cuentas/principal`, { nombre: 'Cuenta del día a día', numero: '•••• 2048', tarjetaUltimos4: '2048', tarjetaRed: 'BRO', saldoCentavos: operaciones.reduce((s, m) => s + m.centavos, 0), actualizado: new Date() });
 for (const movimiento of operaciones) await escribir(`usuarios/${uid}/cuentas/principal/movimientos/${movimiento.id}`, {
   descripcion: movimiento.descripcion, centavos: movimiento.centavos, categoria: movimiento.categoria, fecha: new Date(Date.now() - movimiento.dias * 86400000),
 });
-await escribir(`usuarios/${uid}/cuentas/ahorro`, { nombre: 'Mi ahorro', numero: '•••• 7712', saldoCentavos: 150000, actualizado: new Date() });
+await escribir(`usuarios/${uid}/cuentas/ahorro`, { nombre: 'Mi ahorro', numero: '•••• 7712', tarjetaUltimos4: '7712', tarjetaRed: 'BRO', saldoCentavos: 150000, actualizado: new Date() });
 await escribir(`usuarios/${uid}/cuentas/ahorro/movimientos/inicial`, { descripcion: 'Ahorro inicial de prueba', centavos: 150000, categoria: 'Ahorro', fecha: new Date() });
 await escribir('experiencias/actual', { schemaVersion: 1, revision: 1, actualizado: new Date(), tarjetas: [
   { id: 'bienestar', tipo: 'aviso', titulo: 'Pequeños pasos, grandes cambios', texto: 'Revisa tus movimientos y encuentra espacio para ahorrar.', segmento: 'todos', destino: '/cuentas', orden: 1 },

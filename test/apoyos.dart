@@ -4,6 +4,10 @@ import 'package:financebro/features/auth/identidad.dart';
 import 'package:financebro/features/accounts/cuentas.dart';
 
 class IdentidadPrueba implements RepositorioIdentidad {
+  @override
+  bool get sesionGuardada => usuario != null;
+  @override
+  Future<void> reanudarDemostracion() async {}
   final controlador = StreamController<Identidad?>.broadcast();
   Identidad? usuario;
   bool rechazar = false;

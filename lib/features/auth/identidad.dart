@@ -11,6 +11,8 @@ abstract interface class RepositorioIdentidad {
   Future<void> registrar(String nombre, String correo, String clave);
   Future<void> recuperar(String correo);
   Future<void> salir();
+  bool get sesionGuardada;
+  Future<void> reanudarDemostracion();
 }
 
 String? validarCorreo(String? valor) {

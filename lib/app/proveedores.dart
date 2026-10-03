@@ -19,6 +19,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/auth/identidad.dart';
+import '../features/auth/acceso_rapido.dart';
 import '../features/auth/firebase_identidad.dart';
 import '../features/accounts/cuentas.dart';
 import '../features/accounts/firebase_cuentas.dart';
@@ -34,6 +35,7 @@ final identidadProvider = Provider<RepositorioIdentidad>((ref) {
   final repositorio = FirebaseIdentidad(
     ref.watch(authFirebaseProvider),
     ref.watch(datosProvider),
+    ref.watch(preferenciasLocalesProvider),
   );
   ref.onDispose(repositorio.dispose);
   return repositorio;
@@ -121,3 +123,7 @@ final historialNotificacionesProvider = StreamProvider<List<AvisoCliente>>((
   if (usuario == null) return const Stream.empty();
   return ref.watch(notificacionesRepositorioProvider).historial(usuario.uid);
 });
+
+final recuerdoAccesoProvider = Provider<RecuerdoAcceso?>(
+  (ref) => RecuerdoAcceso.leer(ref.watch(preferenciasLocalesProvider)),
+);

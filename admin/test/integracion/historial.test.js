@@ -125,7 +125,7 @@ test("El histórico pagina sin huecos ni duplicados cuando llega un ajuste en vi
     let global = [],
       errorGlobal;
     const vistaGlobal = observarHistorial({
-      origen: collectionGroup(cliente, "movimientos"),
+      origen: collectionGroup(cliente, "movimientosGlobales"),
       cambiar: (v) => {
         global = v;
       },

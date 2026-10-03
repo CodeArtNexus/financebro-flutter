@@ -51,6 +51,7 @@ service cloud.firestore {
     match /{path=**}/autopagos/{id} { allow read: if administrador(); }
     match /comercios/{id} { allow read: if request.auth != null; }
     match /experiencias/{version} { allow read: if request.auth != null; }
+    match /{path=**}/movimientosGlobales/{id} { allow read: if administrador(); }
     match /{path=**}/movimientos/{id} { allow read: if administrador(); }
     match /{path=**}/cuentas/{id} { allow read: if administrador(); }
     match /{document=**} { allow read, write: if false; }

@@ -130,7 +130,7 @@ export class Banco {
     };
   }
   registrarMovimiento(tx, uid, cuenta, id, datos) {
-    const movimiento = { ...datos, cuenta, uid };
+    const movimiento = { ...datos, referencia: id, cuenta, uid };
     tx.create(
       this.cuenta(uid, cuenta).collection("movimientos").doc(id),
       movimiento,
@@ -235,39 +235,41 @@ export class Banco {
     if (!perfil.exists) falla("not-found", "No encontramos a la persona.");
     const cuentas = await this.usuario(uid).collection("cuentas").get();
     for (const snapshot of cuentas.docs) {
-      if (snapshot.data().numeroCuenta) continue;
-      const c = this.nuevaCuenta(
-        snapshot.id === "ahorro" || snapshot.id === "ahorros"
-          ? "ahorro"
-          : "ahorro",
-        this.ahora(),
-      );
+      const propuesta = this.nuevaCuenta("ahorro", this.ahora());
       await this.db.runTransaction(async (tx) => {
-        const actual = await tx.get(snapshot.ref),
-          directorio = this.db.doc(`directorioCuentas/${c.numeroCuenta}`),
-          ocupado = await tx.get(directorio);
-        if (actual.data()?.numeroCuenta) return;
-        if (ocupado.exists) falla("aborted", "Reintenta la preparación.");
-        tx.update(snapshot.ref, {
-          numeroCuenta: c.numeroCuenta,
-          tipo: c.tipo,
-          estado: "activa",
-          color: actual.data().color ?? c.color,
+        const actual = await tx.get(snapshot.ref);
+        if (!actual.exists) return;
+        const anterior = actual.data();
+        const numero = anterior.numeroCuenta ?? propuesta.numeroCuenta;
+        const tipo = anterior.tipo ?? propuesta.tipo;
+        const directorio = this.db.doc(`directorioCuentas/${numero}`);
+        const ocupado = await tx.get(directorio);
+        const tarjetaRef = this.privado(uid, "tarjetas", `bro_${snapshot.id}`);
+        const tarjeta = await tx.get(tarjetaRef);
+        if (ocupado.exists && (ocupado.data().uid !== uid || ocupado.data().cuenta !== snapshot.id)) {
+          falla("aborted", "Reintenta la preparación.");
+        }
+        if (!anterior.numeroCuenta) tx.update(snapshot.ref, {
+          numeroCuenta: numero, tipo, estado: "activa",
+          color: anterior.color ?? propuesta.color,
         });
-        tx.create(directorio, {
-          uid,
-          cuenta: snapshot.id,
-          titular: perfil.data().nombre,
-          tipo: c.tipo,
+        if (!ocupado.exists) tx.create(directorio, {uid, cuenta: snapshot.id, titular: perfil.data().nombre, tipo});
+        if (!tarjeta.exists && anterior.tarjetaUltimos4) tx.create(tarjetaRef, {
+          tipo: "propia", cuenta: snapshot.id, nombre: anterior.nombre,
+          banco: "FinanceBro", ultimos4: anterior.tarjetaUltimos4,
+          color: anterior.color ?? propuesta.color, actualizado: this.ahora(),
         });
       });
+      // Una interrupción puede dejar páginas pendientes; reintentar completa
+      // el histórico sin reemplazar registros existentes ni resetear saldos.
       const historial = await snapshot.ref.collection("movimientos").get();
       for (const m of historial.docs) {
-        await this.privado(
-          uid,
-          "movimientosGlobales",
-          `${snapshot.id}_${m.id}`,
-        ).set({ ...m.data(), uid, cuenta: snapshot.id });
+        try {
+          await this.privado(uid, "movimientosGlobales", `${snapshot.id}_${m.id}`)
+            .create({ ...m.data(), referencia: m.data().referencia ?? m.id, uid, cuenta: snapshot.id });
+        } catch (error) {
+          if (error.code !== 6 && error.code !== "already-exists") throw error;
+        }
       }
     }
     return { preparadas: cuentas.size };

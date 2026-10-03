@@ -178,6 +178,8 @@ test("Los contactos internos se verifican y las tarjetas externas guardan solo �
   };
   await banco.pagarExterno(authA, d);
   await banco.pagarExterno(authA, d);
+  const global = await banco.usuario(ana).collection("movimientosGlobales").where("referencia", "==", d.referencia).get();
+  assert.equal(global.size, 1);
   assert.equal(
     (
       await banco
@@ -380,4 +382,25 @@ test("El endpoint callable exige sesión y ejecuta consultas con un token real d
   const datos = await r.json();
   assert.equal(r.status, 200);
   assert.equal(datos.result.titular, "Bruno Demo");
+});
+
+test("Preparar cuentas antiguas conserva saldos, tarjetas e históricos y completa un reintento", async () => {
+  const uid = `legado_${marca}`;
+  await banco.usuario(uid).set({nombre: "Legado Demo"});
+  const cuenta = banco.cuenta(uid, "principal");
+  await cuenta.set({nombre: "Mis ahorros", numero: "•••• 1234", tarjetaUltimos4: "1234", saldoCentavos: 12345, moneda: "USD"});
+  await cuenta.collection("movimientos").doc("historia_original").set({descripcion: "Fondos anteriores", centavos: 12345, fecha: banco.ahora()});
+  await banco.migrarCuentas(admin, {uid});
+  const preparado = (await cuenta.get()).data();
+  assert.equal(preparado.saldoCentavos, 12345);
+  assert.equal(preparado.tarjetaUltimos4, "1234");
+  const tarjeta = banco.privado(uid, "tarjetas", "bro_principal");
+  await tarjeta.update({color: "menta"});
+  await cuenta.collection("movimientos").doc("pagina_pendiente").set({descripcion: "Movimiento pendiente de preparar", centavos: 0, fecha: banco.ahora()});
+  await banco.migrarCuentas(admin, {uid});
+  await banco.migrarCuentas(admin, {uid});
+  assert.equal((await cuenta.get()).data().numeroCuenta, preparado.numeroCuenta);
+  assert.equal((await cuenta.get()).data().saldoCentavos, 12345);
+  assert.equal((await tarjeta.get()).data().color, "menta");
+  assert.equal((await banco.usuario(uid).collection("movimientosGlobales").get()).size, 2);
 });

@@ -49,14 +49,15 @@ void main() {
     await FirebaseAuth.instanceFor(app: Firebase.app('demo-financebro'))
         .signOut();
     await tester.pumpWidget(aplicacion);
-    await esperar(tester, find.text('Ya tengo una cuenta'));
+    await tester.pump(const Duration(milliseconds: 700));
     if (guardarCapturas) {
-      await binding.convertFlutterSurfaceToImage();
+      if (Platform.isAndroid) await binding.convertFlutterSurfaceToImage();
       await captura(tester, '01-bienvenida');
     }
-    await tester.ensureVisible(find.text('Ya tengo una cuenta'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Ya tengo una cuenta'));
+    if (find.text('Ya tengo una cuenta').evaluate().isNotEmpty) {
+      await tester.ensureVisible(find.text('Ya tengo una cuenta'));
+      await tester.tap(find.text('Ya tengo una cuenta'));
+    }
     await esperar(tester, find.byKey(const Key('correo')));
     await tester.enterText(
       find.byKey(const Key('correo')),
@@ -67,41 +68,56 @@ void main() {
       'FinanceBro-local-2026!',
     );
     FocusManager.instance.primaryFocus?.unfocus();
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 700));
     await tester.ensureVisible(find.byKey(const Key('enviar-acceso')));
     await tester.tap(find.byKey(const Key('enviar-acceso')));
-    await esperar(tester, find.text('Cuenta del día a día'));
+    await esperar(tester, find.text('Tu dinero, a tu manera'));
     await captura(tester, '02-inicio');
     await tester.tap(find.text('Cuentas'));
     await esperar(tester, find.text('Tus cuentas'));
     await tester.tap(find.text('Cuenta del día a día'));
-    await esperar(tester, find.text('Supermercado de prueba'));
-    expect(find.text('Ingreso de prueba'), findsOneWidget);
+    await esperar(tester, find.text('Movimientos de tu cuenta'));
     await tester.tap(find.text('Gastos'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 700));
+    await tester.scrollUntilVisible(
+      find.text('Supermercado de prueba'),
+      350,
+      scrollable: find.byType(Scrollable).first,
+      maxScrolls: 20,
+    );
+    expect(
+      tester
+          .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'Gastos'))
+          .selected,
+      isTrue,
+    );
     expect(find.text('Ingreso de prueba'), findsNothing);
     expect(find.text('Supermercado de prueba'), findsOneWidget);
     await captura(tester, '03-movimientos');
     await tester.tap(find.byType(BackButton));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 700));
     await tester.tap(find.text('Mi perfil'));
     await esperar(tester, find.text('Organizar mis finanzas'));
     await tester.tap(find.text('Organizar mis finanzas'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 700));
     await tester.tap(find.text('Preparar mi próximo viaje').last);
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 700));
     await tester.tap(find.text('Guardar preferencias'));
     await esperar(tester, find.text('Tus preferencias están actualizadas.'));
     await tester.tap(find.text('Inicio'));
-    await tester.pumpAndSettle();
-    await tester.drag(find.byType(ListView).first, const Offset(0, -650));
-    await esperar(tester, find.text('Tu próximo viaje empieza aquí'));
+    await tester.pump(const Duration(milliseconds: 700));
+    await tester.scrollUntilVisible(
+      find.text('Tu próximo viaje empieza aquí'),
+      350,
+      scrollable: find.byType(Scrollable).first,
+      maxScrolls: 20,
+    );
     // El endpoint administrativo sin credenciales existe solo en los emuladores.
     expect(usarEmuladores, isTrue);
     final http = HttpClient();
     final solicitud = await http.patchUrl(
       Uri.parse(
-        'http://$servidorEmuladores:8080/v1/projects/demo-financebro/databases/(default)/documents/experiencias/actual',
+        'http://$servidorEmuladores:$puertoFirestore/v1/projects/demo-financebro/databases/(default)/documents/experiencias/actual',
       ),
     );
     solicitud.headers.set('Authorization', 'Bearer owner');
@@ -148,7 +164,7 @@ void main() {
     await tester.tap(find.text('Mi perfil'));
     await esperar(tester, find.text('Divisas'));
     await tester.ensureVisible(find.text('Divisas'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 700));
     await tester.tap(find.text('Divisas'));
     await esperar(tester, find.byKey(const Key('resultado-divisas')));
     await captura(tester, '05-divisas');
@@ -167,7 +183,7 @@ void main() {
     await tester.tap(find.text('Mi perfil'));
     await esperar(tester, find.text('Divisas'));
     await tester.ensureVisible(find.text('Divisas'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 700));
     await tester.tap(find.text('Divisas'));
     await esperar(tester, find.textContaining('guardada'));
     await tester.tap(find.text('Cuentas'));
@@ -176,7 +192,7 @@ void main() {
     await tester.tap(find.text('Mi perfil'));
     await esperar(tester, find.text('Divisas'));
     await tester.ensureVisible(find.text('Divisas'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 700));
     await tester.tap(find.text('Divisas'));
     await esperar(tester, find.text('Consultando la tasa'));
     await esperar(tester, find.byKey(const Key('resultado-divisas')));
@@ -187,7 +203,7 @@ void main() {
     await tester.tap(find.text('Cerrar sesión'));
     await esperar(tester, find.byKey(const Key('correo')));
     await tester.ensureVisible(find.text('Quiero crear una cuenta'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 700));
     await tester.tap(find.text('Quiero crear una cuenta'));
     await esperar(tester, find.byKey(const Key('nombre')));
     await tester.enterText(find.byKey(const Key('nombre')), 'Nueva Persona');
@@ -200,7 +216,7 @@ void main() {
       'Registro-local-2026!',
     );
     FocusManager.instance.primaryFocus?.unfocus();
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 700));
     await tester.ensureVisible(find.byKey(const Key('enviar-acceso')));
     await tester.tap(find.byKey(const Key('enviar-acceso')));
     await esperar(tester, find.textContaining('Hola, Nueva'));

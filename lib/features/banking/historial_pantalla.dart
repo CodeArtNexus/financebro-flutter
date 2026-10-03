@@ -145,7 +145,7 @@ class _HistorialEstado extends EstadoBanco<HistorialPantalla> {
                         style: TextStyle(fontSize: 10),
                       ),
                     SelectableText(
-                      'Referencia: ${doc.id}',
+                      'Referencia: ${d['referencia'] ?? doc.id}',
                       style: const TextStyle(fontSize: 9),
                     ),
                   ],

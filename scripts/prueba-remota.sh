@@ -3,7 +3,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 source scripts/env.sh
 export FINANCEBRO_DEVICE_ID="${FINANCEBRO_DEVICE_ID:-emulator-5554}"
-test -f .secrets/prueba-real.json || { echo 'Falta el archivo privado de acceso remoto. Consulta docs/verificacion.md.'; exit 1; }
+test -f .secrets/prueba-real.json || { echo 'Falta el archivo privado de acceso remoto. Prepáralo con las credenciales de demostración de tu proyecto Firebase; no debe versionarse.'; exit 1; }
 mkdir -p evidencia-local
 ./android/gradlew -p tooling/android-push :app:assembleDebug :app:assembleDebugAndroidTest --console=plain
 adb -s "$FINANCEBRO_DEVICE_ID" install -r tooling/android-push/app/build/outputs/apk/debug/app-debug.apk

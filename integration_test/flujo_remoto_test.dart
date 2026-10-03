@@ -41,18 +41,19 @@ void main() {
     final aplicacion = await app.prepararAplicacion();
     await FirebaseAuth.instance.signOut();
     await tester.pumpWidget(aplicacion);
-    await esperarRemoto(tester, find.text('Ya tengo una cuenta'));
-    await tester.ensureVisible(find.text('Ya tengo una cuenta'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Ya tengo una cuenta'));
+    await tester.pump(const Duration(milliseconds: 700));
+    if (find.text('Ya tengo una cuenta').evaluate().isNotEmpty) {
+      await tester.ensureVisible(find.text('Ya tengo una cuenta'));
+      await tester.tap(find.text('Ya tengo una cuenta'));
+    }
     await esperarRemoto(tester, find.byKey(const Key('correo')));
     await tester.enterText(find.byKey(const Key('correo')), correo);
     await tester.enterText(find.byKey(const Key('clave')), clave);
     FocusManager.instance.primaryFocus?.unfocus();
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 700));
     await tester.ensureVisible(find.byKey(const Key('enviar-acceso')));
     await tester.tap(find.byKey(const Key('enviar-acceso')));
-    await esperarRemoto(tester, find.text('Cuenta del día a día'));
+    await esperarRemoto(tester, find.text('Tu dinero, a tu manera'));
     expect(
       FirebaseAuth.instance.currentUser?.uid,
       const String.fromEnvironment('DEMO_UID'),

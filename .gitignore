@@ -55,3 +55,7 @@ node_modules/
 **/*.xcuserstate
 
 /ios/Flutter/Firma.local.xcconfig
+
+# Revisión y documentación privada
+/.revision-local/
+/docs/

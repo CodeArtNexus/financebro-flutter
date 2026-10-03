@@ -1,0 +1,12 @@
+{
+  "name": "financebro-herramientas",
+  "private": true,
+  "type": "module",
+  "scripts": {"test": "node --test pruebas-reglas.test.mjs"},
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "5.0.2",
+    "firebase": "12.19.0",
+    "firebase-tools": "15.32.1"
+  },
+  "engines": {"node": ">=22.0.0"}
+}

@@ -16,7 +16,7 @@ try {
   await nube(`https://identitytoolkit.googleapis.com/admin/v2/projects/${proyecto}/config`);
 } catch (error) {
   if (!error.message.includes('CONFIGURATION_NOT_FOUND')) throw error;
-  await nube(`https://identitytoolkit.googleapis.com/v2/projects/${proyecto}/identityPlatform:initializeAuth`, { method: 'POST', body: {} });
+  throw new Error(`Inicia Authentication con «Comenzar» en https://console.firebase.google.com/project/${proyecto}/authentication y activa Correo electrónico/contraseña. No se habilita facturación automáticamente.`);
 }
 await nube(`https://identitytoolkit.googleapis.com/admin/v2/projects/${proyecto}/config?updateMask=signIn.email`, {
   method: 'PATCH', body: { signIn: { email: { enabled: true, passwordRequired: true } } },

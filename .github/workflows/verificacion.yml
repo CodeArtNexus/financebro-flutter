@@ -1,0 +1,51 @@
+name: Verificación de FinanceBro
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: verificacion-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  flutter:
+    name: Formato, análisis y pruebas Flutter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: '3.47.5'
+          channel: stable
+          cache: true
+      - name: Resolver versiones fijadas
+        run: flutter pub get --enforce-lockfile
+      - name: Verificar formato
+        run: dart format --output=none --set-exit-if-changed lib test integration_test test_driver
+      - name: Analizar solución
+        run: flutter analyze
+      - name: Probar reglas de negocio y pantallas
+        run: flutter test --coverage
+  seguridad:
+    name: Reglas de Firebase
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22.20.0'
+          cache: npm
+          cache-dependency-path: tooling/package-lock.json
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Instalar dependencias fijadas
+        run: npm ci --prefix tooling
+      - name: Probar reglas sin credenciales de nube
+        run: tooling/node_modules/.bin/firebase emulators:exec --only firestore --project demo-financebro-reglas 'npm --prefix tooling test'

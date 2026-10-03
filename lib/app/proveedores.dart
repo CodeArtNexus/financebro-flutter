@@ -30,12 +30,14 @@ final datosProvider = Provider<FirebaseFirestore>(
 final authFirebaseProvider = Provider<FirebaseAuth>(
   (ref) => FirebaseAuth.instanceFor(app: ref.watch(firebaseAppProvider)),
 );
-final identidadProvider = Provider<RepositorioIdentidad>(
-  (ref) => FirebaseIdentidad(
+final identidadProvider = Provider<RepositorioIdentidad>((ref) {
+  final repositorio = FirebaseIdentidad(
     ref.watch(authFirebaseProvider),
     ref.watch(datosProvider),
-  ),
-);
+  );
+  ref.onDispose(repositorio.dispose);
+  return repositorio;
+});
 final sesionProvider = StreamProvider<Identidad?>(
   (ref) => ref.watch(identidadProvider).cambios,
 );

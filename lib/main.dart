@@ -37,14 +37,6 @@ Future<Widget> prepararAplicacion() async {
   } else {
     FirebaseMessaging.onBackgroundMessage(recibirEnSegundoPlano);
   }
-  FlutterError.onError = (detalle) {
-    registrarEvento('error_flutter');
-    FlutterError.presentError(detalle);
-  };
-  PlatformDispatcher.instance.onError = (error, stack) {
-    registrarEvento('error_no_controlado');
-    return true;
-  };
   return ProviderScope(
     retry: (int intento, Object error) => null,
     overrides: [
@@ -58,5 +50,14 @@ Future<Widget> prepararAplicacion() async {
 }
 
 Future<void> main() async {
-  runApp(await prepararAplicacion());
+  final aplicacion = await prepararAplicacion();
+  FlutterError.onError = (detalle) {
+    registrarEvento('error_flutter');
+    FlutterError.presentError(detalle);
+  };
+  PlatformDispatcher.instance.onError = (error, stack) {
+    registrarEvento('error_no_controlado');
+    return true;
+  };
+  runApp(aplicacion);
 }

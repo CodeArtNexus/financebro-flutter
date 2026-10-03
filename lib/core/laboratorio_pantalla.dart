@@ -56,7 +56,7 @@ class _LaboratorioEstado extends ConsumerState<LaboratorioPantalla> {
                       EscenarioRed.normal => "Conexión normal / recuperar",
                       EscenarioRed.sinConexion => "Sin conexión",
                       EscenarioRed.latencia => "Alta latencia (4 segundos)",
-                      EscenarioRed.divisasCaidas => "Divisas no disponibles (503)",
+                      EscenarioRed.divisasCaidas => "Fallo del servicio de divisas",
                     }}',
                   ),
                 ),

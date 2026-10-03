@@ -7,6 +7,6 @@ if [[ ! -f pubspec.yaml ]]; then
   printf '%s\n' 'Preparación terminada. La verificación de la solución estará disponible después de crear el proyecto Flutter.' >&2
   exit 2
 fi
-dart format --output=none --set-exit-if-changed lib test
+dart format --output=none --set-exit-if-changed lib test integration_test test_driver
 flutter analyze
 flutter test

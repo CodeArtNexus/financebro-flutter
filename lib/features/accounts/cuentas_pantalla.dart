@@ -24,9 +24,13 @@ class CuentasPantalla extends ConsumerWidget {
                 children: [
                   if (datos.desdeCache) AvisoCache(datos.actualizado),
                   if (datos.valor.isEmpty)
-                    const PanelEstado(
-                      titulo: 'Tu espacio está listo',
-                      mensaje: 'Aún no tienes cuentas asignadas. Aparecerán aquí cuando estén disponibles.',
+                    PanelEstado(
+                      titulo: datos.desdeCache
+                          ? 'Necesitamos conexión'
+                          : 'Tu espacio está listo',
+                      mensaje: datos.desdeCache
+                          ? 'Todavía no hay cuentas guardadas en este dispositivo. Recupera la conexión para consultarlas.'
+                          : 'Aún no tienes cuentas asignadas. Aparecerán aquí cuando estén disponibles.',
                     ),
                   for (final cuenta in datos.valor) TarjetaCuenta(cuenta),
                 ],

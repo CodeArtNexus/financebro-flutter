@@ -1,0 +1,44 @@
+# Dart / Flutter
+.dart_tool/
+.pub/
+.pub-cache/
+.flutter-plugins
+.flutter-plugins-dependencies
+build/
+coverage/
+**/doc/api/
+
+# Android / Apple
+android/.gradle/
+android/local.properties
+**/Pods/
+**/.symlinks/
+**/DerivedData/
+*.jks
+*.keystore
+key.properties
+
+# Configuración local y credenciales privadas
+.env
+.env.*
+!.env.example
+.secrets/
+scripts/env.local.sh
+**/*service-account*.json
+**/*adminsdk*.json
+**/credentials.json
+
+# Emuladores / herramientas
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+.firebase/
+emulator-data/
+node_modules/
+
+# Sistema / editores
+.DS_Store
+.idea/
+*.iml
+
+# Versionar pubspec.lock, reglas, índices y configuración pública del cliente Firebase.

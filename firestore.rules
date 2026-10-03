@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function propietario(uid) { return request.auth != null && request.auth.uid == uid; }
+    function perfilValido() {
+      return request.resource.data.keys().hasOnly(['nombre', 'segmento', 'mostrarSaldo', 'actualizado'])
+        && request.resource.data.nombre is string
+        && request.resource.data.nombre.size() >= 2 && request.resource.data.nombre.size() <= 60
+        && request.resource.data.segmento in ['equilibrio', 'ahorro', 'viajes']
+        && request.resource.data.mostrarSaldo is bool
+        && request.resource.data.actualizado == request.time;
+    }
+    match /usuarios/{uid} {
+      allow read: if propietario(uid);
+      allow create, update: if propietario(uid) && perfilValido();
+      match /cuentas/{cuenta} {
+        allow read: if propietario(uid);
+        match /movimientos/{movimiento} { allow read: if propietario(uid); }
+      }
+      match /dispositivos/{dispositivo} {
+        allow read, delete: if propietario(uid);
+        allow create, update: if propietario(uid)
+          && request.resource.data.keys().hasOnly(['token','actualizado'])
+          && request.resource.data.token is string && request.resource.data.token.size() <= 4096
+          && request.resource.data.actualizado == request.time;
+      }
+      match /notificaciones/{notificacion} { allow read: if propietario(uid); }
+    }
+    match /experiencias/{version} { allow read: if request.auth != null; }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

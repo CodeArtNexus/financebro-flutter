@@ -1,17 +1,301 @@
-<!doctype html><html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#fff6ee"><title>FinanceBro · Administración</title><link rel="icon" type="image/svg+xml" href="/bro.svg"></head><body>
-<div class="glow uno"></div><div class="glow dos"></div>
-<header><a class="marca" href="/" aria-label="FinanceBro"><span class="marca-icono">b.</span>financebro<span class="punto">•</span></a><span class="insignia">Administración</span><button id="salir" class="secundario oculto">Cerrar sesión</button></header>
-<main>
-<section id="acceso" class="acceso"><div class="relato"><span class="eyebrow">CUIDAMOS CADA MOVIMIENTO</span><h1>Más claridad.<br>Mejores planes.</h1><p>El espacio para acompañar las cuentas de FinanceBro, gestionar fondos de prueba y seguir su actividad en tiempo real.</p><div class="tarjeta-decorativa" aria-hidden="true"><span>financebro •</span><strong>Todo en su lugar.</strong><small>CUENTAS · MOVIMIENTOS · PLANES</small></div></div><form id="login" class="cristal"><span class="eyebrow">TU ESPACIO DE GESTIÓN</span><h2>Hola, administrador.</h2><p>Ingresa con la cuenta habilitada para este panel.</p><label>Correo electrónico<input id="correo" type="email" autocomplete="username" required></label><label>Contraseña<input id="clave" type="password" autocomplete="current-password" required minlength="6"></label><button class="primario" type="submit">Entrar al panel <span>→</span></button><p class="nota">Entorno de demostración con fondos sintéticos.</p></form></section>
-<section id="panel" class="oculto"><div class="cabecera"><div><span class="eyebrow">VISTA COMPARTIDA CON LA APP</span><h1>Un panorama más claro.</h1><p id="identidad"></p></div><span class="estado"><i></i> Datos en vivo</span></div>
-<div id="metricas" class="metricas"></div>
-<nav class="pestanas" aria-label="Vistas del panel"><button data-vista="cuentas" aria-current="page">Cuentas y fondos</button><button data-vista="movimientos">Actividad global</button><button data-vista="qr">Cobro QR</button></nav>
-<section id="vista-cuentas"><div class="rejilla"><div class="cristal"><div class="titulo"><div><h2>Cada persona, su espacio.</h2><p>Selecciona una cuenta para ver su actividad.</p></div></div><label class="busqueda">Buscar por nombre o identificador<input id="buscar" placeholder="Por ejemplo, Sebastian" type="search"></label><div id="cuentas"></div></div><aside class="cristal"><span class="eyebrow">GESTIÓN DE FONDOS</span><h2 id="cuenta-titulo">Elige una cuenta</h2><p id="cuenta-subtitulo">Sus fondos y movimientos aparecerán aquí.</p><form id="ajuste"><label>Importe del ajuste en USD<input id="importe" inputmode="decimal" placeholder="100,00 o -25,00" required></label><label>Motivo<input id="motivo" placeholder="Asignación para prueba de pagos" minlength="5" maxlength="120" required></label><button class="primario" type="submit">Revisar ajuste</button><p class="nota">Los ajustes guardan su motivo y un movimiento. No hay fondos bancarios reales.</p></form><button id="asignar" class="secundario">Asignar nueva cuenta</button></aside></div><div class="cristal actividad-cuenta"><h2>Movimientos de esta cuenta</h2><div id="detalle-movimientos"><p class="vacio">Selecciona una cuenta para consultar su histórico.</p></div></div></section>
-<section id="vista-movimientos" class="oculto cristal"><div class="titulo"><div><h2>La actividad, a la vista.</h2><p>Los 200 movimientos globales más recientes. Selecciona una cuenta para consultar sus últimos 100.</p></div></div><div id="global-movimientos"></div></section>
-<section id="vista-qr" class="oculto"><div class="rejilla qr-layout"><form id="crear-qr" class="cristal"><span class="eyebrow">COBRO DE DEMOSTRACIÓN</span><h2>Un QR. Un pago.</h2><p>Café Bro es el comercio habilitado para probar el flujo desde tu teléfono.</p><label>Importe en USD<input id="importe-qr" inputmode="decimal" value="4,50" required></label><button class="primario" type="submit">Generar un nuevo QR</button><p class="nota">Cada código tiene su propia referencia. Reutilizarlo no vuelve a cobrar a la misma persona.</p></form><div class="cristal resultado-qr"><div id="imagen-qr"></div><h2 id="total-qr">Tu próximo pago empieza aquí.</h2><p id="referencia-qr"></p><textarea id="contenido-qr" readonly aria-label="Código de pago FinanceBro" class="oculto"></textarea><button id="copiar-qr" class="secundario oculto">Copiar código de pago</button></div></div></section>
-</section>
-<p id="mensaje" class="mensaje oculto" role="status" aria-live="polite"></p>
-</main><footer>financebro • Un entorno para demostrar experiencias financieras.</footer>
-<dialog id="confirmacion"><form method="dialog"><h2>Revisar ajuste</h2><p id="confirmacion-texto"></p><p id="confirmacion-motivo"></p><p class="nota">Esta operación quedará en el histórico de la cuenta.</p><div class="acciones"><button value="cancelar" class="secundario">Cancelar</button><button value="confirmar" class="primario">Confirmar ajuste</button></div></form></dialog>
-<dialog id="nueva-cuenta"><form id="form-cuenta"><h2>Un nuevo espacio financiero</h2><label>Persona<select id="persona-cuenta" required></select></label><label>Nombre de la cuenta<input id="nombre-cuenta" minlength="2" maxlength="60" value="Mi nueva cuenta" required></label><label>Últimos cuatro dígitos de la tarjeta de prueba<input id="tarjeta-cuenta" pattern="[0-9]{4}" maxlength="4" value="1234" required></label><p class="nota">Comienza con saldo cero. Después puedes asignar fondos con un ajuste.</p><div class="acciones"><button type="button" id="cancelar-cuenta" class="secundario">Cancelar</button><button type="submit" class="primario">Crear cuenta</button></div></form></dialog>
-<script type="module" src="/src/main.js"></script></body></html>
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#fff6ee" />
+    <title>FinanceBro · Administración</title>
+    <link rel="icon" type="image/svg+xml" href="/bro.svg" />
+  </head>
+  <body>
+    <div class="glow uno"></div>
+    <div class="glow dos"></div>
+    <header>
+      <a class="marca" href="/" aria-label="FinanceBro"
+        ><span class="marca-icono">fb.</span>financebro<span class="punto"
+          >•</span
+        ></a
+      ><span class="insignia">Administración</span
+      ><button id="salir" class="secundario oculto">Cerrar sesión</button>
+    </header>
+    <main>
+      <section id="acceso" class="acceso">
+        <div class="relato">
+          <span class="eyebrow">CUIDAMOS CADA MOVIMIENTO</span>
+          <h1>Más claridad.<br />Mejores planes.</h1>
+          <p>
+            El espacio para acompañar las cuentas de FinanceBro, gestionar
+            fondos de prueba y seguir su actividad en tiempo real.
+          </p>
+          <div class="tarjeta-decorativa" aria-hidden="true">
+            <span>financebro •</span><strong>Todo en su lugar.</strong
+            ><small>CUENTAS · MOVIMIENTOS · PLANES</small>
+          </div>
+        </div>
+        <form id="login" class="cristal">
+          <span class="eyebrow">TU ESPACIO DE GESTIÓN</span>
+          <h2>Hola, administrador.</h2>
+          <p>Ingresa con la cuenta habilitada para este panel.</p>
+          <label
+            >Correo electrónico<input
+              id="correo"
+              type="email"
+              autocomplete="username"
+              required /></label
+          ><label
+            >Contraseña<input
+              id="clave"
+              type="password"
+              autocomplete="current-password"
+              required
+              minlength="6" /></label
+          ><button class="primario" type="submit">
+            Entrar al panel <span>→</span>
+          </button>
+          <p class="nota">Entorno de demostración con fondos sintéticos.</p>
+        </form>
+      </section>
+      <section id="panel" class="oculto">
+        <div class="cabecera">
+          <div>
+            <span class="eyebrow">VISTA COMPARTIDA CON LA APP</span>
+            <h1>Un panorama más claro.</h1>
+            <p id="identidad"></p>
+          </div>
+          <span class="estado"><i></i> Datos en vivo</span>
+        </div>
+        <div id="metricas" class="metricas"></div>
+        <nav class="pestanas" aria-label="Vistas del panel">
+          <button data-vista="cuentas" aria-current="page">
+            Cuentas y fondos</button
+          ><button data-vista="movimientos">Actividad global</button
+          ><button data-vista="qr">QR de cuentas</button
+          ><button data-vista="solicitudes">Solicitudes</button
+          ><button data-vista="servicios">Servicios y pagos mensuales</button>
+        </nav>
+        <section id="vista-cuentas">
+          <div class="rejilla">
+            <div class="cristal">
+              <div class="titulo">
+                <div>
+                  <h2>Cada persona, su espacio.</h2>
+                  <p>Selecciona una cuenta para ver su actividad.</p>
+                </div>
+              </div>
+              <label class="busqueda"
+                >Buscar por nombre o identificador<input
+                  id="buscar"
+                  placeholder="Por ejemplo, Sebastian"
+                  type="search"
+              /></label>
+              <div id="cuentas"></div>
+            </div>
+            <aside class="cristal">
+              <span class="eyebrow">GESTIÓN DE FONDOS</span>
+              <h2 id="cuenta-titulo">Elige una cuenta</h2>
+              <p id="cuenta-subtitulo">
+                Sus fondos y movimientos aparecerán aquí.
+              </p>
+              <form id="ajuste">
+                <label
+                  >Importe del ajuste en USD<input
+                    id="importe"
+                    inputmode="decimal"
+                    placeholder="100,00 o -25,00"
+                    required /></label
+                ><label
+                  >Motivo<input
+                    id="motivo"
+                    placeholder="Asignación para prueba de pagos"
+                    minlength="5"
+                    maxlength="120"
+                    required /></label
+                ><button class="primario" type="submit">Revisar ajuste</button>
+                <p class="nota">
+                  Los ajustes guardan su motivo y un movimiento. No hay fondos
+                  bancarios reales.
+                </p>
+              </form>
+              <button id="asignar" class="secundario">
+                Preparar números de cuenta
+              </button>
+            </aside>
+          </div>
+          <div class="cristal actividad-cuenta">
+            <h2>Movimientos de esta cuenta</h2>
+            <div id="detalle-movimientos">
+              <p class="vacio">
+                Selecciona una cuenta para consultar su histórico.
+              </p>
+            </div>
+            <button id="mas-detalle" class="secundario oculto">Cargar anteriores de esta cuenta</button>
+          </div>
+        </section>
+        <section id="vista-movimientos" class="oculto cristal">
+          <div class="titulo">
+            <div>
+              <h2>La actividad, a la vista.</h2>
+              <p>
+                Actividad global con páginas anteriores. Cada cuenta conserva su
+                propio histórico.
+              </p>
+            </div>
+          </div>
+          <div id="global-movimientos"></div>
+          <button id="mas-movimientos" class="secundario">
+            Cargar anteriores
+          </button>
+        </section>
+        <section id="vista-qr" class="oculto">
+          <div class="rejilla qr-layout">
+            <form id="crear-qr" class="cristal">
+              <span class="eyebrow">TRANSFERENCIAS ENTRE CUENTAS</span>
+              <h2>Tu cuenta, tu QR.</h2>
+              <p>
+                Selecciona la cuenta receptora. La otra persona escanea,
+                verifica el titular y elige un monto.
+              </p>
+              <label
+                >Cuenta receptora<select
+                  id="cuenta-qr"
+                  required
+                ></select></label
+              ><button class="primario" type="submit">
+                Generar un nuevo QR
+              </button>
+              <p class="nota">
+                El QR no incluye saldos. Cada transferencia se confirma por
+                separado, entre USD 0,10 y USD 100.
+              </p>
+            </form>
+            <div class="cristal resultado-qr">
+              <div id="imagen-qr"></div>
+              <h2 id="total-qr">Tu próximo pago empieza aquí.</h2>
+              <p id="referencia-qr"></p>
+              <textarea
+                id="contenido-qr"
+                readonly
+                aria-label="Código de pago FinanceBro"
+                class="oculto"
+              ></textarea
+              ><button id="copiar-qr" class="secundario oculto">
+                Copiar código de pago
+              </button>
+            </div>
+          </div>
+        </section>
+        <section id="vista-solicitudes" class="oculto">
+          <div class="cristal">
+            <h2>Solicitudes de cuenta corriente</h2>
+            <p>
+              Revisa los documentos de prueba, solicita correcciones o aprueba
+              la cuenta temporal. La activación requiere comprobar el depósito
+              inicial.
+            </p>
+            <div id="solicitudes-lista"></div>
+          </div>
+        </section>
+        <section id="vista-servicios" class="oculto">
+          <div class="rejilla">
+            <form id="servicio-form" class="cristal">
+              <h2>Servicios disponibles en la app</h2>
+              <label
+                >Identificador<input
+                  id="servicio-id"
+                  pattern="[a-zA-Z0-9_-]{1,80}"
+                  required
+                  placeholder="luz" /></label
+              ><label
+                >Nombre<input
+                  id="servicio-nombre"
+                  minlength="2"
+                  maxlength="60"
+                  required /></label
+              ><label
+                >Icono<select id="servicio-icono">
+                  <option value="luz">Luz</option>
+                  <option value="agua">Agua</option>
+                  <option value="internet">Internet</option>
+                  <option value="telefono">Teléfono</option>
+                </select></label
+              ><label
+                >Valor base de prueba en USD<input
+                  id="servicio-base"
+                  inputmode="decimal"
+                  required
+                  value="20,00" /></label
+              ><label
+                >Disponibilidad<select id="servicio-activo">
+                  <option value="true">Habilitado</option>
+                  <option value="false">Deshabilitado</option>
+                </select></label
+              ><button class="primario" type="submit">Guardar servicio</button>
+              <p class="nota">
+                Las facturas son sintéticas y varían según contrato y mes.
+                Deshabilitar un servicio conserva su histórico.
+              </p>
+            </form>
+            <div class="cristal">
+              <h2>Catálogo en vivo</h2>
+              <div id="servicios-lista"></div>
+            </div>
+          </div>
+          <div class="cristal actividad-cuenta">
+            <h2>Pagos mensuales</h2>
+            <p>
+              El servidor revisa los vencidos cada día. La persona autoriza su
+              cuenta, día y límite mensual.
+            </p>
+            <button id="procesar-autopagos" class="secundario">
+              Procesar pagos vencidos
+            </button>
+            <div id="autopagos-lista"></div>
+          </div>
+        </section>
+      </section>
+      <p
+        id="mensaje"
+        class="mensaje oculto"
+        role="status"
+        aria-live="polite"
+      ></p>
+    </main>
+    <footer>
+      financebro • Un entorno para demostrar experiencias financieras.
+    </footer>
+    <dialog id="confirmacion">
+      <form method="dialog">
+        <h2>Revisar ajuste</h2>
+        <p id="confirmacion-texto"></p>
+        <p id="confirmacion-motivo"></p>
+        <p class="nota">Esta operación quedará en el histórico de la cuenta.</p>
+        <div class="acciones">
+          <button value="cancelar" class="secundario">Cancelar</button
+          ><button value="confirmar" class="primario">Confirmar ajuste</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="nueva-cuenta">
+      <form id="form-cuenta">
+        <h2>Preparar cuentas existentes</h2>
+        <label>Persona<select id="persona-cuenta" required></select></label
+        ><input
+          id="nombre-cuenta"
+          type="hidden"
+          value="Cuenta existente"
+        /><input id="tarjeta-cuenta" type="hidden" value="1234" />
+        <p class="nota">
+          Asigna números a las cuentas de demostración anteriores, conservando
+          saldos y todos sus movimientos. Las nuevas cuentas las abre su
+          propietario.
+        </p>
+        <div class="acciones">
+          <button type="button" id="cancelar-cuenta" class="secundario">
+            Cancelar</button
+          ><button type="submit" class="primario">Preparar cuentas</button>
+        </div>
+      </form>
+    </dialog>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

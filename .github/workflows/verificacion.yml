@@ -84,6 +84,8 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
+      - name: Usar la versión fijada de npm del servidor
+        run: npm install --global npm@11.18.0
       - name: Instalar dependencias fijadas
         run: npm ci --prefix functions && npm ci --prefix tooling && npm ci --prefix admin
       - name: Probar validaciones

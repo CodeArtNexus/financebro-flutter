@@ -1,7 +1,18 @@
 import { randomBytes } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { nube, proyecto } from './nube.mjs';
-import { local, escribir } from './datos.mjs';
+import { local, escribir, datos, raiz } from './datos.mjs';
+
+async function prepararDato(ruta, objeto) {
+  // Las cuentas y el histórico se conservan incluso al repetir la preparación.
+  // Solo el perfil y catálogo locales se restablecen para fijar las precondiciones del E2E.
+  if (local && (ruta === 'experiencias/actual' || /^usuarios\/[^/]+$/.test(ruta))) return escribir(ruta, objeto);
+  try { await datos(`${raiz}/${ruta}`); return; }
+  catch (error) {
+    if (error.estado !== 404 && !error.message.startsWith('Emulador (404)')) throw error;
+  }
+  return escribir(ruta, objeto);
+}
 
 const correo = 'demo@financebro.test';
 let usuario;
@@ -30,20 +41,20 @@ if (local) {
   }, null, 2), { mode: 0o600 });
 }
 const uid = usuario.localId;
-await escribir(`usuarios/${uid}`, { nombre: 'Sebastian Demo', segmento: 'equilibrio', mostrarSaldo: true, actualizado: new Date() });
+await prepararDato(`usuarios/${uid}`, { nombre: 'Sebastian Demo', segmento: 'equilibrio', mostrarSaldo: true, actualizado: new Date() });
 const operaciones = [
   { id: 'ingreso', descripcion: 'Ingreso de prueba', centavos: 280000, categoria: 'Ingresos', dias: 0 },
   { id: 'compras', descripcion: 'Supermercado de prueba', centavos: -8250, categoria: 'Compras', dias: 1 },
   { id: 'cafe', descripcion: 'Café de prueba', centavos: -450, categoria: 'Alimentación', dias: 2 },
   { id: 'servicio', descripcion: 'Servicio de prueba', centavos: -3980, categoria: 'Servicios', dias: 3 },
 ];
-await escribir(`usuarios/${uid}/cuentas/principal`, { nombre: 'Cuenta del día a día', numero: '•••• 2048', tarjetaUltimos4: '2048', tarjetaRed: 'BRO', saldoCentavos: operaciones.reduce((s, m) => s + m.centavos, 0), actualizado: new Date() });
-for (const movimiento of operaciones) await escribir(`usuarios/${uid}/cuentas/principal/movimientos/${movimiento.id}`, {
+await prepararDato(`usuarios/${uid}/cuentas/principal`, { nombre: 'Cuenta del día a día', numero: '•••• 2048', tarjetaUltimos4: '2048', tarjetaRed: 'BRO', saldoCentavos: operaciones.reduce((s, m) => s + m.centavos, 0), actualizado: new Date() });
+for (const movimiento of operaciones) await prepararDato(`usuarios/${uid}/cuentas/principal/movimientos/${movimiento.id}`, {
   descripcion: movimiento.descripcion, centavos: movimiento.centavos, categoria: movimiento.categoria, fecha: new Date(Date.now() - movimiento.dias * 86400000),
 });
-await escribir(`usuarios/${uid}/cuentas/ahorro`, { nombre: 'Mi ahorro', numero: '•••• 7712', tarjetaUltimos4: '7712', tarjetaRed: 'BRO', saldoCentavos: 150000, actualizado: new Date() });
-await escribir(`usuarios/${uid}/cuentas/ahorro/movimientos/inicial`, { descripcion: 'Ahorro inicial de prueba', centavos: 150000, categoria: 'Ahorro', fecha: new Date() });
-await escribir('experiencias/actual', { schemaVersion: 1, revision: 1, actualizado: new Date(), tarjetas: [
+await prepararDato(`usuarios/${uid}/cuentas/ahorro`, { nombre: 'Mi ahorro', numero: '•••• 7712', tarjetaUltimos4: '7712', tarjetaRed: 'BRO', saldoCentavos: 150000, actualizado: new Date() });
+await prepararDato(`usuarios/${uid}/cuentas/ahorro/movimientos/inicial`, { descripcion: 'Ahorro inicial de prueba', centavos: 150000, categoria: 'Ahorro', fecha: new Date() });
+await prepararDato('experiencias/actual', { schemaVersion: 1, revision: 1, actualizado: new Date(), tarjetas: [
   { id: 'bienestar', tipo: 'aviso', titulo: 'Pequeños pasos, grandes cambios', texto: 'Revisa tus movimientos y encuentra espacio para ahorrar.', segmento: 'todos', destino: '/cuentas', orden: 1 },
   { id: 'ahorro', tipo: 'recomendacion', titulo: 'Dale intención a tu ahorro', texto: 'Tu perfil de ahorro prioriza contenido para tus metas.', segmento: 'ahorro', destino: '/cuentas', orden: 2 },
   { id: 'viajes', tipo: 'divisas', titulo: 'Tu próximo viaje empieza aquí', texto: 'Calcula tu presupuesto con tasas de referencia actuales.', segmento: 'viajes', destino: '/divisas', orden: 2 },

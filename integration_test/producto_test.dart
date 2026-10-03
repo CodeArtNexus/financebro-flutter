@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:financebro/core/configuracion.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:financebro/app/financebro_app.dart';
@@ -7,6 +8,7 @@ import 'package:financebro/features/payments/pagos.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:financebro/main.dart' as app;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -19,8 +21,9 @@ void main() {
     tester,
   ) async {
     final aplicacion = await app.prepararAplicacion();
-    await FirebaseAuth.instanceFor(app: Firebase.app('demo-financebro'))
-        .signOut();
+    await FirebaseAuth.instanceFor(
+      app: usarEmuladores ? Firebase.app('demo-financebro') : Firebase.app(),
+    ).signOut();
     await tester.pumpWidget(aplicacion);
     await esperar(tester, find.text('Ya tengo una cuenta'));
     await tester.ensureVisible(find.text('Ya tengo una cuenta'));
@@ -29,17 +32,25 @@ void main() {
     await esperar(tester, find.byKey(const Key('correo')));
     await tester.pumpAndSettle();
     if (capturas) {
-      await binding.convertFlutterSurfaceToImage();
+      if (defaultTargetPlatform == TargetPlatform.android) {
+        await binding.convertFlutterSurfaceToImage();
+      }
       await tester.pumpAndSettle();
       await binding.takeScreenshot('producto-acceso');
     }
     await tester.enterText(
       find.byKey(const Key('correo')),
-      'demo@financebro.test',
+      const String.fromEnvironment(
+        'DEMO_EMAIL',
+        defaultValue: 'demo@financebro.test',
+      ),
     );
     await tester.enterText(
       find.byKey(const Key('clave')),
-      'FinanceBro-local-2026!',
+      const String.fromEnvironment(
+        'DEMO_PASSWORD',
+        defaultValue: 'FinanceBro-local-2026!',
+      ),
     );
     FocusManager.instance.primaryFocus?.unfocus();
     await tester.pumpAndSettle();
@@ -149,5 +160,20 @@ void main() {
       ),
       isTrue,
     );
+    // Reinicia el árbol de la aplicación manteniendo la sesión real del SDK.
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(aplicacion);
+    await esperar(tester, find.text('Volver a mi espacio'));
+    await tester.ensureVisible(find.text('Volver a mi espacio'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Volver a mi espacio'));
+    await esperar(tester, find.text('Face ID · demo'));
+    await tester.ensureVisible(find.text('Face ID · demo'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Face ID · demo'));
+    await esperar(tester, find.text('Continuar demo'));
+    await tester.tap(find.text('Continuar demo'));
+    await esperar(tester, find.text('Mis tarjetas'));
   });
 }

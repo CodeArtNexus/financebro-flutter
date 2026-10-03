@@ -32,10 +32,56 @@
         "lib/firebase_options.dart": {
           "projectId": "financebro-sb-20261003",
           "configurations": {
-            "android": "1:678478455472:android:5bf5b0422048fa10a25175"
+            "android": "1:678478455472:android:5bf5b0422048fa10a25175",
+            "ios": "1:678478455472:ios:85878e6b91d83f1ea25175"
           }
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "financebro-sb-20261003",
+          "appId": "1:678478455472:ios:85878e6b91d83f1ea25175",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
         }
       }
     }
+  },
+  "hosting": {
+    "public": "admin/dist",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "X-Frame-Options",
+            "value": "DENY"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "strict-origin-when-cross-origin"
+          },
+          {
+            "key": "Content-Security-Policy",
+            "value": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://*.googleapis.com wss://*.firebaseio.com https://*.firebaseio.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+          }
+        ]
+      }
+    ]
   }
 }

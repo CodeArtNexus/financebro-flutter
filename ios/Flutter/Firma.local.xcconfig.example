@@ -1,0 +1,3 @@
+// Copiar como Firma.local.xcconfig y seleccionar el equipo propio de Apple.
+DEVELOPMENT_TEAM = TU_EQUIPO_APPLE
+CODE_SIGN_STYLE = Automatic

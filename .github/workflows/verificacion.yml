@@ -49,3 +49,21 @@ jobs:
         run: npm ci --prefix tooling
       - name: Probar reglas sin credenciales de nube
         run: tooling/node_modules/.bin/firebase emulators:exec --only firestore --project demo-financebro-reglas 'npm --prefix tooling test'
+  administracion:
+    name: Panel web y cálculo de importes
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '22.20.0'
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+      - name: Instalar dependencias fijadas
+        run: npm ci --prefix admin
+      - name: Probar importes y códigos de pago
+        run: npm --prefix admin test
+      - name: Compilar panel
+        run: npm --prefix admin run build

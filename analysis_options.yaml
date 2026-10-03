@@ -5,3 +5,4 @@ analyzer:
     - build/**
     - android/**
     - tooling/node_modules/**
+    - ios/**

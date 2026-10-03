@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -37,6 +39,11 @@ class FirebaseNotificaciones implements RepositorioNotificaciones {
     await locales.initialize(
       settings: const InitializationSettings(
         android: AndroidInitializationSettings('ic_notification'),
+        iOS: DarwinInitializationSettings(
+          requestAlertPermission: false,
+          requestBadgePermission: false,
+          requestSoundPermission: false,
+        ),
       ),
       onDidReceiveNotificationResponse: (respuesta) =>
           _abrir?.call(destinoPush({'ruta': respuesta.payload})),
@@ -70,6 +77,7 @@ class FirebaseNotificaciones implements RepositorioNotificaciones {
           body: aviso.texto,
           payload: aviso.destino,
           notificationDetails: const NotificationDetails(
+            iOS: DarwinNotificationDetails(),
             android: AndroidNotificationDetails(
               'financebro_clientes',
               'Avisos de FinanceBro',
@@ -102,6 +110,10 @@ class FirebaseNotificaciones implements RepositorioNotificaciones {
     }
     final permiso = await mensajes.getNotificationSettings();
     if (permiso.authorizationStatus == AuthorizationStatus.authorized) {
+      if (defaultTargetPlatform == TargetPlatform.iOS &&
+          !const bool.fromEnvironment('IOS_PUSH_ENABLED')) {
+        return;
+      }
       final token = await mensajes.getToken();
       if (token != null) await _guardarToken(token);
     }
@@ -118,6 +130,12 @@ class FirebaseNotificaciones implements RepositorioNotificaciones {
 
   @override
   Future<bool> activar(String uid) async {
+    if (defaultTargetPlatform == TargetPlatform.iOS &&
+        !const bool.fromEnvironment('IOS_PUSH_ENABLED')) {
+      throw const FalloApp(
+        'Los avisos push en iPhone requieren configurar APNs y una membresía de Apple Developer. Puedes consultar tu historial de avisos aquí.',
+      );
+    }
     if (_uid != uid) {
       throw const FalloApp('Estamos preparando tu sesión. Vuelve a intentar.');
     }

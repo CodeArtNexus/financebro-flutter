@@ -1,12 +1,11 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'dart:ui';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/financebro_app.dart';
@@ -24,7 +23,19 @@ Future<void> recibirEnSegundoPlano(RemoteMessage mensaje) async {
 Future<Widget> prepararAplicacion() async {
   WidgetsFlutterBinding.ensureInitialized();
   final app = usarEmuladores
-      ? await Firebase.initializeApp(demoProjectId: 'demo-financebro')
+      ? await Firebase.initializeApp(
+          name: 'demo-financebro',
+          // Firebase Installations en iOS valida el formato incluso en Emulator Suite.
+          // Esta clave sintética no pertenece a ningún proyecto remoto.
+          options: FirebaseOptions(
+            apiKey: 'A00000000000000000000000000000000000000',
+            appId: defaultTargetPlatform == TargetPlatform.iOS
+                ? '1:1:ios:1'
+                : '1:1:android:1',
+            messagingSenderId: '1',
+            projectId: 'demo-financebro',
+          ),
+        )
       : await Firebase.initializeApp(
           options: DefaultFirebaseOptions.currentPlatform,
         );

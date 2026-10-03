@@ -42,6 +42,8 @@ void main() {
     await FirebaseAuth.instance.signOut();
     await tester.pumpWidget(aplicacion);
     await esperarRemoto(tester, find.text('Ya tengo una cuenta'));
+    await tester.ensureVisible(find.text('Ya tengo una cuenta'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Ya tengo una cuenta'));
     await esperarRemoto(tester, find.byKey(const Key('correo')));
     await tester.enterText(find.byKey(const Key('correo')), correo);

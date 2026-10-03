@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../app/proveedores.dart';
 import '../../app/tema.dart';
@@ -79,224 +80,270 @@ class _QrEstado extends ConsumerState<QrPantalla> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Pagar con QR')),
-    body: ListView(
-      padding: const EdgeInsets.all(22),
-      children: [
-        const EncabezadoBro(
-          'Escanea. Confirma. Listo.',
-          subtitulo: 'Un café, un plan, un pago sencillo.',
-        ),
-        EntradaBro(
-          child: CristalBro(
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: naranjaFinanceBro.withValues(alpha: .25),
-                    borderRadius: BorderRadius.circular(26),
-                  ),
-                  child: const Icon(
-                    Icons.qr_code_scanner_rounded,
-                    size: 72,
-                    color: naranjaTextoBro,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'Pagos de demostración',
-                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Usa el QR del panel FinanceBro. Confirmar descontará fondos de prueba y guardará tu movimiento.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 12, height: 1.6),
-                ),
-                const SizedBox(height: 20),
-                FilledButton.icon(
-                  onPressed: _cargando ? null : _escanear,
-                  icon: const Icon(Icons.camera_alt_outlined),
-                  label: const Text('Escanear QR'),
-                ),
-                TextButton(
-                  onPressed: _cargando
-                      ? null
-                      : () => _leer(
-                          SolicitudQr(
-                            'cafe-bro',
-                            450,
-                            'demo-${DateTime.now().microsecondsSinceEpoch}',
-                          ).contenido,
-                        ),
-                  child: const Text('Probar con Café Bro · USD 4,50'),
-                ),
-              ],
-            ),
-          ),
-        ),
-        const SizedBox(height: 18),
-        ExpansionTile(
-          title: const Text(
-            'Tengo un código de pago',
-            style: TextStyle(fontSize: 13),
-          ),
-          children: [
-            TextField(
-              key: const Key('codigo-qr'),
-              controller: _codigo,
-              maxLength: 512,
-              maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Código FinanceBro'),
-            ),
-            TextButton(
-              onPressed: _cargando ? null : () => _leer(_codigo.text),
-              child: const Text('Revisar código'),
-            ),
-          ],
-        ),
-        if (_cargando)
-          const Padding(
-            padding: EdgeInsets.all(20),
-            child: Center(child: CircularProgressIndicator()),
-          ),
-        if (_error != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18),
-            child: Semantics(
-              liveRegion: true,
-              child: Text(_error!, key: const Key('error-qr')),
-            ),
-          ),
-        if (_solicitud != null && _recibo == null) ...[
-          const SizedBox(height: 18),
-          CristalBro(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  _nombre!,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  dinero(_solicitud!.centavos),
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: -1,
-                  ),
-                ),
-                const SizedBox(height: 20),
-                ref
-                    .watch(cuentasProvider)
-                    .when(
-                      loading: () => const LinearProgressIndicator(),
-                      error: (e, _) =>
-                          PanelError(e, () => ref.invalidate(cuentasProvider)),
-                      data: (datos) => Column(
-                        children: [
-                          if (datos.desdeCache) AvisoCache(datos.actualizado),
-                          DropdownButtonFormField<String>(
-                            key: const Key('cuenta-pago'),
-                            initialValue: _cuenta,
-                            isExpanded: true,
-                            decoration: const InputDecoration(
-                              labelText: 'Pagar desde',
-                            ),
-                            items: datos.valor
-                                .map(
-                                  (c) => DropdownMenuItem(
-                                    value: c.id,
-                                    child: Text(
-                                      c.nombre,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: _cargando
-                                ? null
-                                : (v) => setState(() => _cuenta = v),
-                          ),
-                          if (datos.valor.isEmpty)
-                            const Text(
-                              'Necesitas una cuenta asignada para pagar.',
-                            ),
-                        ],
+  Widget build(BuildContext context) => _recibo != null
+      ? Scaffold(
+          appBar: AppBar(title: const Text('Tu pago está listo')),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: EntradaBro(
+              child: CristalBro(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 22),
+                    const Icon(
+                      Icons.check_circle_outline_rounded,
+                      size: 72,
+                      color: Color(0xFF356B53),
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Pago confirmado',
+                      key: Key('recibo-pago'),
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      dinero(_recibo!.centavos),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -1,
                       ),
                     ),
-                const SizedBox(height: 16),
-                FilledButton(
-                  key: const Key('confirmar-pago'),
-                  onPressed: _cargando || _cuenta == null ? null : _pagar,
-                  child: Text(
-                    _cargando ? 'Confirmando…' : 'Confirmar pago de prueba',
-                  ),
+                    Text(_recibo!.nombre, textAlign: TextAlign.center),
+                    const SizedBox(height: 28),
+                    const Divider(),
+                    const SizedBox(height: 18),
+                    const Text(
+                      'Todo en orden. Tu movimiento ya quedó guardado.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    const SizedBox(height: 18),
+                    SelectableText(
+                      'Referencia: ${_recibo!.referencia}',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: Color(0xFF686C7D),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    FilledButton.icon(
+                      onPressed: () =>
+                          context.push('/cuentas/${_recibo!.cuenta}'),
+                      icon: const Icon(Icons.receipt_long_outlined),
+                      label: const Text('Ver mis movimientos'),
+                    ),
+                    TextButton(
+                      onPressed: () => setState(() {
+                        _solicitud = null;
+                        _recibo = null;
+                        _codigo.clear();
+                      }),
+                      child: const Text('Hacer otro pago'),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Pago de demostración con fondos de prueba.',
+                      style: TextStyle(fontSize: 10),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  'El pago se confirma únicamente con conexión.',
-                  style: TextStyle(fontSize: 10),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        ],
-        if (_recibo != null) ...[
-          const SizedBox(height: 20),
-          EntradaBro(
-            child: CristalBro(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Icon(
-                    Icons.check_circle_outline_rounded,
-                    size: 58,
-                    color: Color(0xFF356B53),
-                  ),
-                  const SizedBox(height: 14),
-                  const Text(
-                    'Pago confirmado',
-                    key: Key('recibo-pago'),
-                    style: TextStyle(fontSize: 23, fontWeight: FontWeight.w600),
-                    textAlign: TextAlign.center,
-                  ),
-                  Text(
-                    '${dinero(_recibo!.centavos)} · ${_recibo!.nombre}',
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 16),
-                  SelectableText(
-                    'Referencia: ${_recibo!.referencia}',
-                    style: const TextStyle(fontSize: 11),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Ya puedes verlo en los movimientos de tu cuenta.',
-                    style: TextStyle(fontSize: 12),
-                  ),
-                  TextButton(
-                    onPressed: () => setState(() {
-                      _solicitud = null;
-                      _recibo = null;
-                    }),
-                    child: const Text('Hacer otro pago'),
-                  ),
-                ],
               ),
             ),
           ),
-        ],
-      ],
-    ),
-  );
+        )
+      : Scaffold(
+          appBar: AppBar(title: const Text('Pagar con QR')),
+          body: ListView(
+            padding: const EdgeInsets.all(22),
+            children: [
+              const EncabezadoBro(
+                'Escanea. Confirma. Listo.',
+                subtitulo: 'Un café, un plan, un pago sencillo.',
+              ),
+              EntradaBro(
+                child: CristalBro(
+                  child: Column(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: naranjaFinanceBro.withValues(alpha: .25),
+                          borderRadius: BorderRadius.circular(26),
+                        ),
+                        child: const Icon(
+                          Icons.qr_code_scanner_rounded,
+                          size: 72,
+                          color: naranjaTextoBro,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Pagos de demostración',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Usa el QR del panel FinanceBro. Confirmar descontará fondos de prueba y guardará tu movimiento.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 12, height: 1.6),
+                      ),
+                      const SizedBox(height: 20),
+                      FilledButton.icon(
+                        onPressed: _cargando ? null : _escanear,
+                        icon: const Icon(Icons.camera_alt_outlined),
+                        label: const Text('Escanear QR'),
+                      ),
+                      TextButton(
+                        onPressed: _cargando
+                            ? null
+                            : () => _leer(
+                                SolicitudQr(
+                                  'cafe-bro',
+                                  450,
+                                  'demo-${DateTime.now().microsecondsSinceEpoch}',
+                                ).contenido,
+                              ),
+                        child: const Text('Probar con Café Bro · USD 4,50'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              ExpansionTile(
+                title: const Text(
+                  'Tengo un código de pago',
+                  style: TextStyle(fontSize: 13),
+                ),
+                children: [
+                  TextField(
+                    key: const Key('codigo-qr'),
+                    controller: _codigo,
+                    maxLength: 512,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      labelText: 'Código FinanceBro',
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: _cargando ? null : () => _leer(_codigo.text),
+                    child: const Text('Revisar código'),
+                  ),
+                ],
+              ),
+              if (_cargando)
+                const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              if (_error != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  child: Semantics(
+                    liveRegion: true,
+                    child: Text(_error!, key: const Key('error-qr')),
+                  ),
+                ),
+              if (_solicitud != null && _recibo == null) ...[
+                const SizedBox(height: 18),
+                CristalBro(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        _nombre!,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        dinero(_solicitud!.centavos),
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: -1,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      ref
+                          .watch(cuentasProvider)
+                          .when(
+                            loading: () => const LinearProgressIndicator(),
+                            error: (e, _) => PanelError(
+                              e,
+                              () => ref.invalidate(cuentasProvider),
+                            ),
+                            data: (datos) => Column(
+                              children: [
+                                if (datos.desdeCache)
+                                  AvisoCache(datos.actualizado),
+                                DropdownButtonFormField<String>(
+                                  key: const Key('cuenta-pago'),
+                                  initialValue: _cuenta,
+                                  isExpanded: true,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Pagar desde',
+                                  ),
+                                  items: datos.valor
+                                      .map(
+                                        (c) => DropdownMenuItem(
+                                          value: c.id,
+                                          child: Text(
+                                            c.nombre,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                                  onChanged: _cargando
+                                      ? null
+                                      : (v) => setState(() => _cuenta = v),
+                                ),
+                                if (datos.valor.isEmpty)
+                                  const Text(
+                                    'Necesitas una cuenta asignada para pagar.',
+                                  ),
+                              ],
+                            ),
+                          ),
+                      const SizedBox(height: 16),
+                      FilledButton(
+                        key: const Key('confirmar-pago'),
+                        onPressed: _cargando || _cuenta == null ? null : _pagar,
+                        child: Text(
+                          _cargando
+                              ? 'Confirmando…'
+                              : 'Confirmar pago de prueba',
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'El pago se confirma únicamente con conexión.',
+                        style: TextStyle(fontSize: 10),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
 }
 
 class _EscanerBro extends StatefulWidget {

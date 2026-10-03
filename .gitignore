@@ -48,3 +48,10 @@ node_modules/
 # Guía personal fuera de Git
 /README.personal.md
 /evidencia-local/
+
+# Panel e instalación personal en iOS
+/admin/dist/
+**/xcuserdata/
+**/*.xcuserstate
+
+/ios/Flutter/Firma.local.xcconfig

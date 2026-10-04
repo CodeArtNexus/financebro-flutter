@@ -18,6 +18,33 @@ Future<void> main() async {
           return true;
         },
     responseDataCallback: (datos) async {
+      // Las capturas extensas de Android se transfieren como archivos, sin un JSON gigante.
+      for (final nombre
+          in (datos?['capturasLocales'] as List<dynamic>? ?? [])) {
+        if (nombre is! String || !RegExp(r'^[a-z0-9-]+$').hasMatch(nombre)) {
+          throw StateError('Nombre de captura inválido.');
+        }
+        final r = await Process.run('adb', [
+          '-s',
+          Platform.environment['FINANCEBRO_DISPOSITIVO'] ?? 'emulator-5554',
+          'exec-out',
+          'run-as',
+          'ec.financebro.financebro',
+          'cat',
+          'files/financebro_capturas/$nombre.png',
+        ], stdoutEncoding: null);
+        final bytes = r.stdout as List<int>;
+        const png = [137, 80, 78, 71, 13, 10, 26, 10];
+        if (r.exitCode != 0 ||
+            bytes.length < png.length ||
+            List.generate(png.length, (i) => bytes[i]).join(',') !=
+                png.join(',')) {
+          throw StateError(
+            'No se pudo exportar una imagen PNG válida: $nombre.',
+          );
+        }
+        await File('${destino.path}/$nombre.png').writeAsBytes(bytes);
+      }
       final resultado = Map<String, dynamic>.of(datos ?? {})
         ..remove('screenshots');
       await writeResponseData(

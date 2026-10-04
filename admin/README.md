@@ -1,6 +1,6 @@
 # Administración de FinanceBro
 
-Panel web con acceso de asesor para consultar personas, cuentas y actividad global; ajustar fondos con un motivo; revisar cuentas corrientes, solicitudes de crédito y tarjetas físicas; generar QR y administrar servicios y pagos mensuales. Comparte datos e identidad visual con el cliente móvil.
+Panel web con acceso de asesor para consultar personas, cuentas y actividad global; ajustar fondos con un motivo; revisar cuentas corrientes, solicitudes de tarjeta de crédito y tarjetas físicas; generar QR y administrar servicios y pagos mensuales. Comparte datos e identidad visual con el cliente móvil.
 
 Es parte del prototipo descrito en el [README principal](../README.md): los fondos y proveedores son sintéticos. No concede crédito real ni emite tarjetas bancarias o realiza envíos físicos.
 
@@ -21,7 +21,7 @@ Cada ajuste conserva actor, motivo, fecha, importe y referencia para evitar repe
 
 Los documentos corporativos se descargan con sesión de asesor, sin enlaces públicos permanentes. El expediente puede recibir correcciones, aprobación temporal o activación después de comprobar el depósito inicial. La cuenta corriente no emite tarjeta.
 
-Las solicitudes de crédito muestran ingresos declarados, ocupación y consentimiento; preaprobar registra una evaluación inicial y no concede un cupo. Las solicitudes físicas conservan el diseño y domicilio autorizados, con revisión para diseños personalizados. El servidor impide registrar un envío antes de la fecha seleccionada; cada decisión deja una revisión y avisa al cliente. Registrar envío o entrega representa un estado del prototipo, sin integración con mensajería física.
+Las solicitudes de tarjeta de crédito muestran ingresos declarados, ocupación y consentimiento. Aprobar exige un cupo entre USD 1 y USD 50.000, emite la tarjeta digital y avisa al titular para elegir el corte mensual. La vista de tarjetas distingue cupo disponible, deuda, total facturado y mínimo; permite registrar consumos sintéticos con comercio y referencia. La actualización de cortes vencidos usa el mismo proceso del programador. Cada compra y abono conserva su histórico; un pago desde ahorros recupera cupo. Las solicitudes físicas conservan el diseño y domicilio autorizados, con revisión para diseños personalizados. El servidor impide registrar un envío antes de la fecha seleccionada; cada decisión deja una revisión y avisa al cliente. Registrar envío o entrega representa un estado del prototipo, sin integración con mensajería física.
 
 El catálogo habilita servicios sin reinstalar la app. Los pagos mensuales conservan consentimiento, cuenta, contrato, día y límite. El servidor evita pagar dos veces un período y registra incidencias cuando no puede completar el pago. El panel puede procesar pagos vencidos con el mismo flujo preparado para el programador.
 

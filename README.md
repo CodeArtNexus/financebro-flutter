@@ -46,6 +46,27 @@ Accesos exclusivamente locales: `demo@financebro.test` y `valeria@financebro.tes
 
 En simulador iOS añadir `--dart-define=EMULATOR_HOST=127.0.0.1`. En dispositivos físicos configurar un host accesible en la misma red privada. Los puertos se pueden cambiar con `AUTH_PORT`, `FIRESTORE_PORT`, `FUNCTIONS_PORT` y `STORAGE_PORT`; el panel utiliza `VITE_AUTH_PORT`, `VITE_FIRESTORE_PORT`, `VITE_FUNCTIONS_PORT` y `VITE_STORAGE_PORT`. El entorno local debe mantenerse en ejecución para registrar y operar.
 
+## iPhone físico en la red local
+
+El SDK nativo de Functions para iOS exige HTTPS al enviar credenciales fuera de la dirección de loopback. Para probar Emulator Suite desde un iPhone físico, prepara un certificado privado de siete días para la IPv4 del servidor:
+
+```sh
+python3 scripts/preparar-iphone-local.py --host 192.168.1.10
+FINANCEBRO_TLS_HOST=192.168.1.10 \
+FINANCEBRO_TLS_CERT=.secrets/iphone-local/servidor.pem \
+FINANCEBRO_TLS_KEY=.secrets/iphone-local/servidor.key \
+node scripts/proxy-funciones-https.mjs
+```
+
+Configura el acceso de Auth, Firestore y Storage a esa misma dirección privada; el puente TLS escucha en 5443 y conecta Functions con su emulador en loopback. Si utilizas otros puertos, pásalos al generador con `--auth-port`, `--firestore-port`, `--functions-port`, `--storage-port` y `--tls-port`, y al puente con `FINANCEBRO_FUNCTIONS_PORT` y `FINANCEBRO_TLS_PORT`.
+
+```sh
+flutter run -d <identificador-del-iphone> --profile \
+  --dart-define-from-file=.secrets/iphone-local/definiciones.json
+```
+
+La clave privada permanece en el servidor y se ignora en Git. Solo el certificado público entra en la compilación local; la app confía en él para esa conexión y conserva la validación de nombre y vigencia. No requiere instalar certificados del sistema. El transporte se limita a iOS, `USE_EMULATORS=true`, el proyecto `demo-financebro`, direcciones privadas y tokens sintéticos; el entorno remoto mantiene el SDK de Firebase. Las peticiones conservan el [protocolo de funciones callable](https://firebase.google.com/docs/functions/callable-reference) y la autorización del servidor. Cuando cambie la IP o venza el certificado, genera otro en una salida nueva con `--salida` y recompila.
+
 ## Arquitectura y protección de datos
 
 La aplicación se organiza por funcionalidades, con Riverpod para estado y GoRouter para navegación. Firebase Authentication identifica al usuario; Firestore conserva perfiles y registros; Storage protege los expedientes. Functions ejecuta las operaciones en transacciones, comprueba identidad y rol, y mantiene una bandeja de avisos. El saldo se calcula en centavos enteros y los reintentos conservan su referencia.

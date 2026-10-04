@@ -3,6 +3,7 @@ import 'registro.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 
 import '../../core/errores.dart';
+import '../../core/funciones_banca.dart';
 
 import 'dart:async';
 
@@ -161,16 +162,12 @@ class FirebaseIdentidad implements RepositorioIdentidad {
             .timeout(const Duration(seconds: 15));
       }
       registrarEvento('registro_acceso_validado', servicio: 'identidad');
-      final resultado = await functions
-          .httpsCallable(
-            'banca',
-            options: HttpsCallableOptions(timeout: const Duration(seconds: 25)),
-          )
-          .call<Map<String, dynamic>>({
-            'operacion': 'registrarCliente',
-            'datos': registro.apertura,
-          });
-      final nombre = resultado.data['nombre'] as String;
+      final resultado = await llamarBanca(
+        functions,
+        'registrarCliente',
+        registro.apertura,
+      );
+      final nombre = resultado['nombre'] as String;
       _nombreSesion = nombre;
       registrarEvento('registro_apertura_completada', servicio: 'banca');
       try {
@@ -183,12 +180,12 @@ class FirebaseIdentidad implements RepositorioIdentidad {
       await RecuerdoAcceso(credencial.user!.uid, nombre).guardar(preferencias);
       _requiereRegistro = false;
       _desbloqueada = true;
-    } on FirebaseFunctionsException catch (e) {
+    } on ErrorFuncionBanca catch (e) {
       _requiereRegistro = true;
       throw FalloApp(
-        e.code == 'unavailable' || e.code == 'deadline-exceeded'
+        e.codigo == 'unavailable' || e.codigo == 'deadline-exceeded'
             ? 'No pudimos conectar para terminar tu apertura. Conservamos tu acceso; vuelve a intentar con los mismos datos.'
-            : e.message ?? 'No pudimos completar tu apertura.',
+            : e.mensaje,
       );
     } finally {
       _preparando = false;

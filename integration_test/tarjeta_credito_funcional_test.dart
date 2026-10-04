@@ -6,6 +6,7 @@ import 'package:financebro/app/financebro_app.dart';
 import 'package:financebro/app/proveedores.dart';
 import 'package:financebro/app/rutas.dart';
 import 'package:financebro/core/configuracion.dart';
+import 'package:financebro/core/funciones_banca.dart';
 import 'package:financebro/main.dart' as app;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -56,12 +57,7 @@ void main() {
         String operacion,
         Map<String, dynamic> datos,
       ) async {
-        await tester.runAsync(
-          () => funciones.httpsCallable('banca').call({
-            'operacion': operacion,
-            'datos': datos,
-          }),
-        );
+        await tester.runAsync(() => llamarBanca(funciones, operacion, datos));
       }
 
       Future<void> pulsar(Finder f) async {

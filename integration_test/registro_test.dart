@@ -17,6 +17,9 @@ import 'package:integration_test/integration_test.dart';
 import 'flujo_critico_test.dart' show esperar;
 
 Future<void> llenarRegistro(WidgetTester tester, {String? correo}) async {
+  // Mantiene la escritura automatizada sin competir con el teclado nativo.
+  tester.testTextInput.register();
+  addTearDown(tester.testTextInput.unregister);
   await esperar(tester, find.byKey(const Key('nombre')));
   final datos = {
     'nombre': 'Lucía',
@@ -32,6 +35,7 @@ Future<void> llenarRegistro(WidgetTester tester, {String? correo}) async {
     await tester.enterText(find.byKey(Key(d.key)), d.value);
   }
   FocusManager.instance.primaryFocus?.unfocus();
+  await tester.pump(const Duration(milliseconds: 700));
   await tester.ensureVisible(find.byKey(const Key('enviar-acceso')));
   await tester.tap(find.byKey(const Key('enviar-acceso')));
   await tester.pump(const Duration(milliseconds: 700));
@@ -50,6 +54,7 @@ Future<void> llenarRegistro(WidgetTester tester, {String? correo}) async {
     await tester.enterText(find.byKey(Key(d.key)), d.value);
   }
   FocusManager.instance.primaryFocus?.unfocus();
+  await tester.pump(const Duration(milliseconds: 700));
   await tester.ensureVisible(
     find.text('Leer contrato, términos y condiciones'),
   );
@@ -80,6 +85,8 @@ void main() {
         tester.element(find.byType(FinanceBroApp)),
       );
       if (const bool.fromEnvironment('SDK_REGISTRO')) {
+        contenedor.read(rutasProvider).go('/registrar');
+        await tester.pump(const Duration(milliseconds: 400));
         debugPrint('registro_dispositivo=inicio');
         await tester.runAsync(
           () => contenedor
@@ -100,6 +107,7 @@ void main() {
                 ),
               ),
         );
+        expect(tester.takeException(), isNull);
         debugPrint('registro_dispositivo=alta_completada');
       } else {
         contenedor.read(rutasProvider).go('/registrar');
@@ -147,6 +155,7 @@ void main() {
                 ),
               ),
         );
+        expect(tester.takeException(), isNull);
         debugPrint('registro_dispositivo=reintento_verificado');
         return;
       }

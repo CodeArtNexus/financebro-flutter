@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/proveedores.dart';
 import '../../core/configuracion.dart';
 import '../../core/errores.dart';
+import '../../core/funciones_banca.dart';
 
 String nuevaReferencia() => List.generate(
   16,
@@ -72,20 +73,14 @@ class Banca {
     Map<String, dynamic> datos = const {},
   ]) async {
     try {
-      final r = await functions
-          .httpsCallable(
-            'banca',
-            options: HttpsCallableOptions(timeout: const Duration(seconds: 30)),
-          )
-          .call<Map<String, dynamic>>({'operacion': operacion, 'datos': datos});
-      return Map<String, dynamic>.from(r.data);
-    } on FirebaseFunctionsException catch (e) {
+      return await llamarBanca(functions, operacion, datos);
+    } on ErrorFuncionBanca catch (e) {
       throw FalloApp(
-        e.code == 'unavailable' ||
-                e.code == 'not-found' && operacion == 'abrirAhorros'
+        e.codigo == 'unavailable' ||
+                e.codigo == 'not-found' && operacion == 'abrirAhorros'
             ? 'No pudimos conectar con el servicio. Revisa tu conexión y vuelve a intentar.'
-            : e.message ?? 'No pudimos completar la operación.',
-        transitorio: e.code == 'unavailable',
+            : e.mensaje,
+        transitorio: e.codigo == 'unavailable',
       );
     }
   }

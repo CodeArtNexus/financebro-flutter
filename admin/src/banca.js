@@ -1,3 +1,4 @@
+import {iniciarChequera} from "./chequera.js";
 import {
   doc,
   collection,
@@ -25,6 +26,7 @@ export function iniciarBanca({
 }) {
   const $ = (id) => document.getElementById(id),
     storage = getStorage(app);
+  const chequera = iniciarChequera({db,ejecutar,avisar,fallo,escapar});
   let suscripciones = [],
     solicitudes = [],
     servicios = [],
@@ -65,6 +67,7 @@ export function iniciarBanca({
       `<button class="${valor === "rechazar" ? "secundario" : "primario"}" data-tarjeta-revision="${valor}" data-id="${escapar(s.id)}" data-uid="${escapar(s.uid)}">${nombre}</button>`;
     const tarjeta = (s) =>
       `<article class="solicitud"><div class="cabecera"><div><h2>${s.tipo === "credito" ? "Solicitud de tarjeta de crédito" : "Tarjeta física"} · ${escapar(s.nombre)}</h2><p>${escapar(estados[s.estado] ?? s.estado)}</p></div></div>${s.tipo === "credito" ? `<p>${escapar(s.ocupacion)} · Ingresos mensuales ${dinero(s.ingresosCentavos)}</p>${s.cupoCentavos ? `<p><strong>Cupo aprobado ${dinero(s.cupoCentavos)}</strong> · El titular elige su corte en la app.</p>` : `<p>Aprueba la tarjeta asignando un cupo. La app solicitará al titular elegir su corte mensual.</p>`}` : `<div class="vista-tarjeta tono-${escapar(s.diseno.color)}"><strong>fb.</strong><p>${escapar(s.diseno.nombre)}</p><span>•••• ${escapar(s.diseno.ultimos4)}</span></div><p>${s.diseno.fondoRuta ? `<button class="secundario" data-documento="${escapar(s.diseno.fondoRuta)}">Ver fondo personalizado</button>` : ""}${s.personalizada ? "Diseño personalizado · revisión en 3 días" : "Diseño predeterminado"}<br>Envío solicitado: ${escapar(s.fechaEnvio)}<br>${escapar(s.domicilio.direccion)} · ${escapar(s.domicilio.ciudad)}<br>Contacto: ${escapar(s.domicilio.telefono)}</p>`}${s.nota ? `<p>${escapar(s.nota)}</p>` : ""}<div class="acciones">${s.tipo === "credito" && ["revision", "preaprobada"].includes(s.estado) ? accion(s, "rechazar", "No aprobar") + accion(s, "aprobar", "Aprobar tarjeta y cupo") : s.estado === "revision_diseno" ? accion(s, "rechazar", "No aprobar diseño") + accion(s, "aprobar_diseno", "Aprobar diseño") : s.estado === "preparacion" ? accion(s, "enviar", "Registrar envío") : s.estado === "enviada" ? accion(s, "entregar", "Registrar entrega") : ""}</div></article>`;
+    const asesoria = s => `<article class="solicitud"><h2>Asesoría · ${escapar(s.nombre)}</h2><p>${escapar(s.motivo)}</p>${s.respuesta?`<p>Respuesta: ${escapar(s.respuesta)}</p>`:`<button class="primario" data-asesoria="${escapar(s.id)}" data-uid="${escapar(s.uid)}">Responder consulta</button>`}</article>`;
     const corporativa = (s) =>
       `<article class="solicitud"><div class="cabecera"><div><h2>${escapar(s.empresa)}</h2><p>${escapar(s.representante)} · RUC ${escapar(s.ruc)}<br>${escapar(estados[s.estado] ?? s.estado)} · ${s.depositoCentavos ? dinero(s.depositoCentavos) : s.escala === "pyme" ? "Depósito USD 1.000" : "Depósito USD 2.000"}</p></div></div><div class="documentos">${Object.entries(
         s.documentos ?? {},
@@ -87,7 +90,7 @@ export function iniciarBanca({
     $("solicitudes-lista").innerHTML = visibles.length
       ? visibles
           .map((s) =>
-            ["credito", "fisica"].includes(s.tipo)
+            s.tipo==="asesoria" ? asesoria(s) : ["credito", "fisica"].includes(s.tipo)
               ? tarjeta(s)
               : corporativa(s),
           )
@@ -96,6 +99,8 @@ export function iniciarBanca({
   }
   $("buscar-solicitud").addEventListener("input", renderSolicitudes);
   $("solicitudes-lista").addEventListener("click", async (e) => {
+    const consulta=e.target.closest('[data-asesoria]');
+    if(consulta){const dialog=document.createElement('dialog');dialog.innerHTML='<form><h2>Responder consulta</h2><label>Respuesta del asesor<textarea name="respuesta" minlength="5" maxlength="400" required></textarea></label><div class="acciones"><button type="button" class="secundario">Volver</button><button type="submit" class="primario">Enviar respuesta</button></div></form>';document.body.append(dialog);dialog.querySelector('[type=button]').onclick=()=>dialog.close();dialog.addEventListener('close',()=>dialog.remove());dialog.querySelector('form').onsubmit=async v=>{v.preventDefault();v.submitter.disabled=true;try{await ejecutar('responderAsesoria',{uid:consulta.dataset.uid,id:consulta.dataset.asesoria,respuesta:new FormData(v.target).get('respuesta')});dialog.close();avisar('Respuesta enviada al cliente.');}catch(error){avisar(fallo(error),true);v.submitter.disabled=false;}};dialog.showModal();return;}
     const doc = e.target.closest("[data-documento]");
     if (doc) {
       doc.disabled = true;
@@ -265,6 +270,7 @@ export function iniciarBanca({
   });
   return {
     escuchar() {
+      chequera.escuchar();
       suscripciones.push(onSnapshot(doc(db,"experiencias/decoracion"),(s)=>{
         const d=s.data();if(!d || decoracionEditada)return;
         for(const campo of ["tema","desde","hasta","titulo","mensaje","activa"])$("decoracion-"+campo).value=String(d[campo]);
@@ -288,7 +294,7 @@ export function iniciarBanca({
       observar(collectionGroup(db, "solicitudes"), (items) => {
         solicitudes = items.filter(
           (s) =>
-            ["credito", "fisica"].includes(s.tipo) ||
+            ["credito", "fisica", "asesoria"].includes(s.tipo) ||
             ["revision", "deposito", "activa", "correcciones"].includes(
               s.estado,
             ),
@@ -320,6 +326,7 @@ export function iniciarBanca({
       });
     },
     detener() {
+      chequera.detener();
       for (const s of suscripciones) s();
       suscripciones = [];
       solicitudes = [];

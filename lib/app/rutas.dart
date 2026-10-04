@@ -1,3 +1,5 @@
+import '../features/banking/chequera_pantallas.dart';
+
 import 'dart:ui';
 
 import 'package:flutter/cupertino.dart' show CupertinoPage;
@@ -112,6 +114,19 @@ final rutasProvider = Provider<GoRouter>((ref) {
           pantalla(
             '/apertura/corriente',
             (_) => const AperturaCorrientePantalla(),
+          ),
+          pantalla('/chequera', (_) => const ChequeraPantalla()),
+          pantalla(
+            '/chequera/emitir',
+            (s) => EmitirChequesPantalla(grupo: s.uri.queryParameters['grupo']),
+          ),
+          pantalla(
+            '/chequera/grupos/:grupo',
+            (s) => GrupoChequesPantalla(s.pathParameters['grupo']!),
+          ),
+          pantalla(
+            '/chequera/cheques/:cheque',
+            (s) => ChequeDetallePantalla(s.pathParameters['cheque']!),
           ),
           pantalla('/contactos', (_) => const ContactosPantalla()),
           pantalla(

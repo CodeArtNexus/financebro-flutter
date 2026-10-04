@@ -5,6 +5,7 @@ String destinoPush(Map<String, dynamic> datos) {
   if (ruta is! String) return '/notificaciones';
   if (destinosPermitidos.contains(ruta) ||
       [
+        '/chequera',
         '/tarjetas',
         '/tarjetas/credito/detalle',
         '/pagos',
@@ -12,6 +13,7 @@ String destinoPush(Map<String, dynamic> datos) {
         '/historial',
         '/apertura/corriente',
       ].contains(ruta) ||
+      RegExp(r'^/chequera/cheques/[a-zA-Z0-9_-]{1,80}$').hasMatch(ruta) ||
       RegExp(r'^/cuentas/[a-zA-Z0-9_-]{1,80}$').hasMatch(ruta)) {
     return ruta;
   }

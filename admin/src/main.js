@@ -335,7 +335,7 @@ document.querySelector(".pestanas").addEventListener("click", (e) => {
   for (const b of document.querySelectorAll("[data-vista]"))
     b.removeAttribute("aria-current");
   boton.setAttribute("aria-current", "page");
-  for (const id of ["cuentas", "movimientos", "qr", "solicitudes", "tarjetas", "servicios", "experiencia"])
+  for (const id of ["cuentas", "movimientos", "qr", "solicitudes", "tarjetas", "servicios", "experiencia", "chequera"])
     $(`vista-${id}`).classList.toggle("oculto", id !== boton.dataset.vista);
 });
 $("ajuste").addEventListener("submit", (e) => {

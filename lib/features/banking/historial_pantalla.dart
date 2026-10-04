@@ -1,3 +1,5 @@
+import 'package:go_router/go_router.dart';
+
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -113,6 +115,15 @@ class _HistorialEstado extends EstadoBanco<HistorialPantalla> {
         ? 'Movimientos asociados'
         : 'Todos tus movimientos',
     [
+      if (widget.cuenta == 'corriente')
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: FilledButton.icon(
+            onPressed: () => context.push('/chequera'),
+            icon: const Icon(Icons.receipt_long_outlined),
+            label: const Text('Abrir mi chequera digital'),
+          ),
+        ),
       EncabezadoBro(
         'Tu actividad, en detalle',
         subtitulo: 'Histórico conservado por operación.',

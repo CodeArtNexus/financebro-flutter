@@ -1,3 +1,4 @@
+import "./apariencia.js";
 import "./estilo.css";
 import { initializeApp } from "firebase/app";
 import {

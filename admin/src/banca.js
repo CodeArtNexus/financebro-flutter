@@ -239,18 +239,8 @@ export function iniciarBanca({
     $("servicio-activo").value = String(s.activo);
     $("servicio-visible").value = String(s.visibleEnApp !== false);
   });
-  $("procesar-autopagos").addEventListener("click", async (e) => {
-    e.target.disabled = true;
-    try {
-      const r = await ejecutar("procesarAutopagos");
-      avisar(
-        `${r.procesados} pagos vencidos procesados. Revisa los estados y movimientos.`,
-      );
-    } catch (error) {
-      avisar(fallo(error), true);
-    } finally {
-      e.target.disabled = false;
-    }
+  $("procesar-autopagos").addEventListener("click", () => {
+    avisar("La programación guarda el día y el límite. Cada titular consulta y confirma el pago desde su app; no hay débitos programados activos.");
   });
   $("tarjetas-credito-lista").addEventListener("click", (e) => {
     const boton = e.target.closest("[data-consumo]");
@@ -286,7 +276,7 @@ export function iniciarBanca({
     dialog.showModal();
   });
   $("procesar-cortes").onclick = async (e) => {
-    e.target.disabled = true;
+    e.currentTarget.disabled = true;
     try {
       const r = await ejecutar("procesarCortesTarjetas");
       avisar(
@@ -295,7 +285,7 @@ export function iniciarBanca({
     } catch (error) {
       avisar(fallo(error), true);
     } finally {
-      e.target.disabled = false;
+      e.currentTarget.disabled = false;
     }
   };
   let decoracionEditada = false;

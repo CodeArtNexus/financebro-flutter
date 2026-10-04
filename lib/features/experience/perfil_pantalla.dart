@@ -292,7 +292,7 @@ class _PerfilEstado extends ConsumerState<PerfilPantalla> {
         const SizedBox(height: 32),
         OutlinedButton.icon(
           onPressed: _guardando ? null : _salir,
-          icon: const Icon(Icons.close_rounded, size: 19),
+          icon: const Icon(Icons.logout_rounded, size: 19),
 
           label: const Text('Cerrar sesión'),
         ),

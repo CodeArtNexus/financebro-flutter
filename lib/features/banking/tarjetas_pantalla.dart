@@ -576,7 +576,10 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
                               OutlinedButton.icon(
                                 onPressed: () =>
                                     context.push('/tarjetas/fisica/${t['id']}'),
-                                icon: const Icon(Icons.close_rounded, size: 19),
+                                icon: const Icon(
+                                  Icons.local_shipping_outlined,
+                                  size: 19,
+                                ),
 
                                 label: Text(
                                   ref

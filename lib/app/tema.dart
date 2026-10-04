@@ -202,7 +202,12 @@ ThemeData crearTema({Brightness brillo = Brightness.light}) {
       labelTextStyle: WidgetStatePropertyAll(
         TextStyle(fontFamily: 'Poppins', color: texto, fontSize: 10),
       ),
-      iconTheme: WidgetStatePropertyAll(IconThemeData(color: texto, size: 23)),
+      iconTheme: WidgetStateProperty.resolveWith(
+        (estados) => IconThemeData(
+          color: estados.contains(WidgetState.selected) ? tintaBro : texto,
+          size: 23,
+        ),
+      ),
     ),
   );
 }

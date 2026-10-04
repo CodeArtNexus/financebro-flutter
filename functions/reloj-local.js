@@ -3,6 +3,9 @@ import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { Banco } from "./src/banca.js";
 import { procesarCheques } from "./src/chequera.js";
+if (process.env.FINANCEBRO_COBROS_LOCALES !== "true") {
+  throw Error("El reloj de cobros está detenido. Activarlo exige FINANCEBRO_COBROS_LOCALES=true y emuladores locales.");
+}
 for (const nombre of [
   "FIRESTORE_EMULATOR_HOST",
   "FIREBASE_STORAGE_EMULATOR_HOST",

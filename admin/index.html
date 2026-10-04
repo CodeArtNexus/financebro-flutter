@@ -25,7 +25,7 @@
           <h1>Más claridad.<br />Mejores planes.</h1>
           <p>
             El espacio para acompañar las cuentas de FinanceBro, gestionar
-            fondos de prueba y seguir su actividad en tiempo real.
+            fondos y seguir su actividad en tiempo real.
           </p>
           <div class="tarjeta-decorativa" aria-hidden="true">
             <span>financebro •</span><strong>Todo en su lugar.</strong
@@ -52,7 +52,7 @@
           ><button class="primario" type="submit">
             Entrar al panel <span>→</span>
           </button>
-          <p class="nota">Entorno de demostración con fondos sintéticos.</p>
+          <p class="nota">Acceso exclusivo para el equipo autorizado.</p>
         </form>
       </section>
       <section id="panel" class="oculto">
@@ -106,14 +106,13 @@
                 ><label
                   >Motivo<input
                     id="motivo"
-                    placeholder="Asignación para prueba de pagos"
+                    placeholder="Motivo del ajuste de fondos"
                     minlength="5"
                     maxlength="120"
                     required /></label
                 ><button class="primario" type="submit">Revisar ajuste</button>
                 <p class="nota">
-                  Los ajustes guardan su motivo y un movimiento. No hay fondos
-                  bancarios reales.
+                  Cada ajuste guarda su motivo, histórico y aviso para el titular.
                 </p>
               </form>
               <button id="asignar" class="secundario">
@@ -128,7 +127,9 @@
                 Selecciona una cuenta para consultar su histórico.
               </p>
             </div>
-            <button id="mas-detalle" class="secundario oculto">Cargar anteriores de esta cuenta</button>
+            <button id="mas-detalle" class="secundario oculto">
+              Cargar anteriores de esta cuenta
+            </button>
           </div>
         </section>
         <section id="vista-movimientos" class="oculto cristal">
@@ -186,11 +187,11 @@
         </section>
         <section id="vista-solicitudes" class="oculto">
           <div class="cristal">
-            <h2>Solicitudes de cuenta corriente</h2>
+            <h2>Solicitudes de cuentas y tarjetas</h2>
             <p>
-              Revisa los documentos de prueba, solicita correcciones o aprueba
-              la cuenta temporal. La activación requiere comprobar el depósito
-              inicial.
+              Revisa documentos y solicitudes de tarjetas, solicita correcciones
+              o aprueba la cuenta temporal. La activación requiere comprobar el
+              depósito inicial.
             </p>
             <div id="solicitudes-lista"></div>
           </div>
@@ -219,7 +220,7 @@
                   <option value="telefono">Teléfono</option>
                 </select></label
               ><label
-                >Valor base de prueba en USD<input
+                >Valor base en USD<input
                   id="servicio-base"
                   inputmode="decimal"
                   required
@@ -231,7 +232,7 @@
                 </select></label
               ><button class="primario" type="submit">Guardar servicio</button>
               <p class="nota">
-                Las facturas son sintéticas y varían según contrato y mes.
+                Configura los servicios disponibles y su valor base.
                 Deshabilitar un servicio conserva su histórico.
               </p>
             </form>
@@ -260,9 +261,7 @@
         aria-live="polite"
       ></p>
     </main>
-    <footer>
-      financebro • Un entorno para demostrar experiencias financieras.
-    </footer>
+    <footer>financebro • Claridad en cada movimiento.</footer>
     <dialog id="confirmacion">
       <form method="dialog">
         <h2>Revisar ajuste</h2>
@@ -285,9 +284,8 @@
           value="Cuenta existente"
         /><input id="tarjeta-cuenta" type="hidden" value="1234" />
         <p class="nota">
-          Asigna números a las cuentas de demostración anteriores, conservando
-          saldos y todos sus movimientos. Las nuevas cuentas las abre su
-          propietario.
+          Completa los números de las cuentas anteriores, conservando saldos y
+          todos sus movimientos. Las nuevas cuentas las abre su propietario.
         </p>
         <div class="acciones">
           <button type="button" id="cancelar-cuenta" class="secundario">

@@ -150,7 +150,7 @@ function render() {
     ["Personas registradas", usuarios.length],
     ["Cuentas asociadas", cuentas.length],
     [
-      "Fondos de prueba",
+      "Fondos registrados",
       dinero(cuentas.reduce((s, c) => s + c.saldoCentavos, 0)),
     ],
   ]
@@ -271,7 +271,7 @@ onAuthStateChanged(auth, async (usuario) => {
     $("acceso").classList.add("oculto");
     $("salir").classList.remove("oculto");
     $("identidad").textContent =
-      `${usuario.email} · ${local ? "Emuladores locales" : "Demostración conectada a Firebase"}`;
+      `${usuario.email} · ${local ? "Emuladores locales" : "Conectado a Firebase"}`;
     bancoPanel.escuchar();
     desuscribir.push(
       escuchar(collection(db, "usuarios"), (items) => (usuarios = items)),

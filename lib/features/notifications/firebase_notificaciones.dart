@@ -69,6 +69,8 @@ class FirebaseNotificaciones implements RepositorioNotificaciones {
         datos
             .collection('usuarios/$uid/notificaciones')
             .where('fecha', isGreaterThan: desde)
+            .orderBy('fecha', descending: true)
+            .limit(50)
             .snapshots(includeMetadataChanges: true)
             .listen(
               (s) async {

@@ -56,7 +56,7 @@ before(async () => {
     referencia: `fondos_${marca}`,
   });
 });
-test("La apertura no obliga a crear una cuenta y no la duplica ni cambia sus fondos", async () => {
+test("La apertura heredada conserva consentimiento, mayoría de edad y fondos existentes", async () => {
   const visitante = `nuevo_${marca}`;
   await banco.usuario(visitante).set({ nombre: "Nueva Persona" });
   assert.equal(
@@ -178,7 +178,11 @@ test("Los contactos internos se verifican y las tarjetas externas guardan solo �
   };
   await banco.pagarExterno(authA, d);
   await banco.pagarExterno(authA, d);
-  const global = await banco.usuario(ana).collection("movimientosGlobales").where("referencia", "==", d.referencia).get();
+  const global = await banco
+    .usuario(ana)
+    .collection("movimientosGlobales")
+    .where("referencia", "==", d.referencia)
+    .get();
   assert.equal(global.size, 1);
   assert.equal(
     (
@@ -231,6 +235,14 @@ test("La solicitud guarda progreso; requiere documentos y asesor antes de activa
   assert.equal(
     (await banco.cuenta(bruno, "corriente").get()).data().estado,
     "temporal",
+  );
+  assert.equal(
+    (await banco.privado(bruno, "tarjetas", "bro_corriente").get()).exists,
+    false,
+  );
+  assert.equal(
+    (await banco.cuenta(bruno, "corriente").get()).data().tarjetaUltimos4,
+    undefined,
   );
   await assert.rejects(
     banco.revisarSolicitud(admin, {
@@ -386,21 +398,251 @@ test("El endpoint callable exige sesión y ejecuta consultas con un token real d
 
 test("Preparar cuentas antiguas conserva saldos, tarjetas e históricos y completa un reintento", async () => {
   const uid = `legado_${marca}`;
-  await banco.usuario(uid).set({nombre: "Legado Demo"});
+  await banco.usuario(uid).set({ nombre: "Legado Demo" });
   const cuenta = banco.cuenta(uid, "principal");
-  await cuenta.set({nombre: "Mis ahorros", numero: "•••• 1234", tarjetaUltimos4: "1234", saldoCentavos: 12345, moneda: "USD"});
-  await cuenta.collection("movimientos").doc("historia_original").set({descripcion: "Fondos anteriores", centavos: 12345, fecha: banco.ahora()});
-  await banco.migrarCuentas(admin, {uid});
+  await cuenta.set({
+    nombre: "Mis ahorros",
+    numero: "•••• 1234",
+    tarjetaUltimos4: "1234",
+    saldoCentavos: 12345,
+    moneda: "USD",
+  });
+  await cuenta
+    .collection("movimientos")
+    .doc("historia_original")
+    .set({
+      descripcion: "Fondos anteriores",
+      centavos: 12345,
+      fecha: banco.ahora(),
+    });
+  await banco.migrarCuentas(admin, { uid });
   const preparado = (await cuenta.get()).data();
   assert.equal(preparado.saldoCentavos, 12345);
   assert.equal(preparado.tarjetaUltimos4, "1234");
   const tarjeta = banco.privado(uid, "tarjetas", "bro_principal");
-  await tarjeta.update({color: "menta"});
-  await cuenta.collection("movimientos").doc("pagina_pendiente").set({descripcion: "Movimiento pendiente de preparar", centavos: 0, fecha: banco.ahora()});
-  await banco.migrarCuentas(admin, {uid});
-  await banco.migrarCuentas(admin, {uid});
-  assert.equal((await cuenta.get()).data().numeroCuenta, preparado.numeroCuenta);
+  await tarjeta.update({ color: "menta" });
+  await cuenta
+    .collection("movimientos")
+    .doc("pagina_pendiente")
+    .set({
+      descripcion: "Movimiento pendiente de preparar",
+      centavos: 0,
+      fecha: banco.ahora(),
+    });
+  await banco.migrarCuentas(admin, { uid });
+  await banco.migrarCuentas(admin, { uid });
+  assert.equal(
+    (await cuenta.get()).data().numeroCuenta,
+    preparado.numeroCuenta,
+  );
   assert.equal((await cuenta.get()).data().saldoCentavos, 12345);
   assert.equal((await tarjeta.get()).data().color, "menta");
-  assert.equal((await banco.usuario(uid).collection("movimientosGlobales").get()).size, 2);
+  assert.equal(
+    (await banco.usuario(uid).collection("movimientosGlobales").get()).size,
+    2,
+  );
+});
+
+test("El registro crea ahorros, débito y contrato juntos; reintentos conservan fondos y una cédula no se comparte", async () => {
+  const b = new Banco(db, { reloj: () => new Date("2026-10-03T14:00:00Z") });
+  const uid = `registro_${marca}`,
+    email = `${uid}@financebro.test`,
+    actor = { uid, token: { email } };
+  const d = {
+    nombres: "Lucía",
+    apellidos: "Pérez",
+    correo: email,
+    cedula: String(Date.now() % 10000000000).padStart(10, "0"),
+    direccion: "Calle Naranjos 120",
+    ciudad: "Quito",
+    telefono: "0991234567",
+    aceptaContrato: true,
+    versionContrato: "2026-10-v1",
+  };
+  await assert.rejects(
+    b.registrarCliente(actor, { ...d, aceptaContrato: false }),
+  );
+  await assert.rejects(
+    b.registrarCliente(actor, { ...d, correo: "otra@financebro.test" }),
+  );
+  assert.equal((await b.usuario(uid).collection("cuentas").get()).size, 0);
+  const [a, c] = await Promise.all([
+    b.registrarCliente(actor, d),
+    b.registrarCliente(actor, d),
+  ]);
+  assert.deepEqual(a, c);
+  assert.equal((await b.usuario(uid).collection("cuentas").get()).size, 1);
+  assert.equal((await b.usuario(uid).collection("tarjetas").get()).size, 1);
+  const tarjeta = (
+    await b.privado(uid, "tarjetas", "bro_ahorros").get()
+  ).data();
+  assert.equal(tarjeta.clase, "debito");
+  assert.equal(tarjeta.personalizada, false);
+  const contrato = (
+    await b.privado(uid, "datosPersonales", "identidad").get()
+  ).data();
+  assert.equal(contrato.contratoVersion, "2026-10-v1");
+  assert.equal(contrato.domicilio.direccion, d.direccion);
+  assert.equal((await b.usuario(uid).get()).data().documento, undefined);
+  await b.ajustar(admin, {
+    uid,
+    cuenta: "ahorros",
+    centavos: 1000,
+    motivo: "Fondos de verificación",
+    referencia: `registro_fondos_${marca}`,
+  });
+  await b.registrarCliente(actor, d);
+  assert.equal(
+    (await b.cuenta(uid, "ahorros").get()).data().saldoCentavos,
+    1000,
+  );
+  await assert.rejects(
+    b.registrarCliente({ uid: `otro_${marca}`, token: { email } }, d),
+    (e) => e.codigo === "already-exists",
+  );
+  await assert.rejects(
+    b.guardarTarjeta(actor, {
+      tipo: "propia",
+      nombre: "Inventada",
+      cuenta: "ahorros",
+      color: "menta",
+    }),
+  );
+  await b.guardarTarjeta(actor, {
+    id: "bro_ahorros",
+    tipo: "propia",
+    nombre: "Mi diseño",
+    color: "menta",
+  });
+  const pedido = {
+    tarjeta: "bro_ahorros",
+    referencia: `fisica_${marca}`,
+    direccion: d.direccion,
+    ciudad: d.ciudad,
+    telefono: d.telefono,
+    fechaEnvio: "2026-10-06",
+    aceptaEnvio: true,
+  };
+  await assert.rejects(
+    b.solicitarFisica(actor, { ...pedido, fechaEnvio: "2026-10-05" }),
+  );
+  await assert.rejects(
+    b.solicitarFisica(actor, { ...pedido, fechaEnvio: "2026-10-32" }),
+  );
+  const fisica = await b.solicitarFisica(actor, pedido);
+  assert.equal(fisica.estado, "revision_diseno");
+  assert.deepEqual(await b.solicitarFisica(actor, pedido), fisica);
+  await assert.rejects(
+    b.solicitarFisica(actor, { ...pedido, referencia: `distinta_${marca}` }),
+  );
+  await b.guardarTarjeta(actor, {
+    id: "bro_ahorros",
+    tipo: "propia",
+    nombre: "Otro diseño",
+    color: "noche",
+  });
+  assert.equal(
+    (await b.privado(uid, "solicitudes", fisica.id).get()).data().diseno.color,
+    "menta",
+  );
+  await assert.rejects(
+    b.revisarTarjeta(actor, {
+      uid,
+      id: fisica.id,
+      accion: "aprobar_diseno",
+      nota: "Diseño revisado",
+    }),
+  );
+  await b.revisarTarjeta(admin, {
+    uid,
+    id: fisica.id,
+    accion: "aprobar_diseno",
+    nota: "Diseño aprobado por asesor",
+  });
+  await assert.rejects(
+    b.revisarTarjeta(admin, {
+      uid,
+      id: fisica.id,
+      accion: "enviar",
+      nota: "Envío preparado",
+    }),
+  );
+  const futuro = new Banco(db, {
+    reloj: () => new Date("2026-10-06T14:00:00Z"),
+  });
+  await futuro.revisarTarjeta(admin, {
+    uid,
+    id: fisica.id,
+    accion: "enviar",
+    nota: "Salida de tarjeta registrada",
+  });
+  await futuro.revisarTarjeta(admin, {
+    uid,
+    id: fisica.id,
+    accion: "entregar",
+    nota: "Entrega de tarjeta registrada",
+  });
+  const credito = {
+    ingresosCentavos: 150000,
+    ocupacion: "Diseñadora",
+    aceptaEvaluacion: true,
+  };
+  await assert.rejects(
+    b.solicitarCredito(actor, { ...credito, aceptaEvaluacion: false }),
+  );
+  await b.solicitarCredito(actor, credito);
+  await b.solicitarCredito(actor, credito);
+  assert.equal((await b.usuario(uid).collection("tarjetas").get()).size, 1);
+  await b.revisarTarjeta(admin, {
+    uid,
+    id: "credito",
+    accion: "preaprobar",
+    nota: "Evaluación inicial registrada",
+  });
+  assert.equal(
+    (await b.privado(uid, "solicitudes", "credito").get()).data().estado,
+    "preaprobada",
+  );
+  assert.ok(
+    (await b.usuario(uid).collection("notificaciones").get()).size >= 6,
+  );
+});
+
+test("El diseño predeterminado pasa a preparación y no se puede pedir una tarjeta ajena o externa", async () => {
+  const b = new Banco(db, { reloj: () => new Date("2026-10-03T04:00:00Z") });
+  const uid = `predeterminado_${marca}`,
+    email = `${uid}@financebro.test`,
+    actor = { uid, token: { email } };
+  const domicilio = {
+    direccion: "Avenida Aurora 50",
+    ciudad: "Guayaquil",
+    telefono: "0991234567",
+  };
+  await b.registrarCliente(actor, {
+    nombres: "Pedro",
+    apellidos: "López",
+    correo: email,
+    cedula: String((Date.now() + 1) % 10000000000).padStart(10, "0"),
+    ...domicilio,
+    aceptaContrato: true,
+    versionContrato: "2026-10-v1",
+  });
+  const d = {
+    tarjeta: "bro_ahorros",
+    referencia: `pedido_default_${marca}`,
+    fechaEnvio: "2026-10-05",
+    aceptaEnvio: true,
+    ...domicilio,
+  };
+  const s = await b.solicitarFisica(actor, d);
+  assert.equal(s.estado, "preparacion");
+  await assert.rejects(b.solicitarFisica({ uid: `sin_cuenta_${marca}` }, d));
+  const externa = await b.guardarTarjeta(actor, {
+    tipo: "externa",
+    nombre: "Externa",
+    banco: "Otro banco",
+    ultimos4: "1234",
+    color: "menta",
+  });
+  await assert.rejects(b.solicitarFisica(actor, { ...d, tarjeta: externa.id }));
 });

@@ -17,12 +17,12 @@ async function prepararDato(ruta, objeto) {
 const correo = 'demo@financebro.test';
 let usuario;
 if (local) {
-  const respuesta = await fetch('http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/accounts:signUp?key=demo', {
+  const respuesta = await fetch(`http://${process.env.FIREBASE_AUTH_EMULATOR_HOST ?? '127.0.0.1:9099'}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=demo`, {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: correo, password: 'FinanceBro-local-2026!', displayName: 'Sebastian Demo', returnSecureToken: true }),
   });
   usuario = await respuesta.json();
   if (!respuesta.ok && usuario.error?.message === 'EMAIL_EXISTS') {
-    usuario = await (await fetch('http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=demo', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: correo, password: 'FinanceBro-local-2026!', returnSecureToken: true }) })).json();
+    usuario = await (await fetch(`http://${process.env.FIREBASE_AUTH_EMULATOR_HOST ?? '127.0.0.1:9099'}/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=demo`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: correo, password: 'FinanceBro-local-2026!', returnSecureToken: true }) })).json();
   }
   if (!usuario.localId) throw new Error('No se pudo preparar el usuario local.');
 } else {

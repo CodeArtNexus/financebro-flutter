@@ -38,3 +38,14 @@ test('Otra persona no sube ni descarga documentos de la solicitud',async()=>{con
 test('El asesor puede leer un documento para revisarlo',async()=>{const f=archivo(cliente('ana'));await assertSucceeds(uploadBytes(f,pdf(),{contentType:'application/pdf'}));await assertSucceeds(getBytes(ref(admin().storage(),f.fullPath)));});
 test('Se rechazan formatos y tamaños no permitidos',async()=>{await assertFails(uploadBytes(archivo(cliente('ana')),pdf(),{contentType:'text/html'}));await assertFails(uploadBytes(archivo(cliente('ana')),new Uint8Array(5*1024*1024+1),{contentType:'application/pdf'}));});
 test('Los documentos enviados a revisión ya no admiten cambios',async()=>{await entorno.withSecurityRulesDisabled(c=>updateDoc(doc(c.firestore(),'usuarios/ana/solicitudes/corriente'),{estado:'revision'}));await assertFails(uploadBytes(archivo(cliente('ana')),pdf(),{contentType:'application/pdf'}));});
+
+test('El registro de identidad no es consultable y el domicilio de una solicitud solo se comparte con propietario y asesor',async()=>{
+ await entorno.withSecurityRulesDisabled(async c=>{
+   await setDoc(doc(c.firestore(),'identidadesRegistradas/huella'),{uid:'ana'});
+   await setDoc(doc(c.firestore(),'usuarios/ana/solicitudes/fisica_bro_ahorros'),{tipo:'fisica',domicilio:{direccion:'Calle ficticia 100'}});
+ });
+ for(const c of [cliente('ana'),cliente('bruno'),admin()])await assertFails(getDoc(doc(c.firestore(),'identidadesRegistradas/huella')));
+ for(const c of [cliente('ana'),admin()])await assertSucceeds(getDoc(doc(c.firestore(),'usuarios/ana/solicitudes/fisica_bro_ahorros')));
+ await assertFails(getDoc(doc(cliente('bruno').firestore(),'usuarios/ana/solicitudes/fisica_bro_ahorros')));
+ for(const c of [cliente('ana'),admin()])await assertFails(setDoc(doc(c.firestore(),'usuarios/ana/solicitudes/fisica_bro_ahorros'),{estado:'enviada'}));
+});

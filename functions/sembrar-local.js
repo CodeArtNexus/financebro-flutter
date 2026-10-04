@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from "node:fs/promises";
 import { initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
@@ -31,7 +31,13 @@ for (const [correo, nombre, clave, fondos] of [
     usuario = await auth.getUserByEmail(correo);
   } catch (e) {
     if (e.code !== "auth/user-not-found") throw e;
+    const legado = await db
+      .collection("usuarios")
+      .where("nombre", "==", nombre)
+      .limit(1)
+      .get();
     usuario = await auth.createUser({
+      ...(legado.empty ? {} : { uid: legado.docs[0].id }),
       email: correo,
       password: clave,
       displayName: nombre,
@@ -49,14 +55,18 @@ for (const [correo, nombre, clave, fondos] of [
       mostrarSaldo: true,
       actualizado: new Date(),
     });
-  const cuenta = await banco.abrirAhorros(
-    { uid: usuario.uid },
+  const cuenta = await banco.registrarCliente(
+    { uid: usuario.uid, token: { email: correo } },
     {
-      nombre,
+      nombres: nombre.split(" ")[0],
+      apellidos: "Demo",
+      correo,
+      cedula: correo.startsWith("demo") ? "1723456789" : "1823456789",
+      direccion: "Avenida Aurora 100",
+      ciudad: "Quito",
       telefono: "0991234567",
-      documento: "1712345678",
-      nacimiento: "1990-01-01",
-      aceptaTerminos: true,
+      aceptaContrato: true,
+      versionContrato: "2026-10-v1",
     },
   );
   await banco.ajustar(admin, {
@@ -81,29 +91,33 @@ for (const [id, nombre, icono, baseCentavos] of [
       activo: true,
     });
 if (!(await db.doc("experiencias/actual").get()).exists)
-  await db
-    .doc("experiencias/actual")
-    .set({
-      schemaVersion: 1,
-      revision: 2,
-      actualizado: new Date(),
-      tarjetas: [
-        {
-          id: "ahorro",
-          tipo: "recomendacion",
-          titulo: "Un paso más cerca de tu meta",
-          texto: "Configura un plan de ahorro que vaya contigo.",
-          segmento: "todos",
-          destino: "/cuentas",
-          orden: 1,
-        },
-      ],
-    });
+  await db.doc("experiencias/actual").set({
+    schemaVersion: 1,
+    revision: 2,
+    actualizado: new Date(),
+    tarjetas: [
+      {
+        id: "ahorro",
+        tipo: "recomendacion",
+        titulo: "Un paso más cerca de tu meta",
+        texto: "Configura un plan de ahorro que vaya contigo.",
+        segmento: "todos",
+        destino: "/cuentas",
+        orden: 1,
+      },
+    ],
+  });
 console.log(
   "Personas, cuentas y servicios locales preparados sin restablecer saldos ni históricos.",
 );
 
-const receptora=await auth.getUserByEmail('valeria@financebro.test');
-const receptoraCuenta=(await db.doc(`usuarios/${receptora.uid}/cuentas/ahorros`).get()).data();
-await mkdir('.secrets',{recursive:true});
-await writeFile('.secrets/banca-local.json',JSON.stringify({NUMERO_DESTINO:receptoraCuenta.numeroCuenta}),{mode:0o600});
+const receptora = await auth.getUserByEmail("valeria@financebro.test");
+const receptoraCuenta = (
+  await db.doc(`usuarios/${receptora.uid}/cuentas/ahorros`).get()
+).data();
+await mkdir(".secrets", { recursive: true });
+await writeFile(
+  ".secrets/banca-local.json",
+  JSON.stringify({ NUMERO_DESTINO: receptoraCuenta.numeroCuenta }),
+  { mode: 0o600 },
+);

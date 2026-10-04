@@ -1,7 +1,7 @@
 import { nube, proyecto } from './nube.mjs';
 export const local = process.env.USE_EMULATORS === 'true';
 export const proyectoDatos = local ? 'demo-financebro' : proyecto;
-const origen = local ? 'http://127.0.0.1:8080' : 'https://firestore.googleapis.com';
+const origen = local ? `http://${process.env.FIRESTORE_EMULATOR_HOST ?? '127.0.0.1:8080'}` : 'https://firestore.googleapis.com';
 export const raiz = `${origen}/v1/projects/${proyectoDatos}/databases/(default)/documents`;
 export function codificar(valor) {
   if (valor === null) return { nullValue: null };

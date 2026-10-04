@@ -123,8 +123,9 @@ export class Banco {
       tipo,
       estado: "activa",
       saldoCentavos: 0,
-      tarjetaUltimos4: numero.slice(-4),
-      tarjetaRed: "BRO",
+      ...(tipo === "ahorro"
+        ? { tarjetaUltimos4: numero.slice(-4), tarjetaRed: "BRO" }
+        : {}),
       color: tipo === "corriente" ? "lavanda" : "durazno",
       actualizado: fecha,
     };
@@ -158,6 +159,333 @@ export class Banco {
       creado: datos.fecha,
     });
   }
+  avisarCliente(tx, uid, id, titulo, cuerpo, destino, fecha = this.ahora()) {
+    const evento = `${uid}_${id}`;
+    tx.create(this.privado(uid, "notificaciones", id), {
+      titulo,
+      cuerpo,
+      destino,
+      fecha,
+      evento,
+    });
+    tx.create(this.db.doc(`enviosPush/${evento}`), {
+      uid,
+      titulo,
+      cuerpo,
+      destino,
+      estado: "pendiente",
+      creado: fecha,
+    });
+  }
+  async registrarCliente(auth, d) {
+    const uid = this.actor(auth),
+      nombres = texto(d.nombres, "tus nombres", 2, 28),
+      apellidos = texto(d.apellidos, "tus apellidos", 2, 28);
+    const correo = texto(d.correo, "tu correo", 5, 160).toLowerCase(),
+      cedula = texto(d.cedula, "tu cédula", 10, 10);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo) || !/^\d{10}$/.test(cedula))
+      falla("invalid-argument", "Revisa tu correo y tu cédula de 10 dígitos.");
+    if (
+      typeof auth.token?.email !== "string" ||
+      auth.token.email.toLowerCase() !== correo
+    )
+      falla("permission-denied", "El correo debe corresponder a tu acceso.");
+    if (d.aceptaContrato !== true || d.versionContrato !== "2026-10-v1")
+      falla(
+        "failed-precondition",
+        "Lee y acepta el contrato y los términos antes de continuar.",
+      );
+    const domicilio = {
+      direccion: texto(d.direccion, "tu dirección", 8, 180),
+      ciudad: texto(d.ciudad, "tu ciudad", 2, 60),
+      telefono: texto(d.telefono, "tu teléfono", 7, 20),
+    };
+    if (!/^[+\d ()-]+$/.test(domicilio.telefono))
+      falla("invalid-argument", "Revisa tu teléfono.");
+    const nombre = `${nombres} ${apellidos}`,
+      fecha = this.ahora(),
+      c = this.nuevaCuenta("ahorro", fecha);
+    const identidadRef = this.db.doc(
+      `identidadesRegistradas/${huella([cedula])}`,
+    );
+    return this.db.runTransaction(async (tx) => {
+      const cRef = this.cuenta(uid, "ahorros"),
+        tarjetaRef = this.privado(uid, "tarjetas", "bro_ahorros"),
+        personalRef = this.privado(uid, "datosPersonales", "identidad");
+      const [anterior, identidad, perfil, tarjeta, personal, numero] =
+        await Promise.all([
+          tx.get(cRef),
+          tx.get(identidadRef),
+          tx.get(this.usuario(uid)),
+          tx.get(tarjetaRef),
+          tx.get(personalRef),
+          tx.get(this.db.doc(`directorioCuentas/${c.numeroCuenta}`)),
+        ]);
+      if (anterior.exists && personal.data()?.contratoVersion === "2026-10-v1")
+        return {
+          cuenta: "ahorros",
+          numero: anterior.data().numeroCuenta,
+          nombre: perfil.data().nombre,
+        };
+      if (identidad.exists && identidad.data().uid !== uid)
+        falla("already-exists", "Esta cédula ya está asociada a una cuenta.");
+      if (!anterior.exists && numero.exists)
+        falla("aborted", "Vuelve a intentar la apertura.");
+      tx.set(this.usuario(uid), {
+        nombre,
+        segmento: perfil.data()?.segmento ?? "equilibrio",
+        mostrarSaldo: perfil.data()?.mostrarSaldo ?? true,
+        actualizado: fecha,
+      });
+      if (!identidad.exists) tx.create(identidadRef, { uid, creado: fecha });
+      tx.set(personalRef, {
+        nombres,
+        apellidos,
+        nombre,
+        correo,
+        documento: cedula,
+        domicilio,
+        contratoVersion: "2026-10-v1",
+        aceptado: fecha,
+      });
+      if (!anterior.exists) {
+        tx.create(cRef, c);
+        tx.create(this.db.doc(`directorioCuentas/${c.numeroCuenta}`), {
+          uid,
+          cuenta: "ahorros",
+          titular: nombre,
+          tipo: "ahorro",
+        });
+      }
+      const cuenta = anterior.exists ? anterior.data() : c;
+      if (!tarjeta.exists)
+        tx.create(tarjetaRef, {
+          tipo: "propia",
+          clase: "debito",
+          cuenta: "ahorros",
+          nombre: "Mi tarjeta de débito",
+          banco: "FinanceBro",
+          ultimos4: cuenta.tarjetaUltimos4,
+          color: cuenta.color,
+          personalizada: false,
+          actualizado: fecha,
+        });
+      this.avisarCliente(
+        tx,
+        uid,
+        "bienvenida_ahorros",
+        "Tu cuenta está lista",
+        "Ya tienes tu cuenta de ahorros y tu tarjeta de débito digital.",
+        "/tarjetas",
+        fecha,
+      );
+      return { cuenta: "ahorros", numero: cuenta.numeroCuenta, nombre };
+    });
+  }
+  async solicitarCredito(auth, d) {
+    const uid = this.actor(auth),
+      fecha = this.ahora(),
+      ref = this.privado(uid, "solicitudes", "credito");
+    const ingresosCentavos = entero(
+        d.ingresosCentavos,
+        "tus ingresos mensuales",
+        100,
+        100000000,
+      ),
+      ocupacion = texto(d.ocupacion, "tu ocupación", 2, 80);
+    if (d.aceptaEvaluacion !== true)
+      falla("failed-precondition", "Autoriza la revisión de tu solicitud.");
+    return this.db.runTransaction(async (tx) => {
+      const [cuenta, personal, anterior] = await Promise.all([
+        tx.get(this.cuenta(uid, "ahorros")),
+        tx.get(this.privado(uid, "datosPersonales", "identidad")),
+        tx.get(ref),
+      ]);
+      this.cuentaDisponible(cuenta);
+      if (!personal.data()?.domicilio)
+        falla(
+          "failed-precondition",
+          "Completa tus datos y dirección antes de solicitar una tarjeta.",
+        );
+      if (
+        anterior.exists &&
+        ["revision", "preaprobada"].includes(anterior.data().estado)
+      )
+        return { id: "credito", estado: anterior.data().estado };
+      tx.set(ref, {
+        tipo: "credito",
+        uid,
+        nombre: personal.data().nombre,
+        ingresosCentavos,
+        ocupacion,
+        estado: "revision",
+        aceptado: fecha,
+        actualizado: fecha,
+      });
+      this.avisarCliente(
+        tx,
+        uid,
+        `credito_${randomBytes(8).toString("hex")}`,
+        "Recibimos tu solicitud",
+        "Un asesor revisará tu solicitud de tarjeta de crédito.",
+        "/tarjetas",
+        fecha,
+      );
+      return { id: "credito", estado: "revision" };
+    });
+  }
+  async solicitarFisica(auth, d) {
+    const uid = this.actor(auth),
+      tarjeta = identificador(d.tarjeta),
+      id = referencia(d.referencia),
+      fecha = this.ahora();
+    const envio = texto(d.fechaEnvio, "la fecha de envío", 10, 10),
+      fechaMinima = fechaLocal(new Date(this.reloj().getTime() + 3 * 86400000));
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(envio) ||
+      !Number.isFinite(Date.parse(`${envio}T12:00:00Z`)) ||
+      new Date(`${envio}T12:00:00Z`).toISOString().slice(0, 10) !== envio ||
+      envio < fechaMinima ||
+      envio > fechaLocal(new Date(this.reloj().getTime() + 90 * 86400000))
+    )
+      falla(
+        "invalid-argument",
+        "Selecciona una fecha de envío al menos 3 días después de hoy.",
+      );
+    if (d.aceptaEnvio !== true)
+      falla(
+        "failed-precondition",
+        "Confirma tu dirección y la solicitud de envío.",
+      );
+    const domicilio = {
+      direccion: texto(d.direccion, "tu dirección", 8, 180),
+      ciudad: texto(d.ciudad, "tu ciudad", 2, 60),
+      telefono: texto(d.telefono, "tu teléfono", 7, 20),
+    };
+    if (!/^[+\d ()-]+$/.test(domicilio.telefono))
+      falla("invalid-argument", "Revisa tu teléfono.");
+    const ref = this.privado(uid, "solicitudes", `fisica_${tarjeta}`);
+    return this.db.runTransaction(async (tx) => {
+      const [t, p, s] = await Promise.all([
+        tx.get(this.privado(uid, "tarjetas", tarjeta)),
+        tx.get(this.usuario(uid)),
+        tx.get(ref),
+      ]);
+      if (
+        !t.exists ||
+        t.data().tipo !== "propia" ||
+        t.data().clase === "credito"
+      )
+        falla(
+          "failed-precondition",
+          "Selecciona una tarjeta de débito FinanceBro.",
+        );
+      if (s.exists && s.data().referencia === id)
+        return { id: ref.id, estado: s.data().estado };
+      if (
+        s.exists &&
+        !["cancelada", "entregada", "rechazada"].includes(s.data().estado)
+      )
+        falla(
+          "already-exists",
+          "Ya tienes una solicitud activa para esta tarjeta.",
+        );
+      const personalizada = t.data().personalizada === true,
+        estado = personalizada ? "revision_diseno" : "preparacion";
+      tx.set(ref, {
+        tipo: "fisica",
+        uid,
+        tarjeta,
+        nombre: p.data().nombre,
+        domicilio,
+        fechaEnvio: envio,
+        fechaMinima,
+        estado,
+        referencia: id,
+        personalizada,
+        diseno: {
+          nombre: t.data().nombre,
+          color: t.data().color,
+          ultimos4: t.data().ultimos4,
+        },
+        aceptado: fecha,
+        actualizado: fecha,
+      });
+      this.avisarCliente(
+        tx,
+        uid,
+        `fisica_${id}`,
+        "Tu tarjeta física está en camino de preparación",
+        personalizada
+          ? "Revisaremos tu diseño en un plazo de 3 días. Te avisaremos cuando se apruebe."
+          : `Prepararemos tu tarjeta para enviarla desde el ${envio}.`,
+        "/tarjetas",
+        fecha,
+      );
+      return { id: ref.id, estado };
+    });
+  }
+  async revisarTarjeta(auth, d) {
+    const actor = this.actor(auth, true),
+      uid = identificador(d.uid),
+      id = identificador(d.id),
+      accion = d.accion;
+    const nota = texto(d.nota, "la observación", 5, 160),
+      fecha = this.ahora(),
+      ref = this.privado(uid, "solicitudes", id);
+    return this.db.runTransaction(async (tx) => {
+      const s = await tx.get(ref);
+      if (!s.exists) falla("not-found", "No encontramos la solicitud.");
+      const datos = s.data();
+      let estado;
+      if (
+        datos.tipo === "credito" &&
+        datos.estado === "revision" &&
+        ["preaprobar", "rechazar"].includes(accion)
+      )
+        estado = accion === "preaprobar" ? "preaprobada" : "rechazada";
+      else if (datos.tipo === "fisica") {
+        const pasos = {
+          aprobar_diseno: ["revision_diseno", "preparacion"],
+          rechazar: ["revision_diseno", "rechazada"],
+          enviar: ["preparacion", "enviada"],
+          entregar: ["enviada", "entregada"],
+        };
+        const paso = pasos[accion];
+        if (!paso || datos.estado !== paso[0])
+          falla(
+            "failed-precondition",
+            "La acción no corresponde al estado actual.",
+          );
+        if (accion === "enviar" && fechaLocal(this.reloj()) < datos.fechaEnvio)
+          falla(
+            "failed-precondition",
+            "Todavía no llega la fecha de envío elegida.",
+          );
+        estado = paso[1];
+      } else falla("failed-precondition", "La solicitud ya fue revisada.");
+      tx.update(ref, { estado, nota, asesor: actor, actualizado: fecha });
+      tx.create(ref.collection("revision").doc(), {
+        accion,
+        estado,
+        nota,
+        actor,
+        fecha,
+      });
+      this.avisarCliente(
+        tx,
+        uid,
+        `${id}_${randomBytes(8).toString("hex")}`,
+        datos.tipo === "credito"
+          ? "Tu solicitud de crédito"
+          : "Tu tarjeta física",
+        nota,
+        "/tarjetas",
+        fecha,
+      );
+      return { id, estado };
+    });
+  }
   async abrirAhorros(auth, d) {
     const uid = this.actor(auth),
       nombre = texto(d.nombre, "tu nombre", 2, 60);
@@ -183,7 +511,7 @@ export class Banco {
     if (d.aceptaTerminos !== true)
       falla(
         "failed-precondition",
-        "Acepta los términos de la cuenta de demostración.",
+        "Acepta el contrato y los términos de la cuenta.",
       );
     const fecha = this.ahora(),
       c = this.nuevaCuenta("ahorro", fecha);
@@ -204,6 +532,8 @@ export class Banco {
       tx.create(destino, c);
       tx.create(this.privado(uid, "tarjetas", "bro_ahorros"), {
         tipo: "propia",
+        clase: "debito",
+        personalizada: false,
         cuenta: "ahorros",
         nombre: "Mi FinanceBro",
         banco: "FinanceBro",
@@ -246,27 +576,52 @@ export class Banco {
         const ocupado = await tx.get(directorio);
         const tarjetaRef = this.privado(uid, "tarjetas", `bro_${snapshot.id}`);
         const tarjeta = await tx.get(tarjetaRef);
-        if (ocupado.exists && (ocupado.data().uid !== uid || ocupado.data().cuenta !== snapshot.id)) {
+        if (
+          ocupado.exists &&
+          (ocupado.data().uid !== uid || ocupado.data().cuenta !== snapshot.id)
+        ) {
           falla("aborted", "Reintenta la preparación.");
         }
-        if (!anterior.numeroCuenta) tx.update(snapshot.ref, {
-          numeroCuenta: numero, tipo, estado: "activa",
-          color: anterior.color ?? propuesta.color,
-        });
-        if (!ocupado.exists) tx.create(directorio, {uid, cuenta: snapshot.id, titular: perfil.data().nombre, tipo});
-        if (!tarjeta.exists && anterior.tarjetaUltimos4) tx.create(tarjetaRef, {
-          tipo: "propia", cuenta: snapshot.id, nombre: anterior.nombre,
-          banco: "FinanceBro", ultimos4: anterior.tarjetaUltimos4,
-          color: anterior.color ?? propuesta.color, actualizado: this.ahora(),
-        });
+        if (!anterior.numeroCuenta)
+          tx.update(snapshot.ref, {
+            numeroCuenta: numero,
+            tipo,
+            estado: "activa",
+            color: anterior.color ?? propuesta.color,
+          });
+        if (!ocupado.exists)
+          tx.create(directorio, {
+            uid,
+            cuenta: snapshot.id,
+            titular: perfil.data().nombre,
+            tipo,
+          });
+        if (!tarjeta.exists && tipo !== "corriente" && anterior.tarjetaUltimos4)
+          tx.create(tarjetaRef, {
+            tipo: "propia",
+            cuenta: snapshot.id,
+            nombre: anterior.nombre,
+            banco: "FinanceBro",
+            ultimos4: anterior.tarjetaUltimos4,
+            color: anterior.color ?? propuesta.color,
+            actualizado: this.ahora(),
+          });
       });
       // Una interrupción puede dejar páginas pendientes; reintentar completa
       // el histórico sin reemplazar registros existentes ni resetear saldos.
       const historial = await snapshot.ref.collection("movimientos").get();
       for (const m of historial.docs) {
         try {
-          await this.privado(uid, "movimientosGlobales", `${snapshot.id}_${m.id}`)
-            .create({ ...m.data(), referencia: m.data().referencia ?? m.id, uid, cuenta: snapshot.id });
+          await this.privado(
+            uid,
+            "movimientosGlobales",
+            `${snapshot.id}_${m.id}`,
+          ).create({
+            ...m.data(),
+            referencia: m.data().referencia ?? m.id,
+            uid,
+            cuenta: snapshot.id,
+          });
         } catch (error) {
           if (error.code !== 6 && error.code !== "already-exists") throw error;
         }
@@ -331,10 +686,7 @@ export class Banco {
           "No tienes fondos suficientes en esa cuenta.",
         );
       if (destino.saldoCentavos + importe > MAX_SALDO)
-        falla(
-          "failed-precondition",
-          "El destino supera el saldo permitido en la demostración.",
-        );
+        falla("failed-precondition", "El destino supera el saldo permitido.");
       const idCredito = `rec_${huella([uid, id]).slice(0, 40)}`,
         recibo = {
           referencia: id,
@@ -457,10 +809,26 @@ export class Banco {
       falla("invalid-argument", "Selecciona un color disponible.");
     let tarjeta;
     if (d.tipo === "propia") {
-      const cuenta = identificador(d.cuenta),
+      if (!d.id)
+        falla(
+          "failed-precondition",
+          "Tu tarjeta FinanceBro se emite al abrir tus ahorros.",
+        );
+      const anterior = await this.privado(uid, "tarjetas", id).get();
+      if (!anterior.exists || anterior.data().tipo !== "propia")
+        falla("not-found", "No encontramos tu tarjeta FinanceBro.");
+      const cuenta = identificador(anterior.data().cuenta),
         c = this.cuentaDisponible(await this.cuenta(uid, cuenta).get());
+      if (c.tipo === "corriente")
+        falla(
+          "failed-precondition",
+          "Esta cuenta no emite una tarjeta automáticamente.",
+        );
       tarjeta = {
+        ...anterior.data(),
         tipo: "propia",
+        clase: "debito",
+        personalizada: true,
         cuenta,
         nombre: texto(d.nombre, "el nombre", 2, 40),
         banco: "FinanceBro",
@@ -533,7 +901,7 @@ export class Banco {
         simulado: true,
       };
       const movimiento = {
-        descripcion: `Pago de demostración · ${entidad.data().nombre}`,
+        descripcion: `Pago · ${entidad.data().nombre}`,
         centavos: -importe,
         categoria: tipo === "tarjeta" ? "Tarjetas" : "Transferencias externas",
         tipo,
@@ -739,15 +1107,6 @@ export class Banco {
             falla("already-exists", "La cuenta ya existe.");
           const depositoCentavos = s.data().escala === "pyme" ? 100000 : 200000;
           tx.create(cRef, { ...nueva, estado: "temporal", depositoCentavos });
-          tx.create(this.privado(uid, "tarjetas", "bro_corriente"), {
-            tipo: "propia",
-            cuenta: "corriente",
-            nombre: "FinanceBro empresa",
-            banco: "FinanceBro",
-            ultimos4: nueva.tarjetaUltimos4,
-            color: "lavanda",
-            actualizado: fecha,
-          });
           tx.create(directorio, {
             uid,
             cuenta: "corriente",
@@ -1058,16 +1417,14 @@ export class Banco {
           destino: "/pagos",
           fecha: this.ahora(),
         });
-        await this.db
-          .doc(`enviosPush/${a.uid}_auto_${doc.id}_${per}`)
-          .set({
-            uid: a.uid,
-            titulo: "Revisa tu pago mensual",
-            cuerpo: mensaje,
-            destino: "/pagos",
-            estado: "pendiente",
-            creado: this.ahora(),
-          });
+        await this.db.doc(`enviosPush/${a.uid}_auto_${doc.id}_${per}`).set({
+          uid: a.uid,
+          titulo: "Revisa tu pago mensual",
+          cuerpo: mensaje,
+          destino: "/pagos",
+          estado: "pendiente",
+          creado: this.ahora(),
+        });
       }
       await this.db.runTransaction(async (tx) => {
         tx.update(intento, { estado, mensaje, actualizado: this.ahora() });
@@ -1083,6 +1440,10 @@ export class Banco {
   }
   async ejecutar(auth, operacion, datos = {}) {
     const metodos = {
+      registrarCliente: "registrarCliente",
+      solicitarCredito: "solicitarCredito",
+      solicitarFisica: "solicitarFisica",
+      revisarTarjeta: "revisarTarjeta",
       abrirAhorros: "abrirAhorros",
       destinatario: "destinatario",
       transferir: "transferir",

@@ -157,12 +157,9 @@ class EntradaBro extends StatelessWidget {
       tween: Tween(begin: 0, end: 1),
       duration: const Duration(milliseconds: 380),
       curve: Curves.easeOutCubic,
-      builder: (_, valor, child) => Opacity(
-        opacity: valor,
-        child: Transform.translate(
-          offset: Offset(0, 16 * (1 - valor)),
-          child: child,
-        ),
+      builder: (_, valor, child) => Transform.translate(
+        offset: Offset(0, 16 * (1 - valor)),
+        child: child,
       ),
       child: child,
     );

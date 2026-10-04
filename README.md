@@ -52,6 +52,8 @@ La aplicación se organiza por funcionalidades, con Riverpod para estado y GoRou
 
 Los clientes no pueden escribir saldos, movimientos, aprobaciones o tarjetas directamente. Los datos de identidad y el domicilio solo son legibles por su propietario; una solicitud física comparte el domicilio consentido con el asesor. El registro de cédulas y el directorio interno no son públicos. La cédula se comprueba por formato y unicidad; la mayoría de edad es una declaración del usuario, sin validación de identidad contra servicios oficiales. El contrato es contenido del prototipo y requiere revisión jurídica antes de cualquier uso real.
 
+`firestore.indexes.json` incluye el índice de `tarjetas.clase` con alcance de grupo de colecciones para consultar los cortes pendientes. Debe desplegarse junto con las reglas y Functions; las consultas filtradas entre subcolecciones necesitan ese alcance, según la [documentación de índices de Firestore](https://firebase.google.com/docs/firestore/query-data/index-overview#queries_supported_by_collection_group_indexes).
+
 El panel exige el custom claim `financebroAdmin`, asignado desde una herramienta de confianza y comprobado otra vez por el servidor. Cambiar el perfil o el navegador no concede permisos. [Operaciones del panel](admin/README.md).
 
 ## Verificación

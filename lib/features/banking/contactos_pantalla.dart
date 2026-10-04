@@ -76,7 +76,7 @@ class _ContactosEstado extends EstadoBanco<ContactosPantalla> {
                 campo(banco, 'Banco'),
                 campo(documento, 'Identificación del titular'),
                 const Text(
-                  'Datos externos declarados; no se verifican contra un banco real.',
+                  'Revisa los datos del destinatario antes de guardarlos.',
                   style: TextStyle(fontSize: 11),
                 ),
               ],

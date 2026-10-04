@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/proveedores.dart';
 import '../../core/diseno_bro.dart';
+import '../../core/componentes.dart';
 import '../../core/errores.dart';
 import 'banca.dart';
 import 'componentes_banca.dart';
@@ -69,9 +70,7 @@ class TarjetaVisualBro extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        tarjeta['banco'] == 'FinanceBro'
-                            ? 'fb.'
-                            : tarjeta['banco'] as String? ?? 'Banco',
+                        tarjeta['banco'] == 'FinanceBro' ? 'fb.' : 'Otro banco',
                         maxLines: 2,
                         style: const TextStyle(
                           fontSize: 24,
@@ -109,7 +108,9 @@ class TarjetaVisualBro extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   tarjeta['tipo'] == 'propia'
-                      ? 'DÉBITO · FINANCEBRO'
+                      ? tarjeta['clase'] == 'credito'
+                            ? 'CRÉDITO · FINANCEBRO'
+                            : 'DÉBITO · FINANCEBRO'
                       : 'TARJETA ASOCIADA',
                   style: TextStyle(fontSize: 8, letterSpacing: 1.2),
                 ),
@@ -169,6 +170,10 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
   }
 
   void abrirTarjeta(Map<String, dynamic> t) {
+    if (t['clase'] == 'credito') {
+      context.push('/tarjetas/credito/detalle');
+      return;
+    }
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -270,7 +275,7 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
             children: [
               Text(
                 tipo == 'propia'
-                    ? 'Personaliza tu tarjeta de débito'
+                    ? 'Personaliza tu tarjeta FinanceBro'
                     : 'Asocia una tarjeta de otro banco',
               ),
               campo(nombre, 'Nombre de tu tarjeta'),
@@ -343,6 +348,22 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
                         titular:
                             ref.watch(sesionProvider).value?.nombre ?? 'Bro',
                       ),
+                      if (t['clase'] == 'credito')
+                        Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: Text(
+                            'Cupo disponible ${dinero(((t['cupoCentavos'] as num) - (t['deudaCentavos'] as num)).toInt())}',
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      if (t['tipo'] == 'externa')
+                        const Padding(
+                          padding: EdgeInsets.only(top: 10),
+                          child: Text(
+                            'Tarjeta de otro banco · consulta aquí tus pagos',
+                            style: TextStyle(fontSize: 11),
+                          ),
+                        ),
                       Wrap(
                         alignment: WrapAlignment.center,
                         spacing: 8,
@@ -361,7 +382,9 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
                           TextButton(
                             onPressed: () => context.push(
                               t['tipo'] == 'propia'
-                                  ? '/cuentas/${t['cuenta']}'
+                                  ? t['clase'] == 'credito'
+                                        ? '/tarjetas/credito/detalle'
+                                        : '/cuentas/${t['cuenta']}'
                                   : '/historial?tipo=tarjeta&id=${t['id']}',
                             ),
                             child: const Text('Movimientos'),

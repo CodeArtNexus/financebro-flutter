@@ -6,5 +6,13 @@ void main() {
     expect(destinoPush({'ruta': '/cuentas'}), '/cuentas');
     expect(destinoPush({'ruta': 'https://externo.test'}), '/notificaciones');
     expect(destinoPush({}), '/notificaciones');
+    expect(
+      destinoPush({'ruta': '/tarjetas/credito/detalle'}),
+      '/tarjetas/credito/detalle',
+    );
+    expect(
+      destinoPush({'ruta': '/tarjetas/credito/detalle/../../admin'}),
+      '/notificaciones',
+    );
   });
 }

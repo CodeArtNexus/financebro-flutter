@@ -13,7 +13,7 @@ String nuevaReferencia() => List.generate(
   16,
   (_) => Random.secure().nextInt(256).toRadixString(16).padLeft(2, '0'),
 ).join();
-int montoCentavos(String texto, {int maximo = 10000}) {
+int montoCentavos(String texto, {int minimo = 10, int maximo = 10000}) {
   final valor = texto.trim().replaceAll(',', '.');
   if (!RegExp(r'^\d{1,6}(\.\d{1,2})?$').hasMatch(valor)) {
     throw const FalloApp('Usa un monto con hasta dos decimales.');
@@ -22,9 +22,9 @@ int montoCentavos(String texto, {int maximo = 10000}) {
   final centavos =
       int.parse(partes[0]) * 100 +
       int.parse(partes.length == 2 ? partes[1].padRight(2, '0') : '0');
-  if (centavos < 10 || centavos > maximo) {
+  if (centavos < minimo || centavos > maximo) {
     throw FalloApp(
-      'El monto debe estar entre USD 0,10 y USD ${(maximo / 100).toStringAsFixed(2)}.',
+      'El monto debe estar entre USD ${(minimo / 100).toStringAsFixed(2)} y USD ${(maximo / 100).toStringAsFixed(2)}.',
     );
   }
   return centavos;

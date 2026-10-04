@@ -17,6 +17,7 @@ class MainActivity : FlutterFragmentActivity() {
                 when (call.method) {
                     "limpiarAvisos" -> { gestor.cancelAll(); result.success(null) }
                     "segundoPlano" -> result.success(moveTaskToBack(true))
+                    "titulosAvisos" -> result.success(gestor.activeNotifications.map { it.notification.extras.getCharSequence("android.title")?.toString() ?: "" })
                     "cantidadAvisos" -> result.success(gestor.activeNotifications.size)
                     "estaVisible" -> result.success(hasWindowFocus())
                     else -> result.notImplemented()

@@ -6,6 +6,7 @@ import '../features/banking/contactos_pantalla.dart';
 import '../features/banking/pagos_pantalla.dart';
 import '../features/banking/tarjetas_pantalla.dart';
 import '../features/banking/solicitudes_tarjetas.dart';
+import '../features/banking/credito_pantalla.dart';
 import '../features/banking/historial_pantalla.dart';
 import '../features/exchange/divisas_pantalla.dart';
 import '../features/payments/qr_pantalla.dart';
@@ -89,6 +90,10 @@ final rutasProvider = Provider<GoRouter>((ref) {
         builder: (_, _) => const AperturaCorrientePantalla(),
       ),
       GoRoute(path: '/contactos', builder: (_, _) => const ContactosPantalla()),
+      GoRoute(
+        path: '/tarjetas/credito/detalle',
+        builder: (_, _) => const CreditoDetallePantalla(),
+      ),
       GoRoute(path: '/tarjetas', builder: (_, _) => const TarjetasPantalla()),
       GoRoute(
         path: '/tarjetas/credito',

@@ -27,6 +27,14 @@ void main() {
       expect(() => montoCentavos(v), throwsException);
     }
   });
+  test(
+    'Un saldo de tarjeta menor a diez centavos se puede cancelar por completo',
+    () {
+      expect(montoCentavos('0.05', minimo: 1, maximo: 5000000), 5);
+      expect(() => montoCentavos('0.00', minimo: 1), throwsException);
+      expect(() => montoCentavos('0.05'), throwsException);
+    },
+  );
   test('Una notificación abre rutas propias y no acepta enlaces o recorrido de archivos', () {
     expect(destinoPush({'ruta': '/cuentas/ahorros'}), '/cuentas/ahorros');
     expect(destinoPush({'destino': '/pagos'}), '/pagos');

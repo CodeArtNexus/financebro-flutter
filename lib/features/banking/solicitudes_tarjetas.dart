@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/diseno_bro.dart';
+import '../../core/componentes.dart';
 import '../../app/proveedores.dart';
 import 'componentes_banca.dart';
 import 'banca.dart';
@@ -18,6 +20,7 @@ String fechaEnvio(DateTime fecha) =>
     '${fecha.year}-${fecha.month.toString().padLeft(2, '0')}-${fecha.day.toString().padLeft(2, '0')}';
 const estadosTarjeta = {
   'revision': 'En revisión por un asesor',
+  'aprobada': 'Tu tarjeta de crédito está aprobada',
   'preaprobada': 'Preaprobada · un asesor completará la evaluación',
   'rechazada': 'Solicitud no aprobada',
   'revision_diseno': 'Tu diseño está en revisión',
@@ -58,7 +61,7 @@ class _CreditoEstado extends EstadoBanco<CreditoSolicitudPantalla> {
     final solicitud = ref.watch(solicitudTarjetaProvider('credito')).value;
     final pendiente =
         solicitud != null &&
-        ['revision', 'preaprobada'].contains(solicitud['estado']);
+        ['revision', 'preaprobada', 'aprobada'].contains(solicitud['estado']);
     return pagina('Tarjeta de crédito', [
       const EncabezadoBro(
         'Un siguiente paso contigo',
@@ -73,6 +76,16 @@ class _CreditoEstado extends EstadoBanco<CreditoSolicitudPantalla> {
                 estadosTarjeta[solicitud['estado']] ?? 'Solicitud recibida',
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
+              if (solicitud['estado'] == 'aprobada') ...[
+                Text(
+                  'Cupo aprobado: ${dinero((solicitud['cupoCentavos'] as num).toInt())}',
+                ),
+                const SizedBox(height: 12),
+                FilledButton(
+                  onPressed: () => context.push('/tarjetas/credito/detalle'),
+                  child: const Text('Ver tarjeta y elegir mi corte'),
+                ),
+              ],
               if (solicitud['nota'] != null) Text(solicitud['nota'] as String),
             ],
           ),
@@ -101,7 +114,7 @@ class _CreditoEstado extends EstadoBanco<CreditoSolicitudPantalla> {
           onPressed: ocupado || !acepta
               ? null
               : () => trabajar(() async {
-                  await llamar('solicitarCredito', {
+                  await llamar('solicitarTarjetaCredito', {
                     'ingresosCentavos': montoCentavos(
                       ingresos.text,
                       maximo: 100000000,

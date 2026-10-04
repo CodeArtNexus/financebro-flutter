@@ -1,3 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../../core/red_banco.dart';
+import '../banking/pendientes_pantalla.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -30,7 +35,7 @@ class _QrEstado extends EstadoBanco<QrPantalla> {
   String? cuenta, recibirCuenta;
   String referencia = nuevaReferencia();
   Map<String, dynamic>? receptor, recibo;
-  bool recibir = false;
+  bool recibir = false, pendiente = false;
   @override
   void initState() {
     super.initState();
@@ -66,6 +71,37 @@ class _QrEstado extends EstadoBanco<QrPantalla> {
   }
 
   Future<void> buscar(String numero) => trabajar(() async {
+    if (!ref.read(redBancoProvider).conectado) {
+      final uid = ref.read(identidadProvider).actual?.uid;
+      if (uid == null) {
+        throw const FalloApp(
+          'Desbloquea tu sesión guardada para preparar una transferencia.',
+        );
+      }
+      final contactos = await ref
+          .read(datosProvider)
+          .collection('usuarios/$uid/contactos')
+          .get(const GetOptions(source: Source.cache));
+      final c = contactos.docs
+          .where(
+            (c) =>
+                c.data()['tipo'] == 'interno' && c.data()['numero'] == numero,
+          )
+          .firstOrNull;
+      if (c == null) {
+        throw const FalloApp(
+          'Sin conexión puedes preparar envíos a contactos FinanceBro que ya verificaste. Conéctate para validar una cuenta nueva.',
+        );
+      }
+      setState(
+        () => receptor = {
+          'numero': numero,
+          'titular': c.data()['nombre'],
+          'guardado': true,
+        },
+      );
+      return;
+    }
     final r = await llamar('destinatario', {'numero': numero});
     if (mounted) setState(() => receptor = r);
   });
@@ -78,8 +114,7 @@ class _QrEstado extends EstadoBanco<QrPantalla> {
       if (mounted) context.go('/ingresar');
       return;
     }
-    final r = await llamar('destinatario', {'numero': numero});
-    if (mounted) setState(() => receptor = r);
+    WidgetsBinding.instance.addPostFrameCallback((_) => buscar(numero));
   });
   Future<void> escanear() async {
     final r = await Navigator.of(context)
@@ -89,12 +124,17 @@ class _QrEstado extends EstadoBanco<QrPantalla> {
 
   Future<void> transferir() => trabajar(() async {
     final centavos = montoCentavos(monto.text);
+    final sinConexion = !ref.read(redBancoProvider).conectado;
     final confirmado = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Revisa tu transferencia'),
+        title: Text(
+          sinConexion
+              ? 'Autoriza el envío pendiente'
+              : 'Revisa tu transferencia',
+        ),
         content: Text(
-          'Enviar USD ${(centavos / 100).toStringAsFixed(2)} a ${receptor!['titular']}\nCuenta ${receptor!['numero']}',
+          'Enviar USD ${(centavos / 100).toStringAsFixed(2)} a ${receptor!['titular']}\nCuenta ${receptor!['numero']}${sinConexion ? '\nSe validará al reconectar y caduca en 24 horas. El dinero aún no se descontará.' : ''}',
         ),
         actions: [
           TextButton(
@@ -109,7 +149,7 @@ class _QrEstado extends EstadoBanco<QrPantalla> {
       ),
     );
     if (confirmado != true) return;
-    final r = await llamar('transferir', {
+    final datos = <String, dynamic>{
       'cuenta': cuenta,
       'numero': receptor!['numero'],
       'centavos': centavos,
@@ -117,7 +157,15 @@ class _QrEstado extends EstadoBanco<QrPantalla> {
           ? 'Transferencia FinanceBro'
           : nota.text.trim(),
       'referencia': referencia,
-    });
+    };
+    if (sinConexion) {
+      await ref
+          .read(colaTransferenciasProvider)
+          .agregar(datos, receptor!['titular'] as String);
+      if (mounted) setState(() => pendiente = true);
+      return;
+    }
+    final r = await llamar('transferir', datos);
     if (mounted) setState(() => recibo = r);
   });
   @override
@@ -144,7 +192,33 @@ class _QrEstado extends EstadoBanco<QrPantalla> {
             : (v) => setState(() => recibir = v.first),
       ),
     const SizedBox(height: 20),
-    if (recibo != null && !recibir)
+    if (!widget.accesoRapido)
+      OutlinedButton.icon(
+        onPressed: () => context.push('/pendientes'),
+        icon: const Icon(Icons.schedule_send_outlined),
+        label: const Text('Mis transferencias pendientes'),
+      ),
+    if (pendiente && !recibir)
+      CristalBro(
+        child: Column(
+          children: [
+            const Icon(Icons.schedule_send, size: 56),
+            const Text(
+              'Transferencia preparada',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
+            ),
+            const Text(
+              'Aún no descontamos dinero. Al reconectar validaremos la cuenta, los fondos y el monto.',
+            ),
+            FilledButton.icon(
+              onPressed: () => context.push('/pendientes'),
+              icon: const Icon(Icons.list_alt),
+              label: const Text('Ver estado del envío'),
+            ),
+          ],
+        ),
+      )
+    else if (recibo != null && !recibir)
       ReciboBro(
         recibo!,
         otra: () => setState(() {
@@ -172,10 +246,8 @@ class _QrEstado extends EstadoBanco<QrPantalla> {
                 return CristalBro(
                   child: Column(
                     children: [
-                      const Text('Necesitas una cuenta para recibir.'),
-                      TextButton(
-                        onPressed: () => context.push('/apertura/ahorros'),
-                        child: const Text('Abrir cuenta'),
+                      const Text(
+                        'Conéctate para consultar tu cuenta y recibir.',
                       ),
                     ],
                   ),
@@ -279,8 +351,10 @@ class _QrEstado extends EstadoBanco<QrPantalla> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'Titular verificado',
+              Text(
+                receptor!['guardado'] == true
+                    ? 'Contacto guardado · pendiente de validar'
+                    : 'Titular verificado',
                 style: TextStyle(fontSize: 11, color: Color(0xFF356B53)),
               ),
               Text(
@@ -307,7 +381,12 @@ class _QrEstado extends EstadoBanco<QrPantalla> {
               FilledButton(
                 key: const Key('confirmar-pago'),
                 onPressed: ocupado || cuenta == null ? null : transferir,
-                child: const Text('Revisar transferencia'),
+                child: Text(
+                  ref.watch(conexionBancoProvider).value ==
+                          EstadoConexion.conectado
+                      ? 'Revisar transferencia'
+                      : 'Preparar para enviar al reconectar',
+                ),
               ),
             ],
           ),

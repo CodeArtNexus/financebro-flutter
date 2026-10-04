@@ -968,6 +968,7 @@ export class Banco {
           );
         return anterior.data().recibo;
       }
+      if(d.colaCreada!==undefined){const creada=new Date(d.colaCreada);if(typeof d.colaCreada!=="string"||!Number.isFinite(creada.getTime())||this.reloj().getTime()-creada.getTime()>86400000||creada.getTime()>this.reloj().getTime()+300000)falla("failed-precondition","La autorización pendiente venció. Revisa y crea una nueva transferencia.");}
       const entrada = await tx.get(this.db.doc(`directorioCuentas/${numero}`));
       if (!entrada.exists)
         falla("not-found", "No encontramos la cuenta de destino.");

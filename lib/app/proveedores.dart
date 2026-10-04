@@ -1,3 +1,5 @@
+import '../core/red_banco.dart';
+
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:local_auth/local_auth.dart';
 
@@ -71,6 +73,11 @@ final identidadProvider = Provider<RepositorioIdentidad>((ref) {
     ref.watch(preferenciasLocalesProvider),
     ref.watch(funcionesProvider),
     ref.watch(autenticarDispositivoProvider),
+    tieneConexion: () async {
+      final r = ref.read(redBancoProvider);
+      await r.revisar();
+      return r.conectado;
+    },
   );
   ref.onDispose(repositorio.dispose);
   return repositorio;

@@ -1,3 +1,5 @@
+import '../features/banking/pendientes_pantalla.dart';
+
 import 'package:flutter/material.dart';
 
 import 'dart:async';
@@ -46,6 +48,9 @@ class FinanceBroApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(avisosSesionProvider);
+    if (ref.watch(sesionProvider).value != null) {
+      ref.watch(colaTransferenciasProvider);
+    }
     return MaterialApp.router(
       scaffoldMessengerKey: mensajero,
       title: 'FinanceBro',

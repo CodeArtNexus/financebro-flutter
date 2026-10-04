@@ -1,3 +1,5 @@
+import 'package:financebro/core/red_banco.dart';
+
 import 'dart:convert';
 
 import 'package:financebro/app/financebro_app.dart';
@@ -43,6 +45,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          conexionBancoProvider.overrideWith(
+            (ref) => Stream.value(EstadoConexion.conectado),
+          ),
           identidadProvider.overrideWithValue(identidad),
           preferenciasLocalesProvider.overrideWithValue(preferencias),
         ],

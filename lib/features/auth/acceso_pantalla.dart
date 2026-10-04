@@ -1,3 +1,5 @@
+import '../../core/red_banco.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -43,6 +45,10 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
 
   Future<void> _enviar() async {
     if (!_formulario.currentState!.validate()) return;
+    if (ref.read(conexionBancoProvider).value != EstadoConexion.conectado) {
+      context.push("/conexion");
+      return;
+    }
     if (widget.registro && _paso == 0) {
       setState(() => _paso = 1);
       return;
@@ -164,6 +170,13 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      if (ref.watch(conexionBancoProvider).value !=
+                          EstadoConexion.conectado)
+                        OutlinedButton.icon(
+                          onPressed: () => context.push("/conexion"),
+                          icon: const Icon(Icons.wifi_off),
+                          label: const Text("Revisar conexión"),
+                        ),
                       Text(
                         widget.registro
                             ? (_paso == 0
@@ -181,7 +194,10 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
                             ? (_paso == 0
                                   ? 'Crea tu cuenta de ahorros y recibe tu tarjeta de débito digital.'
                                   : 'Confirma tu domicilio y revisa el contrato antes de abrir tu cuenta.')
-                            : 'Aquí tienes a tu financebro de confianza. Vamos a tus planes.',
+                            : (ref.watch(conexionBancoProvider).value ==
+                                      EstadoConexion.sinConexion
+                                  ? 'Tus datos guardados siguen contigo. Conéctate para ingresar o desbloquea tu sesión anterior.'
+                                  : 'Aquí tienes a tu financebro de confianza. Vamos a tus planes.'),
                       ),
                       const SizedBox(height: 28),
                       if (!widget.registro || _paso == 0) ...[

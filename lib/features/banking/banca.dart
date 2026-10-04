@@ -1,3 +1,5 @@
+import '../../core/red_banco.dart';
+
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -60,11 +62,17 @@ final bancaProvider = Provider<Banca>((ref) {
   if (usarEmuladores) {
     storage.useStorageEmulator(servidorEmuladores, puertoStorage);
   }
-  return Banca(functions, ref.watch(datosProvider), storage);
+  return Banca(
+    functions,
+    ref.watch(datosProvider),
+    storage,
+    hayConexion: () => ref.read(redBancoProvider).conectado,
+  );
 });
 
 class Banca {
-  Banca(this.functions, this.db, this.storage);
+  Banca(this.functions, this.db, this.storage, {this.hayConexion});
+  final bool Function()? hayConexion;
   final FirebaseFunctions functions;
   final FirebaseFirestore db;
   final FirebaseStorage storage;
@@ -72,15 +80,26 @@ class Banca {
     String operacion, [
     Map<String, dynamic> datos = const {},
   ]) async {
+    if (hayConexion?.call() == false) {
+      throw const FalloApp(
+        "Necesitamos conexión para confirmar esta operación.",
+        transitorio: true,
+      );
+    }
     try {
       return await llamarBanca(functions, operacion, datos);
     } on ErrorFuncionBanca catch (e) {
       throw FalloApp(
         e.codigo == 'unavailable' ||
+                e.codigo == 'deadline-exceeded' ||
                 e.codigo == 'not-found' && operacion == 'abrirAhorros'
             ? 'No pudimos conectar con el servicio. Revisa tu conexión y vuelve a intentar.'
             : e.mensaje,
-        transitorio: e.codigo == 'unavailable',
+        transitorio: [
+          'unavailable',
+          'deadline-exceeded',
+          'internal',
+        ].contains(e.codigo),
       );
     }
   }

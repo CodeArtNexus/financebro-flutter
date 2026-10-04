@@ -46,7 +46,7 @@ Future<Widget> prepararAplicacion({
     await FirebaseAuth.instanceFor(app: app)
         .useAuthEmulator(servidorEmuladores, puertoAuth);
     final datos = FirebaseFirestore.instanceFor(app: app);
-    datos.settings = const Settings(persistenceEnabled: false);
+    datos.settings = const Settings(persistenceEnabled: true);
     datos.useFirestoreEmulator(servidorEmuladores, puertoFirestore);
   } else {
     FirebaseMessaging.onBackgroundMessage(recibirEnSegundoPlano);

@@ -21,8 +21,19 @@ class FirebaseIdentidad implements RepositorioIdentidad {
     this.datos,
     this.preferencias,
     this.functions,
-    this.autenticarDispositivo,
-  );
+    this.autenticarDispositivo, {
+    this.tieneConexion,
+  });
+  final Future<bool> Function()? tieneConexion;
+  Future<void> exigirConexion() async {
+    if (tieneConexion != null && !await tieneConexion!()) {
+      throw const FalloApp(
+        "Necesitamos conexión para ingresar o abrir una cuenta.",
+        transitorio: true,
+      );
+    }
+  }
+
   final FirebaseFunctions functions;
   final Future<bool> Function() autenticarDispositivo;
   bool _requiereRegistro = false;
@@ -53,6 +64,23 @@ class FirebaseIdentidad implements RepositorioIdentidad {
       throw const FalloApp(
         'No se completó el desbloqueo. Puedes ingresar con tu contraseña.',
       );
+    }
+    if (tieneConexion != null && !await tieneConexion!()) {
+      final cuentas = await datos
+          .collection('usuarios/${usuario.uid}/cuentas')
+          .limit(1)
+          .get(const GetOptions(source: Source.cache));
+      if (cuentas.docs.isEmpty) {
+        throw const FalloApp(
+          'Conéctate una vez para guardar tu cuenta en este dispositivo.',
+        );
+      }
+      final recuerdo = RecuerdoAcceso.leer(preferencias);
+      if (recuerdo?.uid == usuario.uid) _nombreSesion = recuerdo!.nombre;
+      _requiereRegistro = false;
+      _desbloqueada = true;
+      _preparada.add(null);
+      return;
     }
     final token = await usuario
         .getIdToken(true)
@@ -130,6 +158,7 @@ class FirebaseIdentidad implements RepositorioIdentidad {
 
   @override
   Future<void> ingresar(String correo, String clave) async {
+    await exigirConexion();
     await _completar(
       () => auth.signInWithEmailAndPassword(
         email: correo.trim(),
@@ -140,6 +169,7 @@ class FirebaseIdentidad implements RepositorioIdentidad {
 
   @override
   Future<void> registrar(DatosRegistro registro) async {
+    await exigirConexion();
     _preparando = true;
     _desbloqueada = false;
     try {

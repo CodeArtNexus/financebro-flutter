@@ -1,3 +1,5 @@
+import '../core/conexion_pantalla.dart';
+import '../features/banking/pendientes_pantalla.dart';
 import '../features/banking/chequera_pantallas.dart';
 
 import 'dart:ui';
@@ -60,6 +62,7 @@ final rutasProvider = Provider<GoRouter>((ref) {
     refreshListenable: actualizar,
     redirect: (context, state) {
       final acceso = [
+        '/conexion',
         '/bienvenida',
         '/ingresar',
         '/registrar',
@@ -77,6 +80,7 @@ final rutasProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      pantalla('/conexion', (_) => const ConexionPantalla()),
       pantalla('/bienvenida', (_) => const BienvenidaPantalla()),
       pantalla('/ingresar', (_) => const AccesoPantalla()),
       pantalla('/registrar', (_) => const AccesoPantalla(registro: true)),
@@ -85,6 +89,7 @@ final rutasProvider = Provider<GoRouter>((ref) {
         builder: (context, state, child) =>
             NavegacionPantalla(state.uri.path, child),
         routes: [
+          pantalla('/pendientes', (_) => const PendientesPantalla()),
           pantalla('/inicio', (_) => const InicioPantalla()),
           pantalla('/cuentas', (_) => const CuentasPantalla()),
           pantalla(
@@ -195,7 +200,12 @@ class NavegacionPantalla extends StatelessWidget {
         padding: EdgeInsets.only(
           bottom: 84 + MediaQuery.paddingOf(context).bottom,
         ),
-        child: child,
+        child: Column(
+          children: [
+            const AvisoConexion(),
+            Expanded(child: child),
+          ],
+        ),
       ),
       bottomNavigationBar: ClipRRect(
         borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),

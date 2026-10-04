@@ -1,3 +1,4 @@
+import 'package:financebro/core/red_banco.dart';
 import 'package:financebro/features/banking/banca.dart';
 import 'package:financebro/core/apariencia.dart';
 import 'package:financebro/app/financebro_app.dart';
@@ -39,7 +40,14 @@ void main() {
               .copyWith(textScaler: const TextScaler.linear(1.6)),
           child: child!,
         ),
-        home: const NavegacionPantalla('/qr', SizedBox()),
+        home: ProviderScope(
+          overrides: [
+            conexionBancoProvider.overrideWith(
+              (ref) => Stream.value(EstadoConexion.conectado),
+            ),
+          ],
+          child: const NavegacionPantalla('/qr', SizedBox()),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -56,6 +64,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          conexionBancoProvider.overrideWith(
+            (ref) => Stream.value(EstadoConexion.conectado),
+          ),
           decoracionProvider.overrideWith((ref) => Stream.value({})),
           tarjetasBroProvider.overrideWith((ref) => Stream.value([])),
           identidadProvider.overrideWithValue(identidad),
@@ -95,6 +106,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          conexionBancoProvider.overrideWith(
+            (ref) => Stream.value(EstadoConexion.conectado),
+          ),
           decoracionProvider.overrideWith((ref) => Stream.value({})),
           cuentasProvider.overrideWith((ref) => const Stream.empty()),
         ],
@@ -112,6 +126,9 @@ void main() {
         ProviderScope(
           retry: (int intento, Object error) => null,
           overrides: [
+            conexionBancoProvider.overrideWith(
+              (ref) => Stream.value(EstadoConexion.conectado),
+            ),
             decoracionProvider.overrideWith((ref) => Stream.value({})),
             cuentasProvider.overrideWith(
               (ref) => ++intentos == 1
@@ -146,6 +163,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          conexionBancoProvider.overrideWith(
+            (ref) => Stream.value(EstadoConexion.conectado),
+          ),
           decoracionProvider.overrideWith((ref) => Stream.value({})),
           tarjetasBroProvider.overrideWith((ref) => Stream.value([])),
           identidadProvider.overrideWithValue(identidad),
@@ -173,6 +193,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          conexionBancoProvider.overrideWith(
+            (ref) => Stream.value(EstadoConexion.conectado),
+          ),
           decoracionProvider.overrideWith((ref) => Stream.value({})),
           tarjetasBroProvider.overrideWith((ref) => Stream.value([])),
           identidadProvider.overrideWithValue(identidad),

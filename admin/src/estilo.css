@@ -595,3 +595,10 @@ dialog::backdrop {
   background: #323749;
   color: white;
 }
+
+/* Importes de tarjeta legibles en escritorio y en paneles estrechos. */
+.solicitud .metricas { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.solicitud .metrica { padding: 18px; }
+.solicitud .metrica strong { font-size: clamp(18px, 2vw, 27px); }
+@media (max-width: 900px) { .solicitud .metricas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 420px) { .solicitud .metricas { grid-template-columns: 1fr; } }

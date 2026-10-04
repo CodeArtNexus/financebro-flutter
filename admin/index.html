@@ -71,6 +71,7 @@
           ><button data-vista="movimientos">Actividad global</button
           ><button data-vista="qr">QR de cuentas</button
           ><button data-vista="solicitudes">Solicitudes</button
+          ><button data-vista="tarjetas">Tarjetas de crédito</button
           ><button data-vista="servicios">Servicios y pagos mensuales</button>
         </nav>
         <section id="vista-cuentas">
@@ -112,7 +113,8 @@
                     required /></label
                 ><button class="primario" type="submit">Revisar ajuste</button>
                 <p class="nota">
-                  Cada ajuste guarda su motivo, histórico y aviso para el titular.
+                  Cada ajuste guarda su motivo, histórico y aviso para el
+                  titular.
                 </p>
               </form>
               <button id="asignar" class="secundario">
@@ -193,8 +195,25 @@
               o aprueba la cuenta temporal. La activación requiere comprobar el
               depósito inicial.
             </p>
+            <label
+              >Buscar solicitud por persona o identificador<input
+                id="buscar-solicitud"
+                type="search"
+                placeholder="Por ejemplo, Sebastián"
+            /></label>
             <div id="solicitudes-lista"></div>
           </div>
+        </section>
+        <section id="vista-tarjetas" class="oculto cristal">
+          <h2>Tarjetas de crédito FinanceBro</h2>
+          <p>
+            Consulta cupos, consumos y pagos. Cada operación mantiene el
+            histórico y avisa al titular.
+          </p>
+          <button id="procesar-cortes" class="secundario">
+            Actualizar cortes vencidos
+          </button>
+          <div id="tarjetas-credito-lista"></div>
         </section>
         <section id="vista-servicios" class="oculto">
           <div class="rejilla">

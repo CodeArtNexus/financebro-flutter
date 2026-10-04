@@ -26,7 +26,8 @@ export function iniciarBanca({
     storage = getStorage(app);
   let suscripciones = [],
     solicitudes = [],
-    servicios = [];
+    servicios = [],
+    tarjetasCredito = [];
   if (local)
     connectStorageEmulator(
       storage,
@@ -48,6 +49,7 @@ export function iniciarBanca({
     const estados = {
       revision: "En revisión",
       preaprobada: "Preaprobada",
+      aprobada: "Tarjeta aprobada",
       rechazada: "No aprobada",
       revision_diseno: "Diseño en revisión",
       preparacion: "En preparación",
@@ -61,7 +63,7 @@ export function iniciarBanca({
     const accion = (s, valor, nombre) =>
       `<button class="${valor === "rechazar" ? "secundario" : "primario"}" data-tarjeta-revision="${valor}" data-id="${escapar(s.id)}" data-uid="${escapar(s.uid)}">${nombre}</button>`;
     const tarjeta = (s) =>
-      `<article class="solicitud"><div class="cabecera"><div><h2>${s.tipo === "credito" ? "Solicitud de crédito" : "Tarjeta física"} · ${escapar(s.nombre)}</h2><p>${escapar(estados[s.estado] ?? s.estado)}</p></div></div>${s.tipo === "credito" ? `<p>${escapar(s.ocupacion)} · Ingresos mensuales ${dinero(s.ingresosCentavos)}</p><p>Preaprobar registra la evaluación inicial. La emisión y el cupo requieren completar las condiciones con el cliente.</p>` : `<div class="vista-tarjeta tono-${escapar(s.diseno.color)}"><strong>fb.</strong><p>${escapar(s.diseno.nombre)}</p><span>•••• ${escapar(s.diseno.ultimos4)}</span></div><p>${s.personalizada ? "Diseño personalizado · revisión en 3 días" : "Diseño predeterminado"}<br>Envío solicitado: ${escapar(s.fechaEnvio)}<br>${escapar(s.domicilio.direccion)} · ${escapar(s.domicilio.ciudad)}<br>Contacto: ${escapar(s.domicilio.telefono)}</p>`}${s.nota ? `<p>${escapar(s.nota)}</p>` : ""}<div class="acciones">${s.tipo === "credito" && s.estado === "revision" ? accion(s, "rechazar", "No aprobar") + accion(s, "preaprobar", "Preaprobar") : s.estado === "revision_diseno" ? accion(s, "rechazar", "No aprobar diseño") + accion(s, "aprobar_diseno", "Aprobar diseño") : s.estado === "preparacion" ? accion(s, "enviar", "Registrar envío") : s.estado === "enviada" ? accion(s, "entregar", "Registrar entrega") : ""}</div></article>`;
+      `<article class="solicitud"><div class="cabecera"><div><h2>${s.tipo === "credito" ? "Solicitud de tarjeta de crédito" : "Tarjeta física"} · ${escapar(s.nombre)}</h2><p>${escapar(estados[s.estado] ?? s.estado)}</p></div></div>${s.tipo === "credito" ? `<p>${escapar(s.ocupacion)} · Ingresos mensuales ${dinero(s.ingresosCentavos)}</p>${s.cupoCentavos ? `<p><strong>Cupo aprobado ${dinero(s.cupoCentavos)}</strong> · El titular elige su corte en la app.</p>` : `<p>Aprueba la tarjeta asignando un cupo. La app solicitará al titular elegir su corte mensual.</p>`}` : `<div class="vista-tarjeta tono-${escapar(s.diseno.color)}"><strong>fb.</strong><p>${escapar(s.diseno.nombre)}</p><span>•••• ${escapar(s.diseno.ultimos4)}</span></div><p>${s.personalizada ? "Diseño personalizado · revisión en 3 días" : "Diseño predeterminado"}<br>Envío solicitado: ${escapar(s.fechaEnvio)}<br>${escapar(s.domicilio.direccion)} · ${escapar(s.domicilio.ciudad)}<br>Contacto: ${escapar(s.domicilio.telefono)}</p>`}${s.nota ? `<p>${escapar(s.nota)}</p>` : ""}<div class="acciones">${s.tipo === "credito" && ["revision", "preaprobada"].includes(s.estado) ? accion(s, "rechazar", "No aprobar") + accion(s, "aprobar", "Aprobar tarjeta y cupo") : s.estado === "revision_diseno" ? accion(s, "rechazar", "No aprobar diseño") + accion(s, "aprobar_diseno", "Aprobar diseño") : s.estado === "preparacion" ? accion(s, "enviar", "Registrar envío") : s.estado === "enviada" ? accion(s, "entregar", "Registrar entrega") : ""}</div></article>`;
     const corporativa = (s) =>
       `<article class="solicitud"><div class="cabecera"><div><h2>${escapar(s.empresa)}</h2><p>${escapar(s.representante)} · RUC ${escapar(s.ruc)}<br>${escapar(estados[s.estado] ?? s.estado)} · ${s.depositoCentavos ? dinero(s.depositoCentavos) : s.escala === "pyme" ? "Depósito USD 1.000" : "Depósito USD 2.000"}</p></div></div><div class="documentos">${Object.entries(
         s.documentos ?? {},
@@ -73,8 +75,16 @@ export function iniciarBanca({
         .join(
           "",
         )}</div>${s.nota ? `<p>${escapar(s.nota)}</p>` : ""}<div class="acciones">${s.estado === "revision" ? `<button class="secundario" data-revision="corregir" data-uid="${escapar(s.uid)}">Solicitar correcciones</button><button class="primario" data-revision="aprobar" data-uid="${escapar(s.uid)}">Aprobar cuenta temporal</button>` : ""}${s.estado === "deposito" ? `<button class="primario" data-revision="activar" data-uid="${escapar(s.uid)}">Validar depósito y activar</button>` : ""}</div></article>`;
-    $("solicitudes-lista").innerHTML = solicitudes.length
-      ? solicitudes
+    const buscar = $("buscar-solicitud").value.trim().toLocaleLowerCase("es");
+    const visibles = solicitudes.filter((s) =>
+      [s.nombre, s.empresa, s.uid].some((v) =>
+        String(v ?? "")
+          .toLocaleLowerCase("es")
+          .includes(buscar),
+      ),
+    );
+    $("solicitudes-lista").innerHTML = visibles.length
+      ? visibles
           .map((s) =>
             ["credito", "fisica"].includes(s.tipo)
               ? tarjeta(s)
@@ -83,6 +93,7 @@ export function iniciarBanca({
           .join("")
       : '<p class="vacio">Las solicitudes enviadas aparecerán aquí.</p>';
   }
+  $("buscar-solicitud").addEventListener("input", renderSolicitudes);
   $("solicitudes-lista").addEventListener("click", async (e) => {
     const doc = e.target.closest("[data-documento]");
     if (doc) {
@@ -119,7 +130,8 @@ export function iniciarBanca({
     if (!boton) return;
     const dialog = document.createElement("dialog"),
       form = document.createElement("form");
-    form.innerHTML = `<h2>Revisar solicitud</h2><p>${boton.dataset.revision === "activar" ? "Se comprobará el depósito antes de habilitar la cuenta." : "La decisión quedará registrada con tu identidad de asesor."}</p><label>Observación<textarea name="nota" minlength="5" maxlength="160" required></textarea></label><div class="acciones"><button type="button" class="secundario">Volver</button><button class="primario" type="submit">Confirmar revisión</button></div>`;
+    const aprobacion = boton.dataset.tarjetaRevision === "aprobar";
+    form.innerHTML = `<h2>${aprobacion ? "Aprobar tarjeta de crédito" : "Revisar solicitud"}</h2><p>${boton.dataset.revision === "activar" ? "Se comprobará el depósito antes de habilitar la cuenta." : "La decisión quedará registrada con tu identidad de asesor."}</p>${aprobacion ? `<label>Cupo aprobado en USD<input name="cupo" type="number" min="1" max="50000" step="0.01" required placeholder="1500.00" /></label><p>La aprobación emite una tarjeta. El titular recibirá el cupo y elegirá su corte mensual para activarla.</p>` : ""}<label>Observación<textarea name="nota" minlength="5" maxlength="160" required></textarea></label><div class="acciones"><button type="button" class="secundario">Volver</button><button class="primario" type="submit">Confirmar revisión</button></div>`;
     dialog.append(form);
     document.body.append(dialog);
     form.querySelector("[type=button]").onclick = () => dialog.close();
@@ -134,6 +146,9 @@ export function iniciarBanca({
             uid: boton.dataset.uid,
             accion: boton.dataset.tarjetaRevision ?? boton.dataset.revision,
             nota: new FormData(form).get("nota"),
+            ...(aprobacion
+              ? { cupoCentavos: centavos(new FormData(form).get("cupo")) }
+              : {}),
           },
         );
         dialog.close();
@@ -188,8 +203,67 @@ export function iniciarBanca({
       e.target.disabled = false;
     }
   });
+  $("tarjetas-credito-lista").addEventListener("click", (e) => {
+    const boton = e.target.closest("[data-consumo]");
+    if (!boton) return;
+    const dialog = document.createElement("dialog"),
+      form = document.createElement("form"),
+      referencia = crypto.randomUUID();
+    form.innerHTML =
+      '<h2>Registrar consumo de tarjeta</h2><p>El consumo reduce el cupo disponible y conserva el comercio, la referencia y tu identidad en el histórico.</p><label>Comercio<input name="comercio" minlength="2" maxlength="80" required /></label><label>Importe en USD<input name="importe" type="number" min="0.10" max="50000" step="0.01" required /></label><div class="acciones"><button type="button" class="secundario">Volver</button><button class="primario" type="submit">Confirmar consumo</button></div>';
+    form.querySelector("[type=button]").onclick = () => dialog.close();
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      e.submitter.disabled = true;
+      try {
+        const d = new FormData(form);
+        await ejecutar("registrarConsumoTarjeta", {
+          uid: boton.dataset.consumo,
+          centavos: centavos(d.get("importe")),
+          comercio: d.get("comercio"),
+          referencia,
+        });
+        dialog.close();
+        avisar("Consumo registrado. El titular recibirá un aviso.");
+      } catch (error) {
+        avisar(fallo(error), true);
+      } finally {
+        e.submitter.disabled = false;
+      }
+    };
+    dialog.append(form);
+    document.body.append(dialog);
+    dialog.addEventListener("close", () => dialog.remove());
+    dialog.showModal();
+  });
+  $("procesar-cortes").onclick = async (e) => {
+    e.target.disabled = true;
+    try {
+      const r = await ejecutar("procesarCortesTarjetas");
+      avisar(
+        `${r.procesados} cortes procesados. Los estados de cuenta están actualizados.`,
+      );
+    } catch (error) {
+      avisar(fallo(error), true);
+    } finally {
+      e.target.disabled = false;
+    }
+  };
   return {
     escuchar() {
+      observar(collectionGroup(db, "tarjetas"), (items) => {
+        tarjetasCredito = items.filter(
+          (t) => t.clase === "credito" && t.tipo === "propia",
+        );
+        $("tarjetas-credito-lista").innerHTML =
+          tarjetasCredito
+            .map(
+              (t) =>
+                `<article class="solicitud"><div class="cabecera"><div><h2>${escapar(t.titular)} · •••• ${escapar(t.ultimos4)}</h2><p>${t.estado === "activa" ? `Corte día ${t.diaCorte} · próximo ${escapar(t.proximoCorte)}` : "Esperando elección del corte mensual"}</p></div><span class="estado">${dinero(t.cupoCentavos - t.deudaCentavos)} disponibles</span></div><div class="metricas"><div class="cristal metrica"><span>Cupo aprobado</span><strong>${dinero(t.cupoCentavos)}</strong></div><div class="cristal metrica"><span>Saldo pendiente</span><strong>${dinero(t.deudaCentavos)}</strong></div><div class="cristal metrica"><span>Total facturado pendiente</span><strong>${dinero(t.totalPagarCentavos)}</strong></div><div class="cristal metrica"><span>Mínimo pendiente</span><strong>${dinero(t.minimoPagarCentavos)}</strong></div></div>${t.pagoHasta ? `<p>Pago hasta ${escapar(t.pagoHasta)}</p>` : ""}<button class="secundario" data-consumo="${escapar(t.uid)}" ${t.estado !== "activa" ? "disabled" : ""}>Registrar consumo</button></article>`,
+            )
+            .join("") ||
+          '<p class="vacio">Las tarjetas aprobadas aparecerán aquí.</p>';
+      });
       observar(collectionGroup(db, "solicitudes"), (items) => {
         solicitudes = items.filter(
           (s) =>
@@ -232,6 +306,8 @@ export function iniciarBanca({
       $("solicitudes-lista").replaceChildren();
       $("servicios-lista").replaceChildren();
       $("autopagos-lista").replaceChildren();
+      $("tarjetas-credito-lista").replaceChildren();
+      tarjetasCredito = [];
     },
   };
 }

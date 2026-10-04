@@ -143,7 +143,7 @@ function fechas(fecha) {
 function tabla(items, global = false) {
   if (!items.length)
     return '<p class="vacio">Todavía no hay movimientos en esta vista.</p>';
-  return `<div class="tabla-scroll"><table><thead><tr>${global ? "<th>Persona / Cuenta</th>" : ""}<th>Movimiento</th><th>Fecha</th><th>Importe</th><th>Referencia</th></tr></thead><tbody>${items.map((m) => `<tr>${global ? `<td>${escapar(persona(m.uid))}<small>${escapar(cuentas.find((c) => c.uid === m.uid && c.id === m.cuenta)?.nombre ?? m.cuenta)}</small></td>` : ""}<td>${escapar(m.descripcion)}<small>${escapar(m.categoria)}${m.actor ? ` · ${escapar(m.actor)}` : ""}</small></td><td>${escapar(fechas(m.fecha))}</td><td class="importe ${m.centavos >= 0 ? "ingreso" : "gasto"}">${m.centavos > 0 ? "+" : ""}${escapar(dinero(m.centavos))}</td><td><small>${escapar(m.referencia ?? m.id)}</small></td></tr>`).join("")}</tbody></table></div>`;
+  return `<div class="tabla-scroll"><table><thead><tr>${global ? "<th>Persona / Cuenta</th>" : ""}<th>Movimiento</th><th>Fecha</th><th>Importe</th><th>Referencia</th></tr></thead><tbody>${items.map((m) => `<tr>${global ? `<td>${escapar(persona(m.uid))}<small>${escapar(cuentas.find((c) => c.uid === m.uid && c.id === m.cuenta)?.nombre ?? (m.cuenta === "tarjeta_bro_credito" ? "Tarjeta de crédito" : m.cuenta))}</small></td>` : ""}<td>${escapar(m.descripcion)}<small>${escapar(m.categoria)}${m.actor ? ` · ${escapar(m.actor)}` : ""}</small></td><td>${escapar(fechas(m.fecha))}</td><td class="importe ${m.centavos >= 0 ? "ingreso" : "gasto"}">${m.centavos > 0 ? "+" : ""}${escapar(dinero(m.centavos))}</td><td><small>${escapar(m.referencia ?? m.id)}</small></td></tr>`).join("")}</tbody></table></div>`;
 }
 function render() {
   $("metricas").innerHTML = [
@@ -335,7 +335,7 @@ document.querySelector(".pestanas").addEventListener("click", (e) => {
   for (const b of document.querySelectorAll("[data-vista]"))
     b.removeAttribute("aria-current");
   boton.setAttribute("aria-current", "page");
-  for (const id of ["cuentas", "movimientos", "qr", "solicitudes", "servicios"])
+  for (const id of ["cuentas", "movimientos", "qr", "solicitudes", "tarjetas", "servicios"])
     $(`vista-${id}`).classList.toggle("oculto", id !== boton.dataset.vista);
 });
 $("ajuste").addEventListener("submit", (e) => {

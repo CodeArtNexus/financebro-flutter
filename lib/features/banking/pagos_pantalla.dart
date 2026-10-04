@@ -110,7 +110,7 @@ class _PagosEstado extends EstadoBanco<PagosPantalla> {
         ),
     const SizedBox(height: 18),
     const Text(
-      'Planillas de demostración. El catálogo se actualiza desde el panel de administración.',
+      'Tus servicios en un solo lugar. Consulta tu planilla y elige cómo pagarla.',
       style: TextStyle(fontSize: 11),
     ),
   ]);
@@ -241,7 +241,8 @@ class _ServicioEstado extends EstadoBanco<ServicioPagoPantalla> {
     ] else ...[
       const EncabezadoBro(
         'Consulta lo que tienes pendiente',
-        subtitulo: 'El proveedor de prueba devuelve el valor del mes actual.',
+        subtitulo:
+            'Ingresa el contrato para consultar la planilla del mes actual.',
       ),
       CristalBro(
         child: Column(
@@ -297,7 +298,7 @@ class _ServicioEstado extends EstadoBanco<ServicioPagoPantalla> {
                 ],
                 const SizedBox(height: 12),
                 const Text(
-                  'Valor sintético. No consulta ni paga una planilla real.',
+                  'Revisa el contrato, el período y el importe antes de confirmar.',
                   style: TextStyle(fontSize: 11),
                 ),
               ],

@@ -80,7 +80,11 @@ class TarjetaVisualBro extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const Icon(Icons.contactless_outlined),
+                    Icon(
+                      tarjeta['tipo'] == 'propia'
+                          ? Icons.shield_outlined
+                          : Icons.credit_card,
+                    ),
                   ],
                 ),
                 SizedBox(height: compacta ? 16 : 24),
@@ -103,8 +107,10 @@ class TarjetaVisualBro extends StatelessWidget {
                   style: const TextStyle(fontSize: 10, letterSpacing: 1),
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  'TARJETA DE DEMOSTRACIÓN',
+                Text(
+                  tarjeta['tipo'] == 'propia'
+                      ? 'DÉBITO · FINANCEBRO'
+                      : 'TARJETA ASOCIADA',
                   style: TextStyle(fontSize: 8, letterSpacing: 1.2),
                 ),
               ],
@@ -126,7 +132,7 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
   final nombre = TextEditingController(),
       banco = TextEditingController(),
       ultimos = TextEditingController();
-  String tipo = 'propia', color = 'durazno';
+  String tipo = 'externa', color = 'durazno';
   String? cuenta, editar;
   bool formulario = false;
   @override
@@ -162,6 +168,75 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
     });
   }
 
+  void abrirTarjeta(Map<String, dynamic> t) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (c) => SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TarjetaVisualBro(
+                t,
+                titular:
+                    ref.read(identidadProvider).actual?.nombre ?? 'FinanceBro',
+              ),
+              const SizedBox(height: 20),
+              FilledButton.icon(
+                onPressed: () {
+                  Navigator.pop(c);
+                  context.push(
+                    t['tipo'] == 'propia'
+                        ? '/qr'
+                        : '/pagar-externo?tipo=tarjeta&id=${t['id']}',
+                  );
+                },
+                icon: Icon(
+                  t['tipo'] == 'propia'
+                      ? Icons.qr_code
+                      : Icons.payments_outlined,
+                ),
+                label: Text(
+                  t['tipo'] == 'propia' ? 'Transferir con QR' : 'Pagar tarjeta',
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(c);
+                  personalizar(t);
+                },
+                child: const Text('Personalizar diseño'),
+              ),
+              if (t['tipo'] == 'propia')
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(c);
+                    context.push('/tarjetas/fisica/${t['id']}');
+                  },
+                  child: const Text('Solicitar copia física'),
+                ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(c);
+                  context.push(
+                    t['tipo'] == 'propia'
+                        ? '/cuentas/${t['cuenta']}'
+                        : '/historial?tipo=tarjeta&id=${t['id']}',
+                  );
+                },
+                child: const Text('Ver movimientos'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) => pagina('Mis tarjetas', [
     const EncabezadoBro(
@@ -172,12 +247,19 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
       onPressed: () => setState(() {
         formulario = !formulario;
         editar = null;
+        tipo = 'externa';
+        color = 'durazno';
         nombre.clear();
         banco.clear();
         ultimos.clear();
       }),
       icon: const Icon(Icons.add_card),
       label: const Text('Asociar tarjeta'),
+    ),
+    TextButton.icon(
+      onPressed: () => context.push('/tarjetas/credito'),
+      icon: const Icon(Icons.auto_awesome_outlined),
+      label: const Text('Solicitar tarjeta de crédito'),
     ),
     if (formulario)
       Padding(
@@ -186,24 +268,13 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(value: 'propia', label: Text('FinanceBro')),
-                  ButtonSegment(value: 'externa', label: Text('Otro banco')),
-                ],
-                selected: {tipo},
-                onSelectionChanged: ocupado
-                    ? null
-                    : (v) => setState(() => tipo = v.first),
+              Text(
+                tipo == 'propia'
+                    ? 'Personaliza tu tarjeta de débito'
+                    : 'Asocia una tarjeta de otro banco',
               ),
               campo(nombre, 'Nombre de tu tarjeta'),
-              if (tipo == 'propia')
-                ElegirCuentaBro(
-                  valor: cuenta,
-                  cambiar: ocupado ? null : (v) => setState(() => cuenta = v),
-                  etiqueta: 'Vinculada a tu cuenta',
-                )
-              else ...[
+              if (tipo == 'externa') ...[
                 campo(banco, 'Banco emisor'),
                 campo(
                   ultimos,
@@ -212,7 +283,7 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
                   maximo: 4,
                 ),
                 const Text(
-                  'No ingreses el número completo ni el código de seguridad.',
+                  'Guarda solo los últimos cuatro dígitos. No ingreses claves ni códigos de seguridad.',
                   style: TextStyle(fontSize: 11),
                 ),
               ],
@@ -268,6 +339,7 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
                     children: [
                       TarjetaVisualBro(
                         t,
+                        onTap: () => abrirTarjeta(t),
                         titular:
                             ref.watch(sesionProvider).value?.nombre ?? 'Bro',
                       ),
@@ -296,47 +368,9 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
                           ),
                           if (t['tipo'] == 'propia')
                             TextButton(
-                              onPressed: () => showModalBottomSheet<void>(
-                                context: context,
-                                isScrollControlled: true,
-                                builder: (c) => SafeArea(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(24),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Text(
-                                          'Vista previa para Wallet',
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 20),
-                                        TarjetaVisualBro(
-                                          t,
-                                          titular:
-                                              ref
-                                                  .read(identidadProvider)
-                                                  .actual
-                                                  ?.nombre ??
-                                              'Bro',
-                                        ),
-                                        const SizedBox(height: 20),
-                                        const Text(
-                                          'Este diseño muestra cómo se vería tu tarjeta. Añadir una tarjeta de pago real a Apple Wallet o Google Wallet requiere una integración del banco emisor.',
-                                          style: TextStyle(fontSize: 12),
-                                        ),
-                                        TextButton(
-                                          onPressed: () => Navigator.pop(c),
-                                          child: const Text('Listo'),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              child: const Text('Vista Wallet'),
+                              onPressed: () =>
+                                  context.push('/tarjetas/fisica/${t['id']}'),
+                              child: const Text('Pedir tarjeta física'),
                             ),
                         ],
                       ),

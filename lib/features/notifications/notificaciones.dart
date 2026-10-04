@@ -5,6 +5,7 @@ String destinoPush(Map<String, dynamic> datos) {
   if (ruta is! String) return '/notificaciones';
   if (destinosPermitidos.contains(ruta) ||
       [
+        '/tarjetas',
         '/pagos',
         '/contactos',
         '/historial',

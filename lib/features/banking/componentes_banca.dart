@@ -141,11 +141,14 @@ class ReciboBro extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Icon(
-            Icons.check_circle_outline_rounded,
-            size: 64,
-            color: Color(0xFF356B53),
-          ),
+          if (recibo['tipo'] == 'transferencia')
+            const DineroViajandoBro()
+          else
+            const Icon(
+              Icons.check_circle_outline_rounded,
+              size: 64,
+              color: Color(0xFF356B53),
+            ),
           const SizedBox(height: 16),
           const Text(
             'Operación confirmada',
@@ -173,15 +176,6 @@ class ReciboBro extends StatelessWidget {
             Text('Planilla: ${recibo['periodo']} · ${recibo['contrato']}'),
           const SizedBox(height: 16),
           const Text('Guardado en tu histórico.', textAlign: TextAlign.center),
-          if (recibo['simulado'] == true)
-            const Padding(
-              padding: EdgeInsets.only(top: 12),
-              child: Text(
-                'Liquidación externa de demostración. No envía dinero a un banco o proveedor real.',
-                style: TextStyle(fontSize: 11),
-                textAlign: TextAlign.center,
-              ),
-            ),
           const SizedBox(height: 20),
           FilledButton(
             onPressed: () => context.push('/cuentas/${recibo['cuenta']}'),
@@ -194,6 +188,88 @@ class ReciboBro extends StatelessWidget {
               child: const Text('Hacer otra operación'),
             ),
         ],
+      ),
+    ),
+  );
+}
+
+class DineroViajandoBro extends StatefulWidget {
+  const DineroViajandoBro({super.key});
+  @override
+  State<DineroViajandoBro> createState() => _DineroViajandoEstado();
+}
+
+class _DineroViajandoEstado extends State<DineroViajandoBro>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController controlador = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 950),
+  );
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (MediaQuery.disableAnimationsOf(context)) {
+      controlador.value = 1;
+    } else if (!controlador.isAnimating && controlador.value == 0) {
+      controlador.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    controlador.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    label: 'Transferencia confirmada',
+    child: SizedBox(
+      height: 90,
+      child: AnimatedBuilder(
+        animation: controlador,
+        builder: (context, _) {
+          final t = Curves.easeInOutCubic.transform(controlador.value);
+          return LayoutBuilder(
+            builder: (context, c) => Stack(
+              alignment: Alignment.center,
+              children: [
+                const Positioned(
+                  left: 0,
+                  child: Icon(
+                    Icons.account_balance_wallet_outlined,
+                    size: 44,
+                    color: Color(0xFF686B79),
+                  ),
+                ),
+                const Positioned(
+                  right: 0,
+                  child: Icon(
+                    Icons.account_balance_outlined,
+                    size: 44,
+                    color: Color(0xFF356B53),
+                  ),
+                ),
+                Positioned(
+                  left: 30 + t * (c.maxWidth - 100),
+                  top: 24 - 18 * (1 - (2 * t - 1).abs()),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0xFFFFCEAE),
+                    ),
+                    child: Icon(
+                      t < 1 ? Icons.attach_money_rounded : Icons.check_rounded,
+                      color: const Color(0xFF356B53),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     ),
   );

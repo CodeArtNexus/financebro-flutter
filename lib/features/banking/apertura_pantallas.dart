@@ -2,128 +2,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../app/proveedores.dart';
 import '../../core/diseno_bro.dart';
 import '../../core/errores.dart';
 import 'banca.dart';
 import 'componentes_banca.dart';
-
-const terminosBro =
-    'FinanceBro es una demostración técnica. Los saldos y operaciones son sintéticos; no se abre una cuenta bancaria real ni se custodia dinero. Al continuar autorizas guardar los datos que ingreses para probar la apertura y consultar su histórico. Usa datos y documentos de prueba. Puedes omitir la apertura y conservar el acceso a la app. La cuenta de ahorros habilita transferencias y pagos en esta demostración.';
-
-class AperturaAhorrosPantalla extends ConsumerStatefulWidget {
-  const AperturaAhorrosPantalla({super.key});
-  @override
-  ConsumerState<AperturaAhorrosPantalla> createState() => _AhorrosEstado();
-}
-
-class _AhorrosEstado extends EstadoBanco<AperturaAhorrosPantalla> {
-  final nombre = TextEditingController(),
-      telefono = TextEditingController(),
-      documento = TextEditingController(),
-      nacimiento = TextEditingController();
-  bool acepta = false;
-  @override
-  void initState() {
-    super.initState();
-    nombre.text = ref.read(identidadProvider).actual?.nombre ?? '';
-  }
-
-  @override
-  void dispose() {
-    nombre.dispose();
-    telefono.dispose();
-    documento.dispose();
-    nacimiento.dispose();
-    super.dispose();
-  }
-
-  Future<void> abrir() => trabajar(() async {
-    await llamar('abrirAhorros', {
-      'nombre': nombre.text,
-      'telefono': telefono.text,
-      'documento': documento.text,
-      'nacimiento': nacimiento.text,
-      'aceptaTerminos': acepta,
-    });
-    await ref
-        .read(preferenciasLocalesProvider)
-        .remove('abrir_ahorros_pendiente');
-    if (mounted) context.go('/inicio');
-  });
-  @override
-  Widget build(BuildContext context) => pagina('Tu cuenta de ahorros', [
-    const EncabezadoBro(
-      'Un lugar para tus planes',
-      subtitulo: 'Apertura gratuita con datos de prueba.',
-    ),
-    CristalBro(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          campo(nombre, 'Nombre completo'),
-          campo(telefono, 'Teléfono', teclado: TextInputType.phone),
-          campo(documento, 'Identificación de prueba'),
-          campo(
-            nacimiento,
-            'Nacimiento · AAAA-MM-DD',
-            teclado: TextInputType.datetime,
-          ),
-          CheckboxListTile(
-            contentPadding: EdgeInsets.zero,
-            value: acepta,
-            onChanged: ocupado
-                ? null
-                : (v) => setState(() => acepta = v ?? false),
-            title: const Text(
-              'Acepto los términos y autorizo crear mi cuenta de ahorros',
-              style: TextStyle(fontSize: 12),
-            ),
-          ),
-          TextButton(
-            onPressed: () => showDialog<void>(
-              context: context,
-              builder: (c) => AlertDialog(
-                title: const Text('Términos de demostración'),
-                content: const SingleChildScrollView(child: Text(terminosBro)),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(c),
-                    child: const Text('Entendido'),
-                  ),
-                ],
-              ),
-            ),
-            child: const Text('Leer términos y condiciones'),
-          ),
-          FilledButton(
-            key: const Key('abrir-ahorros'),
-            onPressed: ocupado || !acepta ? null : abrir,
-            child: const Text('Crear cuenta de ahorros'),
-          ),
-        ],
-      ),
-    ),
-    TextButton(
-      onPressed: ocupado
-          ? null
-          : () async {
-              await ref
-                  .read(preferenciasLocalesProvider)
-                  .remove('abrir_ahorros_pendiente');
-              if (context.mounted) context.go('/inicio');
-            },
-      child: const Text('Continuar sin abrir una cuenta'),
-    ),
-    const Text(
-      'Sin una cuenta podrás explorar; transferencias y pagos requieren una cuenta activa.',
-      style: TextStyle(fontSize: 11),
-      textAlign: TextAlign.center,
-    ),
-  ]);
-}
 
 const documentosBro = {
   'constitucion': 'Escritura de constitución',
@@ -252,7 +136,7 @@ class _CorrienteEstado extends EstadoBanco<AperturaCorrientePantalla> {
                         'Cuenta temporal: ${solicitud!['numeroCuenta']}',
                       ),
                       Text(
-                        'Depósito inicial de demostración: USD ${((solicitud['depositoCentavos'] as num) / 100).toStringAsFixed(2)}',
+                        'Depósito inicial: USD ${((solicitud['depositoCentavos'] as num) / 100).toStringAsFixed(2)}',
                       ),
                       const Text(
                         'Puede recibir fondos. El asesor validará el depósito para habilitar transferencias y pagos.',
@@ -301,7 +185,7 @@ class _CorrienteEstado extends EstadoBanco<AperturaCorrientePantalla> {
                 if (solicitud != null) ...[
                   const EncabezadoBro(
                     'Documentos de tu empresa',
-                    subtitulo: 'Solo archivos de prueba · PDF, PNG o JPG · hasta 5 MB.',
+                    subtitulo: 'PDF, PNG o JPG · hasta 5 MB por documento.',
                   ),
                   for (final entrada in documentosBro.entries)
                     Padding(
@@ -344,7 +228,7 @@ class _CorrienteEstado extends EstadoBanco<AperturaCorrientePantalla> {
                         ? null
                         : (v) => setState(() => acepta = v ?? false),
                     title: const Text(
-                      'Autorizo la revisión de estos documentos de prueba y la apertura de la cuenta temporal.',
+                      'Autorizo la revisión de estos documentos y la apertura de la cuenta temporal.',
                       style: TextStyle(fontSize: 12),
                     ),
                   ),
@@ -360,7 +244,7 @@ class _CorrienteEstado extends EstadoBanco<AperturaCorrientePantalla> {
               ],
               const SizedBox(height: 16),
               const Text(
-                'Proceso de demostración: revisión → cuenta temporal → depósito inicial → validación del asesor → cuenta activa.',
+                'Tu proceso: revisión → cuenta temporal → depósito inicial → validación del asesor → cuenta activa.',
                 style: TextStyle(fontSize: 11),
               ),
             ],

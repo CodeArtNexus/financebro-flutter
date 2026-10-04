@@ -6,6 +6,7 @@ import '../../app/proveedores.dart';
 import '../../core/errores.dart';
 import '../../core/diseno_bro.dart';
 import 'identidad.dart';
+import 'registro.dart';
 
 class AccesoPantalla extends ConsumerStatefulWidget {
   const AccesoPantalla({super.key, this.registro = false});
@@ -21,18 +22,32 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
   final _nombre = TextEditingController();
   bool _cargando = false;
   bool _ocultar = true;
-  bool _abrirAhorros = false;
+  final _apellidos = TextEditingController(),
+      _cedula = TextEditingController(),
+      _direccion = TextEditingController(),
+      _ciudad = TextEditingController(),
+      _telefono = TextEditingController();
+  int _paso = 0;
+  bool _acepta = false;
   String? _error;
   @override
   void dispose() {
     _correo.dispose();
     _clave.dispose();
     _nombre.dispose();
+    for (final c in [_apellidos, _cedula, _direccion, _ciudad, _telefono]) {
+      c.dispose();
+    }
     super.dispose();
   }
 
   Future<void> _enviar() async {
     if (!_formulario.currentState!.validate()) return;
+    if (widget.registro && _paso == 0) {
+      setState(() => _paso = 1);
+      return;
+    }
+    if (widget.registro && !_acepta) return;
     setState(() {
       _cargando = true;
       _error = null;
@@ -40,10 +55,18 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
     try {
       final repositorio = ref.read(identidadProvider);
       if (widget.registro) {
-        await ref
-            .read(preferenciasLocalesProvider)
-            .setBool('abrir_ahorros_pendiente', _abrirAhorros);
-        await repositorio.registrar(_nombre.text, _correo.text, _clave.text);
+        await repositorio.registrar(
+          DatosRegistro(
+            nombres: _nombre.text,
+            apellidos: _apellidos.text,
+            correo: _correo.text,
+            cedula: _cedula.text,
+            clave: _clave.text,
+            direccion: _direccion.text,
+            ciudad: _ciudad.text,
+            telefono: _telefono.text,
+          ),
+        );
       } else {
         await repositorio.ingresar(_correo.text, _clave.text);
       }
@@ -77,40 +100,53 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
     }
   }
 
-  Future<void> _biometriaDemo() async {
-    final continuar = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        icon: const Icon(Icons.face_retouching_natural_rounded, size: 54),
-        title: const Text('Tu acceso, más fácil'),
-        content: const Text(
-          'Esta es una demostración de Face ID. Reanuda tu sesión de Firebase; no reconoce tu rostro ni usa el sensor del teléfono.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Continuar demo'),
-          ),
-        ],
-      ),
-    );
-    if (continuar != true || !mounted) return;
+  Future<void> _biometria() async {
     setState(() {
       _cargando = true;
       _error = null;
     });
     try {
-      await ref.read(identidadProvider).reanudarDemostracion();
+      await ref.read(identidadProvider).reanudarConBiometria();
     } catch (e) {
       if (mounted) setState(() => _error = mensajeError(e));
     } finally {
       if (mounted) setState(() => _cargando = false);
     }
   }
+
+  Widget _dato(
+    TextEditingController controlador,
+    String etiqueta,
+    Key key, {
+    TextInputType? teclado,
+    int minimo = 2,
+    int maximo = 120,
+  }) => Padding(
+    padding: const EdgeInsets.only(bottom: 16),
+    child: TextFormField(
+      key: key,
+      controller: controlador,
+      keyboardType: teclado,
+      decoration: InputDecoration(labelText: etiqueta),
+      validator: (v) =>
+          (v?.trim().length ?? 0) < minimo || (v?.trim().length ?? 0) > maximo
+          ? 'Revisa $etiqueta.'
+          : null,
+    ),
+  );
+  Future<void> _contrato() => showDialog<void>(
+    context: context,
+    builder: (c) => AlertDialog(
+      title: const Text('Contrato, términos y condiciones'),
+      content: const SingleChildScrollView(child: Text(contratoRegistro)),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(c),
+          child: const Text('Entendido'),
+        ),
+      ],
+    ),
+  );
 
   @override
   Widget build(BuildContext context) => Scaffold(
@@ -130,7 +166,9 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
                     children: [
                       Text(
                         widget.registro
-                            ? 'Tu próximo paso empieza aquí'
+                            ? (_paso == 0
+                                  ? 'Tu cuenta empieza contigo'
+                                  : 'Tus datos, tu tranquilidad')
                             : (ref.watch(recuerdoAccesoProvider)?.saludo == null
                                   ? 'Qué bueno verte de nuevo'
                                   : 'Hola, ${ref.watch(recuerdoAccesoProvider)!.saludo} 👋'),
@@ -140,66 +178,144 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
                       const SizedBox(height: 12),
                       Text(
                         widget.registro
-                            ? 'Crea tu espacio financiero en unos minutos.'
+                            ? (_paso == 0
+                                  ? 'Crea tu cuenta de ahorros y recibe tu tarjeta de débito digital.'
+                                  : 'Confirma tu domicilio y revisa el contrato antes de abrir tu cuenta.')
                             : 'Aquí tienes a tu financebro de confianza. Vamos a tus planes.',
                       ),
                       const SizedBox(height: 28),
-                      if (widget.registro) ...[
-                        TextFormField(
-                          key: const Key('nombre'),
-                          controller: _nombre,
-                          decoration: const InputDecoration(
-                            labelText: 'Tu nombre',
+                      if (!widget.registro || _paso == 0) ...[
+                        if (widget.registro) ...[
+                          TextFormField(
+                            key: const Key('nombre'),
+                            controller: _nombre,
+                            decoration: const InputDecoration(
+                              labelText: 'Nombres',
+                            ),
+                            textCapitalization: TextCapitalization.words,
+                            validator: (v) =>
+                                (v?.trim().length ?? 0) < 2 ||
+                                    (v?.length ?? 0) > 28
+                                ? 'Escribe un nombre entre 2 y 28 caracteres.'
+                                : null,
                           ),
-                          textCapitalization: TextCapitalization.words,
-                          validator: (v) =>
-                              (v?.trim().length ?? 0) < 2 ||
-                                  (v?.length ?? 0) > 60
-                              ? 'Escribe un nombre entre 2 y 60 caracteres.'
-                              : null,
+                          const SizedBox(height: 16),
+                        ],
+                        if (widget.registro) ...[
+                          _dato(
+                            _apellidos,
+                            'Apellidos',
+                            const Key('apellidos'),
+                            maximo: 28,
+                          ),
+                          TextFormField(
+                            key: const Key('cedula'),
+                            controller: _cedula,
+                            keyboardType: TextInputType.number,
+                            decoration: const InputDecoration(
+                              labelText: 'Cédula',
+                            ),
+                            validator: (v) =>
+                                RegExp(r'^\d{10}$').hasMatch(v?.trim() ?? '')
+                                ? null
+                                : 'Escribe tu cédula de 10 dígitos.',
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        TextFormField(
+                          key: const Key('correo'),
+                          controller: _correo,
+                          keyboardType: TextInputType.emailAddress,
+                          autofillHints: const [AutofillHints.email],
+                          decoration: const InputDecoration(
+                            labelText: 'Correo electrónico',
+                          ),
+                          validator: validarCorreo,
                         ),
                         const SizedBox(height: 16),
-                      ],
-                      TextFormField(
-                        key: const Key('correo'),
-                        controller: _correo,
-                        keyboardType: TextInputType.emailAddress,
-                        autofillHints: const [AutofillHints.email],
-                        decoration: const InputDecoration(
-                          labelText: 'Correo electrónico',
-                        ),
-                        validator: validarCorreo,
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        key: const Key('clave'),
-                        controller: _clave,
-                        obscureText: _ocultar,
-                        autofillHints: [
-                          widget.registro
-                              ? AutofillHints.newPassword
-                              : AutofillHints.password,
-                        ],
-                        decoration: InputDecoration(
-                          labelText: 'Contraseña',
-                          suffixIcon: IconButton(
-                            tooltip: _ocultar
-                                ? 'Mostrar contraseña'
-                                : 'Ocultar contraseña',
-                            onPressed: () =>
-                                setState(() => _ocultar = !_ocultar),
-                            icon: Icon(
-                              _ocultar
-                                  ? Icons.visibility_outlined
-                                  : Icons.visibility_off_outlined,
+                        TextFormField(
+                          key: const Key('clave'),
+                          controller: _clave,
+                          obscureText: _ocultar,
+                          autofillHints: [
+                            widget.registro
+                                ? AutofillHints.newPassword
+                                : AutofillHints.password,
+                          ],
+                          decoration: InputDecoration(
+                            labelText: 'Contraseña',
+                            suffixIcon: IconButton(
+                              tooltip: _ocultar
+                                  ? 'Mostrar contraseña'
+                                  : 'Ocultar contraseña',
+                              onPressed: () =>
+                                  setState(() => _ocultar = !_ocultar),
+                              icon: Icon(
+                                _ocultar
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                              ),
                             ),
                           ),
+                          validator: validarClave,
+                          onFieldSubmitted: (_) {
+                            if (!_cargando) _enviar();
+                          },
                         ),
-                        validator: validarClave,
-                        onFieldSubmitted: (_) {
-                          if (!_cargando) _enviar();
-                        },
-                      ),
+                      ],
+                      if (widget.registro && _paso == 1) ...[
+                        _dato(
+                          _direccion,
+                          'Dirección de domicilio',
+                          const Key('direccion'),
+                          minimo: 8,
+                          maximo: 180,
+                          teclado: TextInputType.streetAddress,
+                        ),
+                        _dato(
+                          _ciudad,
+                          'Ciudad',
+                          const Key('ciudad'),
+                          maximo: 60,
+                        ),
+                        _dato(
+                          _telefono,
+                          'Teléfono',
+                          const Key('telefono'),
+                          minimo: 7,
+                          maximo: 20,
+                          teclado: TextInputType.phone,
+                        ),
+                        const CristalBro(
+                          child: Text(
+                            'Tu cuenta se abrirá con USD 0 y tu tarjeta de débito digital quedará lista. Los pagos y transferencias se confirman antes de ejecutarse.',
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _cargando ? null : _contrato,
+                          child: const Text(
+                            'Leer contrato, términos y condiciones',
+                          ),
+                        ),
+                        CheckboxListTile(
+                          key: const Key('aceptar-contrato'),
+                          contentPadding: EdgeInsets.zero,
+                          value: _acepta,
+                          onChanged: _cargando
+                              ? null
+                              : (v) => setState(() => _acepta = v ?? false),
+                          title: const Text(
+                            'Soy mayor de edad y acepto el contrato y los términos para abrir mi cuenta y emitir mi tarjeta.',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _cargando
+                              ? null
+                              : () => setState(() => _paso = 0),
+                          child: const Text('Revisar mis datos'),
+                        ),
+                      ],
                       const SizedBox(height: 20),
                       if (_error != null)
                         Padding(
@@ -212,25 +328,13 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
                             ),
                           ),
                         ),
-                      if (widget.registro)
-                        SwitchListTile(
-                          contentPadding: EdgeInsets.zero,
-                          value: _abrirAhorros,
-                          onChanged: _cargando
-                              ? null
-                              : (v) => setState(() => _abrirAhorros = v),
-                          title: const Text(
-                            'Quiero abrir mi cuenta de ahorros',
-                            style: TextStyle(fontSize: 13),
-                          ),
-                          subtitle: const Text(
-                            'Opcional. Completarás tus datos y aceptarás los términos en el siguiente paso.',
-                            style: TextStyle(fontSize: 11),
-                          ),
-                        ),
                       FilledButton(
                         key: const Key('enviar-acceso'),
-                        onPressed: _cargando ? null : _enviar,
+                        onPressed:
+                            _cargando ||
+                                widget.registro && _paso == 1 && !_acepta
+                            ? null
+                            : _enviar,
                         child: _cargando
                             ? const SizedBox(
                                 width: 24,
@@ -241,7 +345,9 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
                               )
                             : Text(
                                 widget.registro
-                                    ? 'Crear mi cuenta'
+                                    ? (_paso == 0
+                                          ? 'Continuar'
+                                          : 'Crear mi cuenta y tarjeta')
                                     : 'Ingresar',
                               ),
                       ),
@@ -279,15 +385,15 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
                               _cargando ||
                                   !ref.watch(identidadProvider).sesionGuardada
                               ? null
-                              : _biometriaDemo,
+                              : _biometria,
                           icon: const Icon(
                             Icons.face_retouching_natural_rounded,
                           ),
-                          label: const Text('Face ID · demo'),
+                          label: const Text('Desbloquear mi sesión'),
                         ),
                         const SizedBox(height: 8),
                         const Text(
-                          'Acceso simulado con una sesión previa. Ingresa una vez para probarlo.',
+                          'Usa la seguridad de tu dispositivo después de tu primer ingreso.',
                           textAlign: TextAlign.center,
                           style: TextStyle(fontSize: 11),
                         ),

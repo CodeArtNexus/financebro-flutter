@@ -1,3 +1,6 @@
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:local_auth/local_auth.dart';
+
 import '../features/payments/pagos.dart';
 import '../features/payments/firebase_pagos.dart';
 import '../features/savings/metas.dart';
@@ -6,6 +9,7 @@ import '../features/savings/firebase_metas.dart';
 import 'package:dio/dio.dart';
 
 import '../core/configuracion.dart';
+import '../core/errores.dart';
 import '../features/notifications/notificaciones.dart';
 import '../features/notifications/firebase_notificaciones.dart';
 
@@ -36,11 +40,37 @@ final datosProvider = Provider<FirebaseFirestore>(
 final authFirebaseProvider = Provider<FirebaseAuth>(
   (ref) => FirebaseAuth.instanceFor(app: ref.watch(firebaseAppProvider)),
 );
+final autenticarDispositivoProvider = Provider<Future<bool> Function()>(
+  (ref) => () async {
+    final auth = LocalAuthentication();
+    if (!await auth.isDeviceSupported()) {
+      throw const FalloApp(
+        'Configura un bloqueo seguro en tu dispositivo o ingresa con tu contraseña.',
+      );
+    }
+    return auth.authenticate(
+      localizedReason: 'Desbloquea tu espacio FinanceBro',
+      persistAcrossBackgrounding: true,
+    );
+  },
+);
+final funcionesProvider = Provider<FirebaseFunctions>((ref) {
+  final funciones = FirebaseFunctions.instanceFor(
+    app: ref.watch(firebaseAppProvider),
+    region: 'us-central1',
+  );
+  if (usarEmuladores) {
+    funciones.useFunctionsEmulator(servidorEmuladores, puertoFunciones);
+  }
+  return funciones;
+});
 final identidadProvider = Provider<RepositorioIdentidad>((ref) {
   final repositorio = FirebaseIdentidad(
     ref.watch(authFirebaseProvider),
     ref.watch(datosProvider),
     ref.watch(preferenciasLocalesProvider),
+    ref.watch(funcionesProvider),
+    ref.watch(autenticarDispositivoProvider),
   );
   ref.onDispose(repositorio.dispose);
   return repositorio;
@@ -113,7 +143,6 @@ final cotizacionProvider = FutureProvider.autoDispose
 final notificacionesRepositorioProvider = Provider<RepositorioNotificaciones>((
   ref,
 ) {
-  if (usarEmuladores) return NotificacionesEmuladas(ref.watch(datosProvider));
   final repositorio = FirebaseNotificaciones(
     ref.watch(datosProvider),
     ref.watch(preferenciasLocalesProvider),

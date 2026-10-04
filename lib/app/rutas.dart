@@ -5,6 +5,7 @@ import '../features/banking/apertura_pantallas.dart';
 import '../features/banking/contactos_pantalla.dart';
 import '../features/banking/pagos_pantalla.dart';
 import '../features/banking/tarjetas_pantalla.dart';
+import '../features/banking/solicitudes_tarjetas.dart';
 import '../features/banking/historial_pantalla.dart';
 import '../features/exchange/divisas_pantalla.dart';
 import '../features/payments/qr_pantalla.dart';
@@ -58,12 +59,12 @@ final rutasProvider = Provider<GoRouter>((ref) {
         '/qr-acceso',
       ].contains(state.matchedLocation);
       if (identidad.actual == null && !acceso) return '/ingresar';
+      if (identidad.actual != null && identidad.requiereRegistro) {
+        return state.matchedLocation == '/registrar' ? null : '/registrar';
+      }
       if (identidad.actual != null && acceso) {
         final preferencias = ref.read(preferenciasLocalesProvider);
         if (preferencias.containsKey('qr_pendiente')) return '/qr';
-        if (preferencias.getBool('abrir_ahorros_pendiente') == true) {
-          return '/apertura/ahorros';
-        }
         return '/inicio';
       }
       return null;
@@ -82,16 +83,22 @@ final rutasProvider = Provider<GoRouter>((ref) {
         path: '/qr-acceso',
         builder: (_, _) => const QrPantalla(accesoRapido: true),
       ),
-      GoRoute(
-        path: '/apertura/ahorros',
-        builder: (_, _) => const AperturaAhorrosPantalla(),
-      ),
+      GoRoute(path: '/apertura/ahorros', redirect: (_, _) => '/registrar'),
       GoRoute(
         path: '/apertura/corriente',
         builder: (_, _) => const AperturaCorrientePantalla(),
       ),
       GoRoute(path: '/contactos', builder: (_, _) => const ContactosPantalla()),
       GoRoute(path: '/tarjetas', builder: (_, _) => const TarjetasPantalla()),
+      GoRoute(
+        path: '/tarjetas/credito',
+        builder: (_, _) => const CreditoSolicitudPantalla(),
+      ),
+      GoRoute(
+        path: '/tarjetas/fisica/:tarjeta',
+        builder: (_, s) =>
+            FisicaSolicitudPantalla(s.pathParameters['tarjeta']!),
+      ),
       GoRoute(
         path: '/historial',
         builder: (_, s) => HistorialPantalla(

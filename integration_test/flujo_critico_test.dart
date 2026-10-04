@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'registro_test.dart' show llenarRegistro;
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -205,22 +207,9 @@ void main() {
     await tester.ensureVisible(find.text('Quiero crear una cuenta'));
     await tester.pump(const Duration(milliseconds: 700));
     await tester.tap(find.text('Quiero crear una cuenta'));
-    await esperar(tester, find.byKey(const Key('nombre')));
-    await tester.enterText(find.byKey(const Key('nombre')), 'Nueva Persona');
-    await tester.enterText(
-      find.byKey(const Key('correo')),
-      'persona-${DateTime.now().millisecondsSinceEpoch}@financebro.test',
-    );
-    await tester.enterText(
-      find.byKey(const Key('clave')),
-      'Registro-local-2026!',
-    );
-    FocusManager.instance.primaryFocus?.unfocus();
-    await tester.pump(const Duration(milliseconds: 700));
-    await tester.ensureVisible(find.byKey(const Key('enviar-acceso')));
-    await tester.tap(find.byKey(const Key('enviar-acceso')));
-    await esperar(tester, find.textContaining('Hola, Nueva'));
+    await llenarRegistro(tester);
+    await esperar(tester, find.textContaining('Hola, Lucía'));
     await tester.tap(find.text('Cuentas'));
-    await esperar(tester, find.text('Tu espacio está listo'));
+    await esperar(tester, find.text('Cuenta de ahorros'));
   });
 }

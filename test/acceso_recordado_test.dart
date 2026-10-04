@@ -53,7 +53,7 @@ void main() {
     expect(find.textContaining('Hola, Sebastian'), findsOneWidget);
     expect(find.text('Pagar con QR'), findsOneWidget);
     final boton = tester.widget<OutlinedButton>(
-      find.widgetWithText(OutlinedButton, 'Face ID · demo'),
+      find.widgetWithText(OutlinedButton, 'Desbloquear mi sesión'),
     );
     expect(boton.onPressed, isNull);
     expect(identidad.actual, isNull);

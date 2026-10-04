@@ -1,3 +1,5 @@
+import 'registro.dart';
+
 class Identidad {
   const Identidad(this.uid, this.nombre);
   final String uid;
@@ -8,11 +10,12 @@ abstract interface class RepositorioIdentidad {
   Identidad? get actual;
   Stream<Identidad?> get cambios;
   Future<void> ingresar(String correo, String clave);
-  Future<void> registrar(String nombre, String correo, String clave);
+  Future<void> registrar(DatosRegistro registro);
+  bool get requiereRegistro;
   Future<void> recuperar(String correo);
   Future<void> salir();
   bool get sesionGuardada;
-  Future<void> reanudarDemostracion();
+  Future<void> reanudarConBiometria();
 }
 
 String? validarCorreo(String? valor) {

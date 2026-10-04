@@ -20,7 +20,9 @@ Future<void> recibirEnSegundoPlano(RemoteMessage mensaje) async {
   registrarEvento('push_segundo_plano', servicio: 'notificaciones');
 }
 
-Future<Widget> prepararAplicacion() async {
+Future<Widget> prepararAplicacion({
+  Future<bool> Function()? autenticarDispositivo,
+}) async {
   WidgetsFlutterBinding.ensureInitialized();
   final app = usarEmuladores
       ? await Firebase.initializeApp(
@@ -52,6 +54,8 @@ Future<Widget> prepararAplicacion() async {
   return ProviderScope(
     retry: (int intento, Object error) => null,
     overrides: [
+      if (autenticarDispositivo != null)
+        autenticarDispositivoProvider.overrideWithValue(autenticarDispositivo),
       firebaseAppProvider.overrideWithValue(app),
       preferenciasLocalesProvider.overrideWithValue(
         await SharedPreferences.getInstance(),

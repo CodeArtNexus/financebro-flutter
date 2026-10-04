@@ -106,7 +106,7 @@ class BienvenidaPantalla extends ConsumerWidget {
                     ),
                     const SizedBox(height: 18),
                     const Text(
-                      'Demo con datos financieros de prueba.',
+                      'Tu dinero, con claridad y confianza.',
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 10, color: Color(0xFF686C7D)),
                     ),

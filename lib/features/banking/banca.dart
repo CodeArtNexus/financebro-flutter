@@ -54,13 +54,9 @@ String leerQrCuenta(String codigo) {
 
 final bancaProvider = Provider<Banca>((ref) {
   final app = ref.watch(firebaseAppProvider);
-  final functions = FirebaseFunctions.instanceFor(
-    app: app,
-    region: 'us-central1',
-  );
+  final functions = ref.watch(funcionesProvider);
   final storage = FirebaseStorage.instanceFor(app: app);
   if (usarEmuladores) {
-    functions.useFunctionsEmulator(servidorEmuladores, puertoFunciones);
     storage.useStorageEmulator(servidorEmuladores, puertoStorage);
   }
   return Banca(functions, ref.watch(datosProvider), storage);
@@ -87,7 +83,7 @@ class Banca {
       throw FalloApp(
         e.code == 'unavailable' ||
                 e.code == 'not-found' && operacion == 'abrirAhorros'
-            ? 'El servicio bancario no está disponible en este entorno. Usa la demostración local o vuelve a intentar.'
+            ? 'No pudimos conectar con el servicio. Revisa tu conexión y vuelve a intentar.'
             : e.message ?? 'No pudimos completar la operación.',
         transitorio: e.code == 'unavailable',
       );

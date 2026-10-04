@@ -171,12 +171,12 @@ class _ExternoEstado extends EstadoBanco<PagoExternoPantalla> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Text(
-                'Pago externo de demostración',
+                'Revisa tu pago',
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 10),
               const Text(
-                'Se descontarán fondos sintéticos y se guardará el recibo asociado. No envía dinero fuera de FinanceBro.',
+                'Revisa el destino y el importe. Guardaremos el recibo en el histórico de esta tarjeta o contacto.',
                 style: TextStyle(fontSize: 12),
               ),
               campo(
@@ -197,7 +197,7 @@ class _ExternoEstado extends EstadoBanco<PagoExternoPantalla> {
                         final si = await showDialog<bool>(
                           context: context,
                           builder: (c) => AlertDialog(
-                            title: const Text('Confirmar pago de prueba'),
+                            title: const Text('Confirmar pago'),
                             content: Text(
                               'Descontar USD ${(centavos / 100).toStringAsFixed(2)} de tu cuenta.',
                             ),

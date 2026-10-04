@@ -24,10 +24,14 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>FirebaseMessagingAutoInitEnabled</key>
+	<false/>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Desbloquea tu sesión de FinanceBro con Face ID.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>FinanceBro usa la cámara para escanear códigos QR de pago de demostración.</string>
+	<string>FinanceBro usa la cámara para escanear códigos QR de pago.</string>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>FinanceBro se conecta al servidor local de demostración para probar cuentas, transferencias y documentos con datos sintéticos.</string>
+	<string>FinanceBro se conecta al servicio de tu red para actualizar tus cuentas y movimientos.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

@@ -1,3 +1,5 @@
+import 'package:financebro/features/auth/registro.dart';
+
 import 'dart:async';
 
 import 'package:financebro/features/auth/identidad.dart';
@@ -7,7 +9,7 @@ class IdentidadPrueba implements RepositorioIdentidad {
   @override
   bool get sesionGuardada => usuario != null;
   @override
-  Future<void> reanudarDemostracion() async {}
+  Future<void> reanudarConBiometria() async {}
   final controlador = StreamController<Identidad?>.broadcast();
   Identidad? usuario;
   bool rechazar = false;
@@ -27,8 +29,10 @@ class IdentidadPrueba implements RepositorioIdentidad {
   }
 
   @override
-  Future<void> registrar(String nombre, String correo, String clave) =>
-      ingresar(correo, clave);
+  Future<void> registrar(DatosRegistro registro) =>
+      ingresar(registro.correo, registro.clave);
+  @override
+  bool get requiereRegistro => false;
   @override
   Future<void> recuperar(String correo) async {}
   @override

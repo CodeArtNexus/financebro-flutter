@@ -19,7 +19,9 @@ void main() {
     tester,
   ) async {
     expect(usarEmuladores, isTrue);
-    final aplicacion = await app.prepararAplicacion();
+    final aplicacion = await app.prepararAplicacion(
+      autenticarDispositivo: () async => true,
+    );
     final auth = FirebaseAuth.instanceFor(app: Firebase.app('demo-financebro'));
     await auth.signOut();
     await tester.pumpWidget(aplicacion);
@@ -77,15 +79,15 @@ void main() {
     // Reinicia la interfaz y su contenedor; el SDK mantiene su sesión previa.
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(milliseconds: 700));
-    await tester.pumpWidget(await app.prepararAplicacion());
+    await tester.pumpWidget(
+      await app.prepararAplicacion(autenticarDispositivo: () async => true),
+    );
     await esperar(tester, find.byKey(const Key('correo')));
     expect(find.textContaining('Hola, Sebastian'), findsOneWidget);
     expect(find.text('Pagar con QR'), findsOneWidget);
-    await tester.ensureVisible(find.text('Face ID · demo'));
+    await tester.ensureVisible(find.text('Desbloquear mi sesión'));
     await tester.pump(const Duration(milliseconds: 700));
-    await tester.tap(find.text('Face ID · demo'));
-    await esperar(tester, find.text('Continuar demo'));
-    await tester.tap(find.text('Continuar demo'));
+    await tester.tap(find.text('Desbloquear mi sesión'));
     await esperar(tester, find.text('Tu dinero, a tu manera'));
     expect(auth.currentUser?.uid, uid);
     expect(tester.takeException(), isNull);

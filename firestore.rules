@@ -20,9 +20,9 @@ service cloud.firestore {
         match /movimientos/{movimiento} { allow read: if propietario(uid) || administrador(); allow write: if false; }
       }
       match /{coleccion}/{id} {
-        allow read: if (propietario(uid) || administrador()) && coleccion in ['operaciones','pagos','movimientosGlobales','contactos','tarjetas','solicitudes','autopagos'];
+        allow read: if (propietario(uid) || administrador()) && coleccion in ['operaciones','pagos','movimientosGlobales','contactos','tarjetas','solicitudes','autopagos','cheques','gruposCheques'];
         allow write: if false;
-        match /{subcoleccion}/{subid} { allow read: if (propietario(uid) || administrador()) && coleccion in ['contactos','tarjetas','solicitudes','autopagos']; }
+        match /{subcoleccion}/{subid} { allow read: if (propietario(uid) || administrador()) && coleccion in ['contactos','tarjetas','solicitudes','autopagos','cheques','gruposCheques']; }
       }
       match /datosPersonales/{id} { allow read: if propietario(uid); allow write: if false; }
       match /metas/{meta} {
@@ -46,6 +46,7 @@ service cloud.firestore {
       }
       match /notificaciones/{notificacion} { allow read: if propietario(uid); }
     }
+    match /cheques/{id} { allow read: if administrador(); allow write: if false; match /eventos/{evento} { allow read: if administrador(); } }
     match /servicios/{id} { allow read: if request.auth != null; allow write: if false; }
     match /{path=**}/solicitudes/{id} { allow read: if administrador(); }
     match /{path=**}/tarjetas/{id} { allow read: if administrador(); }

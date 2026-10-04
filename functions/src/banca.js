@@ -1,3 +1,4 @@
+import * as chequera from "./chequera.js";
 import { randomBytes, createHash } from "node:crypto";
 import { Timestamp } from "firebase-admin/firestore";
 import {
@@ -1772,8 +1773,21 @@ export class Banco {
     }
     return { procesados, hayMas: docs.size === 100 };
   }
+  async emitirCheques(auth,d) { return chequera.emitirCheques(this,auth,d); }
+  async gestionarCheque(auth,d) { return chequera.gestionarCheque(this,auth,d); }
+  async cobrarCheque(auth,d) { return chequera.cobrarCheque(this,auth,d); }
+  async procesarCheques(auth,d) { return chequera.procesarCheques(this,auth,d); }
+  async solicitarAsesor(auth,d) { return chequera.solicitarAsesor(this,auth,d); }
+  async responderAsesoria(auth,d) { return chequera.responderAsesoria(this,auth,d); }
   async ejecutar(auth, operacion, datos = {}) {
     const metodos = {
+      emitirCheques: "emitirCheques",
+      gestionarCheque: "gestionarCheque",
+      cobrarCheque: "cobrarCheque",
+      procesarCheques: "procesarCheques",
+      solicitarAsesor: "solicitarAsesor",
+      responderAsesoria: "responderAsesoria",
+
       registrarCliente: "registrarCliente",
       solicitarCredito: "solicitarCredito",
       solicitarTarjetaCredito: "solicitarCredito",

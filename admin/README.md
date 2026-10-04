@@ -1,6 +1,6 @@
 # Administración de FinanceBro
 
-Panel web con acceso de asesor para consultar personas, cuentas y actividad global; ajustar fondos con un motivo; revisar cuentas corrientes, solicitudes de tarjeta de crédito y tarjetas físicas; generar QR y administrar servicios y pagos mensuales. Comparte datos e identidad visual con el cliente móvil.
+Panel web con acceso de asesor para consultar personas, cuentas y actividad global; ajustar fondos con un motivo; revisar cuentas corrientes, solicitudes de tarjeta de crédito y tarjetas físicas; generar QR y administrar servicios, pagos mensuales, temporadas y cheques. Comparte datos e identidad visual con el cliente móvil.
 
 Es parte del prototipo descrito en el [README principal](../README.md): los fondos y proveedores son sintéticos. No concede crédito real ni emite tarjetas bancarias o realiza envíos físicos.
 
@@ -25,6 +25,10 @@ Las solicitudes de tarjeta de crédito muestran ingresos declarados, ocupación 
 
 El catálogo habilita servicios sin reinstalar la app. Los pagos mensuales conservan consentimiento, cuenta, contrato, día y límite. El servidor evita pagar dos veces un período y registra incidencias cuando no puede completar el pago. El panel puede procesar pagos vencidos con el mismo flujo preparado para el programador.
 
+Las temporadas admiten fechas de inicio y fin, tema visual y mensaje. Los clientes conectados reciben el cambio sin instalar otra versión. El catálogo separa disponibilidad y visibilidad para conservar los registros de servicios retirados.
+
+La chequera global permite consultar estados, obligaciones y cobros por persona, procesar vencimientos y revisar los eventos de cada cheque. Una petición de asesor queda en Solicitudes y la respuesta genera un aviso al titular. Emisión, bloqueo, cancelación y cambios de fecha corresponden al emisor desde la app; el asesor no sustituye ese consentimiento.
+
 ## Verificación y despliegue
 
 ```sh
@@ -35,4 +39,4 @@ npm --prefix admin run test:integracion
 
 La prueba de integración requiere las dependencias de `functions/`, Auth y Firestore emulados. Comprueba paginación y un ajuste recibido en vivo, por cuenta y en la actividad global.
 
-La versión actual se ejecuta localmente. El panel remoto conserva 1.1.0 hasta desplegar conjuntamente Functions, Storage, reglas y clientes después de revisar Blaze. Credenciales, firmas locales y la guía personal no forman parte del repositorio.
+La versión 1.5.0 se ejecuta localmente. `scripts/preparar-publicacion.sh` compila la versión remota sin desplegar; el script `publicar-banca.sh` presenta primero los componentes. El panel remoto conserva 1.1.0 hasta desplegar conjuntamente Functions, Storage, reglas y clientes después de revisar Blaze. Credenciales, firmas locales y la guía personal no forman parte del repositorio.

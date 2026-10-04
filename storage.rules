@@ -10,7 +10,7 @@ service firebase.storage {
       allow read: if propietario(uid) || administrador();
       allow create: if resource == null && propietario(uid) && editable(uid)
         && categoria in ['constitucion','estatutos','nombramiento','ruc','balances']
-        && archivo.matches('^[a-zA-Z0-9_-]{8,80}\\.(pdf|png|jpg)$')
+        && archivo.matches('^[a-zA-Z0-9_-]{8,80}[.](pdf|png|jpg)$')
         && request.resource.size > 0 && request.resource.size <= 5 * 1024 * 1024
         && request.resource.contentType in ['application/pdf','image/png','image/jpeg'];
       allow update, delete: if false;
@@ -19,7 +19,7 @@ service firebase.storage {
       allow read: if propietario(uid) || administrador();
       allow create: if resource == null && propietario(uid)
         && firestore.get(/databases/(default)/documents/usuarios/$(uid)/tarjetas/$(tarjeta)).data.tipo == 'propia'
-        && archivo.matches('^[a-zA-Z0-9_-]{8,80}\\.(png|jpg)$')
+        && archivo.matches('^[a-zA-Z0-9_-]{8,80}[.](png|jpg)$')
         && request.resource.size > 0 && request.resource.size <= 2*1024*1024
         && request.resource.contentType in ['image/png','image/jpeg'];
       allow update, delete: if false;

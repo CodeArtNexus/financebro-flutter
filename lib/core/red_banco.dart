@@ -27,7 +27,11 @@ final conexionBancoProvider = StreamProvider<EstadoConexion>(
 );
 
 class RedBanco extends ChangeNotifier with WidgetsBindingObserver {
-  RedBanco(this.proyecto, this.laboratorio) {
+  RedBanco(
+    this.proyecto,
+    this.laboratorio, {
+    Future<EstadoConexion> Function()? comprobarConexion,
+  }) : _sonda = comprobarConexion {
     WidgetsBinding.instance.addObserver(this);
     laboratorio.addListener(revisar);
     _suscripcion = Connectivity().onConnectivityChanged.listen(
@@ -39,7 +43,9 @@ class RedBanco extends ChangeNotifier with WidgetsBindingObserver {
   final String proyecto;
   final ControlRed laboratorio;
   EstadoConexion estado = EstadoConexion.revisando;
-  bool _ocupado = false, _cerrado = false;
+  bool _cerrado = false;
+  Future<void>? _revision;
+  final Future<EstadoConexion> Function()? _sonda;
   Timer? _timer;
   StreamSubscription<List<ConnectivityResult>>? _suscripcion;
   final _cambios = StreamController<EstadoConexion>.broadcast();
@@ -61,13 +67,20 @@ class RedBanco extends ChangeNotifier with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) unawaited(revisar());
   }
 
-  Future<void> revisar() async {
-    if (_ocupado || _cerrado) return;
-    _ocupado = true;
+  Future<void> revisar() {
+    if (_cerrado) return Future.value();
+    return _revision ??= _revisar().whenComplete(() => _revision = null);
+  }
+
+  Future<void> _revisar() async {
     HttpClient? cliente;
     try {
       if (laboratorio.escenario == EscenarioRed.sinConexion) {
         _estado(EstadoConexion.sinConexion);
+        return;
+      }
+      if (_sonda != null) {
+        _estado(await _sonda());
         return;
       }
       final redes = await Connectivity().checkConnectivity();
@@ -92,7 +105,7 @@ class RedBanco extends ChangeNotifier with WidgetsBindingObserver {
           ..setTrustedCertificatesBytes(base64Decode(cert));
       }
       cliente = HttpClient(context: contexto)
-        ..connectionTimeout = const Duration(seconds: 3);
+        ..connectionTimeout = const Duration(seconds: 8);
       final uri = usarEmuladores
           ? Uri(
               scheme: tls ? 'https' : 'http',
@@ -108,7 +121,7 @@ class RedBanco extends ChangeNotifier with WidgetsBindingObserver {
           : Uri.https('us-central1-$proyecto.cloudfunctions.net', '/banca');
       final req = await cliente
           .postUrl(uri)
-          .timeout(const Duration(seconds: 3));
+          .timeout(const Duration(seconds: 8));
       req.headers.contentType = ContentType.json;
       req.write(
         jsonEncode({
@@ -118,10 +131,10 @@ class RedBanco extends ChangeNotifier with WidgetsBindingObserver {
           },
         }),
       );
-      final res = await req.close().timeout(const Duration(seconds: 3));
+      final res = await req.close().timeout(const Duration(seconds: 20));
       final cuerpo = await utf8
           .decodeStream(res)
-          .timeout(const Duration(seconds: 3));
+          .timeout(const Duration(seconds: 8));
       final datos = jsonDecode(cuerpo);
       _estado(
         res.statusCode == 401 &&
@@ -139,7 +152,6 @@ class RedBanco extends ChangeNotifier with WidgetsBindingObserver {
       _estado(EstadoConexion.servicioNoDisponible);
     } finally {
       cliente?.close(force: true);
-      _ocupado = false;
     }
   }
 

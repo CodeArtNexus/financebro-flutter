@@ -13,6 +13,17 @@ import '../../core/diseno_bro.dart';
 import '../../core/errores.dart';
 import 'experiencia.dart';
 
+final datosIdentidadProvider = StreamProvider<Map<String, dynamic>?>((ref) {
+  final uid = ref.watch(sesionProvider).value?.uid;
+  return uid == null
+      ? const Stream.empty()
+      : ref
+            .watch(datosProvider)
+            .doc('usuarios/$uid/datosPersonales/identidad')
+            .snapshots()
+            .map((s) => s.data());
+});
+
 class PerfilPantalla extends ConsumerStatefulWidget {
   const PerfilPantalla({super.key});
   @override
@@ -106,6 +117,31 @@ class _PerfilEstado extends ConsumerState<PerfilPantalla> {
             ],
           ),
         ),
+        if (ref.watch(datosIdentidadProvider).value case final datos?)
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: CristalBro(
+              child: Column(
+                children: [
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.alternate_email),
+                    title: const Text('Tu correo'),
+                    subtitle: Text(datos['correo'] as String? ?? ''),
+                  ),
+                  if (datos['domicilio'] case final Map domicilio)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.home_outlined),
+                      title: const Text('Tu domicilio'),
+                      subtitle: Text(
+                        '${domicilio['direccion']} · ${domicilio['ciudad']}',
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
         const SizedBox(height: 20),
         OutlinedButton.icon(
           onPressed: () => context.push('/cuentas'),

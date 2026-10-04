@@ -19,8 +19,13 @@ Future<void> main() async {
         },
     responseDataCallback: (datos) async {
       // Las capturas extensas de Android se transfieren como archivos, sin un JSON gigante.
-      for (final nombre
-          in (datos?['capturasLocales'] as List<dynamic>? ?? [])) {
+      for (final captura in [
+        for (final n in (datos?['capturasLocales'] as List<dynamic>? ?? []))
+          {'nombre': n, 'carpeta': 'financebro_capturas'},
+        for (final n in (datos?['capturasNextgen'] as List<dynamic>? ?? []))
+          {'nombre': n, 'carpeta': 'financebro_nextgen'},
+      ]) {
+        final nombre = captura['nombre'];
         if (nombre is! String || !RegExp(r'^[a-z0-9-]+$').hasMatch(nombre)) {
           throw StateError('Nombre de captura inválido.');
         }
@@ -31,7 +36,7 @@ Future<void> main() async {
           'run-as',
           'ec.financebro.financebro',
           'cat',
-          'files/financebro_capturas/$nombre.png',
+          "files/${captura['carpeta']}/$nombre.png",
         ], stdoutEncoding: null);
         final bytes = r.stdout as List<int>;
         const png = [137, 80, 78, 71, 13, 10, 26, 10];

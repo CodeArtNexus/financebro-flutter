@@ -1,4 +1,5 @@
 import '../features/banking/pendientes_pantalla.dart';
+import '../features/banking/banca.dart';
 
 import 'package:flutter/material.dart';
 
@@ -50,6 +51,7 @@ class FinanceBroApp extends ConsumerWidget {
     ref.watch(avisosSesionProvider);
     if (ref.watch(sesionProvider).value != null) {
       ref.watch(colaTransferenciasProvider);
+      ref.watch(contactosBroProvider);
     }
     return MaterialApp.router(
       scaffoldMessengerKey: mensajero,

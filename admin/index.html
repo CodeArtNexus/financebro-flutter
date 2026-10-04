@@ -72,7 +72,9 @@
           ><button data-vista="qr">QR de cuentas</button
           ><button data-vista="solicitudes">Solicitudes</button
           ><button data-vista="tarjetas">Tarjetas de crédito</button
-          ><button data-vista="servicios">Servicios y pagos mensuales</button><button data-vista="chequera">Chequera digital</button><button data-vista="experiencia">Experiencia y temporadas</button>
+          ><button data-vista="servicios">Servicios y pagos mensuales</button
+          ><button data-vista="chequera">Chequera digital</button
+          ><button data-vista="experiencia">Experiencia y temporadas</button>
         </nav>
         <section id="vista-cuentas">
           <div class="rejilla">
@@ -215,18 +217,94 @@
           </button>
           <div id="tarjetas-credito-lista"></div>
         </section>
-        <section id="vista-chequera" hidden><div class="cristal"><div class="cabecera"><div><h2>Acuerdos y cobros compartidos</h2><p id="cheques-resumen"></p></div><button class="primario" id="cheques-procesar">Procesar vencimientos y avisos</button></div><p>Los cobros respetan la fecha acordada y validan fondos. Las gestiones del emisor permanecen en el histórico.</p><div class="acciones"><label>Buscar por cliente, proveedor, cuenta o concepto<input id="cheques-buscar" type="search" /></label><label>Estado<select id="cheques-estado"><option value="">Todos</option><option value="pendiente">Por cobrar</option><option value="pendiente_fondos">Pendiente por fondos</option><option value="bloqueado">Bloqueado</option><option value="cancelado">Cancelado</option><option value="cobrado">Cobrado</option></select></label></div><div id="cheques-lista"></div><button class="secundario" id="cheques-mas">Ver más cheques</button></div></section>
-<section id="vista-experiencia" class="oculto cristal">
+        <section id="vista-chequera" class="oculto">
+          <div class="cristal">
+            <div class="cabecera">
+              <div>
+                <h2>Acuerdos y cobros compartidos</h2>
+                <p id="cheques-resumen"></p>
+              </div>
+              <button class="primario" id="cheques-procesar">
+                Procesar vencimientos y avisos
+              </button>
+            </div>
+            <p>
+              Los cobros respetan la fecha acordada y validan fondos. Las
+              gestiones del emisor permanecen en el histórico.
+            </p>
+            <div class="acciones">
+              <label
+                >Buscar por cliente, proveedor, cuenta o concepto<input
+                  id="cheques-buscar"
+                  type="search" /></label
+              ><label
+                >Estado<select id="cheques-estado">
+                  <option value="">Todos</option>
+                  <option value="pendiente">Por cobrar</option>
+                  <option value="pendiente_fondos">Pendiente por fondos</option>
+                  <option value="bloqueado">Bloqueado</option>
+                  <option value="cancelado">Cancelado</option>
+                  <option value="cobrado">Cobrado</option>
+                </select></label
+              >
+            </div>
+            <div id="cheques-lista"></div>
+            <button class="secundario" id="cheques-mas">Ver más cheques</button>
+          </div>
+        </section>
+        <section id="vista-experiencia" class="oculto cristal">
           <span class="eyebrow">MARCA Y PERSONALIZACIÓN</span>
           <h2>Una temporada para compartir.</h2>
-          <p>Activa la decoración y el saludo para todos los usuarios, con fechas de inicio y fin. La app recibe el cambio sin reinstalar.</p>
+          <p>
+            Activa la decoración y el saludo para todos los usuarios, con fechas
+            de inicio y fin. La app recibe el cambio sin reinstalar.
+          </p>
           <form id="decoracion-form" class="rejilla">
-            <div><label>Tema<select id="decoracion-tema"><option value="habitual">FinanceBro habitual</option><option value="navidad">Navidad</option><option value="aniversario">Aniversario</option></select></label>
-            <label>Desde<input id="decoracion-desde" type="date" required></label><label>Hasta<input id="decoracion-hasta" type="date" required></label></div>
-            <div><label>Saludo de temporada<input id="decoracion-titulo" minlength="2" maxlength="60" value="Tus planes también celebran" required></label>
-            <label>Mensaje<input id="decoracion-mensaje" minlength="2" maxlength="140" value="Comparte esta temporada con tu financebro." required></label>
-            <label>Disponibilidad<select id="decoracion-activa"><option value="false">Desactivada</option><option value="true">Activada</option></select></label>
-            <button class="primario" type="submit">Guardar temporada</button><p class="nota">Hasta 90 días. La decoración se retira al terminar el período.</p></div>
+            <div>
+              <label
+                >Tema<select id="decoracion-tema">
+                  <option value="habitual">FinanceBro habitual</option>
+                  <option value="navidad">Navidad</option>
+                  <option value="aniversario">Aniversario</option>
+                </select></label
+              >
+              <label
+                >Desde<input
+                  id="decoracion-desde"
+                  type="date"
+                  required /></label
+              ><label
+                >Hasta<input id="decoracion-hasta" type="date" required
+              /></label>
+            </div>
+            <div>
+              <label
+                >Saludo de temporada<input
+                  id="decoracion-titulo"
+                  minlength="2"
+                  maxlength="60"
+                  value="Tus planes también celebran"
+                  required
+              /></label>
+              <label
+                >Mensaje<input
+                  id="decoracion-mensaje"
+                  minlength="2"
+                  maxlength="140"
+                  value="Comparte esta temporada con tu financebro."
+                  required
+              /></label>
+              <label
+                >Disponibilidad<select id="decoracion-activa">
+                  <option value="false">Desactivada</option>
+                  <option value="true">Activada</option>
+                </select></label
+              >
+              <button class="primario" type="submit">Guardar temporada</button>
+              <p class="nota">
+                Hasta 90 días. La decoración se retira al terminar el período.
+              </p>
+            </div>
           </form>
         </section>
         <section id="vista-servicios" class="oculto">
@@ -263,7 +341,12 @@
                   <option value="true">Habilitado</option>
                   <option value="false">Deshabilitado</option>
                 </select></label
-              ><label>Mostrar en la app<select id="servicio-visible"><option value="true">Visible</option><option value="false">Oculto</option></select></label><button class="primario" type="submit">Guardar servicio</button>
+              ><label
+                >Mostrar en la app<select id="servicio-visible">
+                  <option value="true">Visible</option>
+                  <option value="false">Oculto</option>
+                </select></label
+              ><button class="primario" type="submit">Guardar servicio</button>
               <p class="nota">
                 Configura los servicios disponibles y su valor base.
                 Deshabilitar un servicio conserva su histórico.
@@ -271,6 +354,10 @@
             </form>
             <div class="cristal">
               <h2>Catálogo en vivo</h2>
+              <label class="nota"
+                ><input id="incluir-servicios-ocultos" type="checkbox" />
+                Incluir servicios ocultos en la app</label
+              >
               <div id="servicios-lista"></div>
             </div>
           </div>

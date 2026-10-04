@@ -1,4 +1,4 @@
-import {iniciarChequera} from "./chequera.js";
+import { iniciarChequera } from "./chequera.js";
 import {
   doc,
   collection,
@@ -26,7 +26,7 @@ export function iniciarBanca({
 }) {
   const $ = (id) => document.getElementById(id),
     storage = getStorage(app);
-  const chequera = iniciarChequera({db,ejecutar,avisar,fallo,escapar});
+  const chequera = iniciarChequera({ db, ejecutar, avisar, fallo, escapar });
   let suscripciones = [],
     solicitudes = [],
     servicios = [],
@@ -48,6 +48,19 @@ export function iniciarBanca({
         (e) => avisar(fallo(e), true),
       ),
     );
+  function renderServicios() {
+    const lista = servicios.filter(
+      (s) => s.visibleEnApp !== false || $("incluir-servicios-ocultos").checked,
+    );
+    $("servicios-lista").innerHTML =
+      lista
+        .map(
+          (s) =>
+            `<button class="cuenta" data-servicio="${escapar(s.id)}"><span><strong>${escapar(s.nombre)}</strong><small>${escapar(s.id)} · ${s.activo ? "Habilitado" : "Deshabilitado"}${s.visibleEnApp === false ? " · Oculto en la app" : ""}</small></span><span>${dinero(s.baseCentavos)}</span></button>`,
+        )
+        .join("") || "<p>No hay servicios visibles en esta selección.</p>";
+  }
+  $("incluir-servicios-ocultos").addEventListener("change", renderServicios);
   function renderSolicitudes() {
     const estados = {
       revision: "En revisión",
@@ -67,7 +80,8 @@ export function iniciarBanca({
       `<button class="${valor === "rechazar" ? "secundario" : "primario"}" data-tarjeta-revision="${valor}" data-id="${escapar(s.id)}" data-uid="${escapar(s.uid)}">${nombre}</button>`;
     const tarjeta = (s) =>
       `<article class="solicitud"><div class="cabecera"><div><h2>${s.tipo === "credito" ? "Solicitud de tarjeta de crédito" : "Tarjeta física"} · ${escapar(s.nombre)}</h2><p>${escapar(estados[s.estado] ?? s.estado)}</p></div></div>${s.tipo === "credito" ? `<p>${escapar(s.ocupacion)} · Ingresos mensuales ${dinero(s.ingresosCentavos)}</p>${s.cupoCentavos ? `<p><strong>Cupo aprobado ${dinero(s.cupoCentavos)}</strong> · El titular elige su corte en la app.</p>` : `<p>Aprueba la tarjeta asignando un cupo. La app solicitará al titular elegir su corte mensual.</p>`}` : `<div class="vista-tarjeta tono-${escapar(s.diseno.color)}"><strong>fb.</strong><p>${escapar(s.diseno.nombre)}</p><span>•••• ${escapar(s.diseno.ultimos4)}</span></div><p>${s.diseno.fondoRuta ? `<button class="secundario" data-documento="${escapar(s.diseno.fondoRuta)}">Ver fondo personalizado</button>` : ""}${s.personalizada ? "Diseño personalizado · revisión en 3 días" : "Diseño predeterminado"}<br>Envío solicitado: ${escapar(s.fechaEnvio)}<br>${escapar(s.domicilio.direccion)} · ${escapar(s.domicilio.ciudad)}<br>Contacto: ${escapar(s.domicilio.telefono)}</p>`}${s.nota ? `<p>${escapar(s.nota)}</p>` : ""}<div class="acciones">${s.tipo === "credito" && ["revision", "preaprobada"].includes(s.estado) ? accion(s, "rechazar", "No aprobar") + accion(s, "aprobar", "Aprobar tarjeta y cupo") : s.estado === "revision_diseno" ? accion(s, "rechazar", "No aprobar diseño") + accion(s, "aprobar_diseno", "Aprobar diseño") : s.estado === "preparacion" ? accion(s, "enviar", "Registrar envío") : s.estado === "enviada" ? accion(s, "entregar", "Registrar entrega") : ""}</div></article>`;
-    const asesoria = s => `<article class="solicitud"><h2>Asesoría · ${escapar(s.nombre)}</h2><p>${escapar(s.motivo)}</p>${s.respuesta?`<p>Respuesta: ${escapar(s.respuesta)}</p>`:`<button class="primario" data-asesoria="${escapar(s.id)}" data-uid="${escapar(s.uid)}">Responder consulta</button>`}</article>`;
+    const asesoria = (s) =>
+      `<article class="solicitud"><h2>Asesoría · ${escapar(s.nombre)}</h2><p>${escapar(s.motivo)}</p>${s.respuesta ? `<p>Respuesta: ${escapar(s.respuesta)}</p>` : `<button class="primario" data-asesoria="${escapar(s.id)}" data-uid="${escapar(s.uid)}">Responder consulta</button>`}</article>`;
     const corporativa = (s) =>
       `<article class="solicitud"><div class="cabecera"><div><h2>${escapar(s.empresa)}</h2><p>${escapar(s.representante)} · RUC ${escapar(s.ruc)}<br>${escapar(estados[s.estado] ?? s.estado)} · ${s.depositoCentavos ? dinero(s.depositoCentavos) : s.escala === "pyme" ? "Depósito USD 1.000" : "Depósito USD 2.000"}</p></div></div><div class="documentos">${Object.entries(
         s.documentos ?? {},
@@ -90,17 +104,44 @@ export function iniciarBanca({
     $("solicitudes-lista").innerHTML = visibles.length
       ? visibles
           .map((s) =>
-            s.tipo==="asesoria" ? asesoria(s) : ["credito", "fisica"].includes(s.tipo)
-              ? tarjeta(s)
-              : corporativa(s),
+            s.tipo === "asesoria"
+              ? asesoria(s)
+              : ["credito", "fisica"].includes(s.tipo)
+                ? tarjeta(s)
+                : corporativa(s),
           )
           .join("")
       : '<p class="vacio">Las solicitudes enviadas aparecerán aquí.</p>';
   }
   $("buscar-solicitud").addEventListener("input", renderSolicitudes);
   $("solicitudes-lista").addEventListener("click", async (e) => {
-    const consulta=e.target.closest('[data-asesoria]');
-    if(consulta){const dialog=document.createElement('dialog');dialog.innerHTML='<form><h2>Responder consulta</h2><label>Respuesta del asesor<textarea name="respuesta" minlength="5" maxlength="400" required></textarea></label><div class="acciones"><button type="button" class="secundario">Volver</button><button type="submit" class="primario">Enviar respuesta</button></div></form>';document.body.append(dialog);dialog.querySelector('[type=button]').onclick=()=>dialog.close();dialog.addEventListener('close',()=>dialog.remove());dialog.querySelector('form').onsubmit=async v=>{v.preventDefault();v.submitter.disabled=true;try{await ejecutar('responderAsesoria',{uid:consulta.dataset.uid,id:consulta.dataset.asesoria,respuesta:new FormData(v.target).get('respuesta')});dialog.close();avisar('Respuesta enviada al cliente.');}catch(error){avisar(fallo(error),true);v.submitter.disabled=false;}};dialog.showModal();return;}
+    const consulta = e.target.closest("[data-asesoria]");
+    if (consulta) {
+      const dialog = document.createElement("dialog");
+      dialog.innerHTML =
+        '<form><h2>Responder consulta</h2><label>Respuesta del asesor<textarea name="respuesta" minlength="5" maxlength="400" required></textarea></label><div class="acciones"><button type="button" class="secundario">Volver</button><button type="submit" class="primario">Enviar respuesta</button></div></form>';
+      document.body.append(dialog);
+      dialog.querySelector("[type=button]").onclick = () => dialog.close();
+      dialog.addEventListener("close", () => dialog.remove());
+      dialog.querySelector("form").onsubmit = async (v) => {
+        v.preventDefault();
+        v.submitter.disabled = true;
+        try {
+          await ejecutar("responderAsesoria", {
+            uid: consulta.dataset.uid,
+            id: consulta.dataset.asesoria,
+            respuesta: new FormData(v.target).get("respuesta"),
+          });
+          dialog.close();
+          avisar("Respuesta enviada al cliente.");
+        } catch (error) {
+          avisar(fallo(error), true);
+          v.submitter.disabled = false;
+        }
+      };
+      dialog.showModal();
+      return;
+    }
     const doc = e.target.closest("[data-documento]");
     if (doc) {
       doc.disabled = true;
@@ -257,26 +298,57 @@ export function iniciarBanca({
       e.target.disabled = false;
     }
   };
-  let decoracionEditada=false;
-  const hoy=new Date(Date.now()-5*3600000).toISOString().slice(0,10);
-  $("decoracion-desde").value=hoy;$("decoracion-hasta").value=hoy;
-  $("decoracion-form").addEventListener("input",()=>{decoracionEditada=true;});
-  $("decoracion-form").addEventListener("submit",async(e)=>{
-    e.preventDefault();e.submitter.disabled=true;
+  let decoracionEditada = false;
+  const hoy = new Date(Date.now() - 5 * 3600000).toISOString().slice(0, 10);
+  $("decoracion-desde").value = hoy;
+  $("decoracion-hasta").value = hoy;
+  $("decoracion-form").addEventListener("input", () => {
+    decoracionEditada = true;
+  });
+  $("decoracion-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    e.submitter.disabled = true;
     try {
-      await ejecutar("guardarDecoracion",{activa:$("decoracion-activa").value==="true",tema:$("decoracion-tema").value,desde:$("decoracion-desde").value,hasta:$("decoracion-hasta").value,titulo:$("decoracion-titulo").value,mensaje:$("decoracion-mensaje").value});
-      decoracionEditada=false;avisar("Temporada guardada. La app recibirá el cambio.");
-    } catch(error) {avisar(fallo(error),true);} finally {e.submitter.disabled=false;}
+      await ejecutar("guardarDecoracion", {
+        activa: $("decoracion-activa").value === "true",
+        tema: $("decoracion-tema").value,
+        desde: $("decoracion-desde").value,
+        hasta: $("decoracion-hasta").value,
+        titulo: $("decoracion-titulo").value,
+        mensaje: $("decoracion-mensaje").value,
+      });
+      decoracionEditada = false;
+      avisar("Temporada guardada. La app recibirá el cambio.");
+    } catch (error) {
+      avisar(fallo(error), true);
+    } finally {
+      e.submitter.disabled = false;
+    }
   });
   return {
     escuchar() {
       chequera.escuchar();
-      suscripciones.push(onSnapshot(doc(db,"experiencias/decoracion"),(s)=>{
-        const d=s.data();if(!d || decoracionEditada)return;
-        for(const campo of ["tema","desde","hasta","titulo","mensaje","activa"])$("decoracion-"+campo).value=String(d[campo]);
-        const activa=d.activa && d.desde<=hoy && d.hasta>=hoy;
-        document.body.dataset.temporada=activa?d.tema:"habitual";
-      },e=>avisar(fallo(e),true)));
+      suscripciones.push(
+        onSnapshot(
+          doc(db, "experiencias/decoracion"),
+          (s) => {
+            const d = s.data();
+            if (!d || decoracionEditada) return;
+            for (const campo of [
+              "tema",
+              "desde",
+              "hasta",
+              "titulo",
+              "mensaje",
+              "activa",
+            ])
+              $("decoracion-" + campo).value = String(d[campo]);
+            const activa = d.activa && d.desde <= hoy && d.hasta >= hoy;
+            document.body.dataset.temporada = activa ? d.tema : "habitual";
+          },
+          (e) => avisar(fallo(e), true),
+        ),
+      );
 
       observar(collectionGroup(db, "tarjetas"), (items) => {
         tarjetasCredito = items.filter(
@@ -307,13 +379,7 @@ export function iniciarBanca({
       });
       observar(collection(db, "servicios"), (items) => {
         servicios = items;
-        $("servicios-lista").innerHTML =
-          items
-            .map(
-              (s) =>
-                `<button class="cuenta" data-servicio="${escapar(s.id)}"><span><strong>${escapar(s.nombre)}</strong><small>${escapar(s.id)} · ${s.activo ? "Habilitado" : "Deshabilitado"}</small></span><span>${dinero(s.baseCentavos)}</span></button>`,
-            )
-            .join("") || "<p>Agrega tu primer servicio.</p>";
+        renderServicios();
       });
       observar(query(collectionGroup(db, "autopagos"), limit(100)), (items) => {
         $("autopagos-lista").innerHTML =
@@ -336,7 +402,8 @@ export function iniciarBanca({
       $("autopagos-lista").replaceChildren();
       $("tarjetas-credito-lista").replaceChildren();
       tarjetasCredito = [];
-      decoracionEditada=false;document.body.dataset.temporada="habitual";
+      decoracionEditada = false;
+      document.body.dataset.temporada = "habitual";
     },
   };
 }

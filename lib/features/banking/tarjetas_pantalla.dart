@@ -111,6 +111,9 @@ class TarjetaVisualBro extends StatelessWidget {
                             tarjeta['tipo'] == 'propia'
                                 ? Icons.shield_outlined
                                 : Icons.credit_card,
+                            color: oscuro
+                                ? Colors.white
+                                : const Color(0xFF242735),
                           ),
                         ],
                       ),
@@ -235,15 +238,16 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
       throw const FalloApp('Ese archivo no es una imagen PNG o JPG.');
     }
     final buffer = await ui.ImmutableBuffer.fromUint8List(bytes);
-    final descriptor = await ui.ImageDescriptor.encoded(buffer);
+    ui.ImageDescriptor? descriptor;
     try {
+      descriptor = await ui.ImageDescriptor.encoded(buffer);
       if (descriptor.width > 4096 ||
           descriptor.height > 4096 ||
           descriptor.width * descriptor.height > 16000000) {
         throw const FalloApp('Usa una imagen de hasta 4096 píxeles por lado.');
       }
     } finally {
-      descriptor.dispose();
+      descriptor?.dispose();
       buffer.dispose();
     }
     final uid = ref.read(identidadProvider).actual!.uid;
@@ -299,22 +303,24 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
                   t['tipo'] == 'propia' ? 'Transferir con QR' : 'Pagar tarjeta',
                 ),
               ),
-              TextButton(
+              OutlinedButton.icon(
                 onPressed: () {
                   Navigator.pop(c);
                   personalizar(t);
                 },
-                child: const Text('Personalizar diseño'),
+                icon: const Icon(Icons.palette_outlined),
+                label: const Text('Personalizar diseño'),
               ),
               if (t['tipo'] == 'propia')
-                TextButton(
+                OutlinedButton.icon(
                   onPressed: () {
                     Navigator.pop(c);
                     context.push('/tarjetas/fisica/${t['id']}');
                   },
-                  child: const Text('Solicitar copia física'),
+                  icon: const Icon(Icons.local_shipping_outlined),
+                  label: const Text('Solicitar copia física'),
                 ),
-              TextButton(
+              OutlinedButton.icon(
                 onPressed: () {
                   Navigator.pop(c);
                   context.push(
@@ -323,7 +329,8 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
                         : '/historial?tipo=tarjeta&id=${t['id']}',
                   );
                 },
-                child: const Text('Ver movimientos'),
+                icon: const Icon(Icons.history),
+                label: const Text('Ver movimientos'),
               ),
             ],
           ),

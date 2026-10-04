@@ -296,6 +296,8 @@ export async function cobrarCheque(b, auth, d, { automatico = false } = {}) {
     const doc = await tx.get(cRef);
     if (!doc.exists) fallo("No encontramos el cheque.", "not-found");
     const c = doc.data();
+    entero(c.centavos, "el importe registrado del cheque", 10, MAX);
+    fechaCheque(c.fechaCobro);
     if (!automatico && ![c.uidEmisor, c.uidReceptor].includes(uid))
       fallo("Este cheque no pertenece a tu cuenta.", "permission-denied");
     if (c.estado === "cobrado") return { id, estado: "cobrado" };
@@ -346,6 +348,16 @@ export async function cobrarCheque(b, auth, d, { automatico = false } = {}) {
       }
       return { id, estado: "pendiente_fondos" };
     }
+    // Una inconsistencia no debe convertirse en un débito o un abono parcial.
+    b.cuentaDisponible(oSnap);
+    b.cuentaDisponible(dSnap);
+    if (oRef.path === dRef.path || o.numeroCuenta !== c.numeroOrigen ||
+        destino.numeroCuenta !== c.numeroDestino || o.tipo !== "corriente" ||
+        destino.tipo !== "corriente" || !g.exists)
+      fallo("No pudimos verificar las cuentas y la agrupación del cheque.");
+    const agrupacion = g.data();
+    entero(agrupacion.pendienteCentavos, "el total pendiente", c.centavos, MAX);
+    entero(agrupacion.cobradoCentavos, "el total cobrado", 0, MAX - c.centavos);
     const fecha = b.ahora(),
       mov = `cheque_${id}`;
     tx.update(oRef, {

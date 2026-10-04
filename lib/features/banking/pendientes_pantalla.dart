@@ -109,11 +109,25 @@ class PendientesPantalla extends ConsumerWidget {
                                 'USD ${((v['datos']['centavos'] as int) / 100).toStringAsFixed(2)}',
                               ),
                             ),
-                            if (v['estado'] == 'pendiente')
+                            if (v['estado'] == 'pendiente' &&
+                                v['intentada'] != true)
                               OutlinedButton.icon(
-                                onPressed: () => ref
-                                    .read(colaTransferenciasProvider)
-                                    .cancelar(v['referencia'] as String),
+                                onPressed: () async {
+                                  try {
+                                    await ref
+                                        .read(colaTransferenciasProvider)
+                                        .cancelar(v['referencia'] as String);
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                            SnackBar(
+                                              content: Text(mensajeError(e)),
+                                            ),
+                                          );
+                                    }
+                                  }
+                                },
                                 icon: const Icon(Icons.cancel_outlined),
                                 label: const Text('Cancelar antes de enviar'),
                               ),

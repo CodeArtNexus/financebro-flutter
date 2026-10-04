@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -45,15 +44,20 @@ class ColaTransferencias extends ChangeNotifier {
   List<Map<String, dynamic>> items = [];
   bool procesando = false;
   bool _cerrada = false;
+  bool _agregando = false, _lecturaFallida = false;
+  int _generacion = 0;
   Future<void> _escritura = Future.value();
   String clave(String u) => 'bro_cola_${proyecto}_$u';
   Future<void> cargar(String? u) async {
-    await _escritura;
+    final generacion = ++_generacion;
     uid = u;
     items = [];
+    _lecturaFallida = false;
+    await _escritura.catchError((Object _) {});
+    if (generacion != _generacion) return;
     if (u != null) {
       final raw = await almacen.leer(clave(u));
-      if (uid != u) return;
+      if (generacion != _generacion) return;
       try {
         final lista = jsonDecode(raw ?? '[]');
         if (lista is! List || lista.length > 50) throw const FormatException();
@@ -67,11 +71,16 @@ class ColaTransferencias extends ChangeNotifier {
                   v['datos'] is Map,
             )
             .map(
-              (v) =>
-                  v['estado'] == 'enviando' ? {...v, 'estado': 'pendiente'} : v,
+              (v) => {
+                ...v,
+                // Una cola anterior sin marcador puede haber alcanzado el servidor.
+                'intentada': v['intentada'] ?? true,
+                'estado': v['estado'] == 'enviando' ? 'pendiente' : v['estado'],
+              },
             )
             .toList();
       } catch (_) {
+        _lecturaFallida = true;
         throw const FalloApp(
           'No pudimos leer tus transferencias pendientes. Conservamos el archivo para revisarlo.',
         );
@@ -83,8 +92,17 @@ class ColaTransferencias extends ChangeNotifier {
   Future<void> guardar() {
     final u = uid;
     if (u == null) return Future.value();
+    if (_lecturaFallida) {
+      return Future.error(
+        const FalloApp(
+          'Conservamos tus envíos pendientes. No podemos guardar nuevos envíos hasta recuperar la lista.',
+        ),
+      );
+    }
     final raw = jsonEncode(items);
-    _escritura = _escritura.then((_) => almacen.escribir(clave(u), raw));
+    _escritura = _escritura
+        .catchError((Object _) {})
+        .then((_) => almacen.escribir(clave(u), raw));
     return _escritura;
   }
 
@@ -92,7 +110,25 @@ class ColaTransferencias extends ChangeNotifier {
     if (!_cerrada) notifyListeners();
   }
 
-  Future<void> agregar(Map<String, dynamic> datos, String titular) async {
+  Future<Map<String, dynamic>?> agregar(
+    Map<String, dynamic> datos,
+    String titular,
+  ) async {
+    if (_agregando || _lecturaFallida) {
+      throw const FalloApp('Espera a que terminemos de conservar tus envíos.');
+    }
+    _agregando = true;
+    try {
+      return await _agregar(datos, titular);
+    } finally {
+      _agregando = false;
+    }
+  }
+
+  Future<Map<String, dynamic>?> _agregar(
+    Map<String, dynamic> datos,
+    String titular,
+  ) async {
     final u = uid;
     if (u == null || sesion() != u) {
       throw const FalloApp(
@@ -117,7 +153,11 @@ class ColaTransferencias extends ChangeNotifier {
         'Tu sesión cambió. Vuelve a revisar la transferencia.',
       );
     }
-    if (items.any((v) => v['referencia'] == datos['referencia'])) return;
+    if (items.any((v) => v['referencia'] == datos['referencia'])) {
+      throw const FalloApp(
+        'Este envío ya está guardado. Consulta su estado en transferencias pendientes.',
+      );
+    }
     items = items
         .where((v) => ['pendiente', 'enviando'].contains(v['estado']))
         .followedBy(
@@ -133,35 +173,70 @@ class ColaTransferencias extends ChangeNotifier {
       'titular': titular,
       'creada': creada,
       'estado': 'pendiente',
+      'intentada': false,
       'mensaje': 'Se validará al reconectar. Aún no descontamos dinero.',
       'datos': {...datos, 'colaCreada': creada},
     });
-    await guardar();
+    try {
+      await guardar();
+    } catch (_) {
+      items.removeWhere((v) => v['referencia'] == datos['referencia']);
+      throw const FalloApp(
+        'No pudimos guardar el envío en tu dispositivo. No lo enviamos ni descontamos dinero.',
+      );
+    }
     avisar();
-    if (conectado()) unawaited(procesar());
+    _agregando = false;
+    if (conectado()) await procesar();
+    final item = items
+        .where((v) => v['referencia'] == datos['referencia'])
+        .firstOrNull;
+    return item?['estado'] == 'confirmada'
+        ? Map<String, dynamic>.from(item!['recibo'] as Map)
+        : null;
   }
 
   Future<void> cancelar(String ref) async {
     final i = items.where((v) => v['referencia'] == ref).firstOrNull;
-    if (i == null || i['estado'] != 'pendiente') return;
+    if (i == null || i['estado'] != 'pendiente' || i['intentada'] == true) {
+      return;
+    }
+    final mensajeAnterior = i['mensaje'];
     i['estado'] = 'cancelada';
     i['mensaje'] = 'Cancelada antes de enviarse.';
-    await guardar();
+    try {
+      await guardar();
+    } catch (_) {
+      i['estado'] = 'pendiente';
+      i['mensaje'] = mensajeAnterior;
+      throw const FalloApp(
+        'No pudimos guardar la cancelación. El envío sigue pendiente; vuelve a cancelar antes de conectarte.',
+      );
+    }
     avisar();
   }
 
   Future<void> procesar() async {
-    if (procesando || uid == null || !conectado() || sesion() != uid) return;
+    if (procesando ||
+        _agregando ||
+        _lecturaFallida ||
+        uid == null ||
+        !conectado() ||
+        sesion() != uid) {
+      return;
+    }
     procesando = true;
-    final u = uid;
+    final u = uid, generacion = _generacion;
     try {
       for (final item
           in items.where((v) => v['estado'] == 'pendiente').toList()) {
-        if (uid != u || sesion() != u || !conectado()) break;
+        if (generacion != _generacion || sesion() != u || !conectado()) break;
+        if (item['estado'] != 'pendiente') continue;
         final creada = DateTime.tryParse(item['creada'] as String);
-        if (creada == null ||
-            reloj().difference(creada) > const Duration(hours: 24) ||
-            creada.isAfter(reloj().add(const Duration(minutes: 5)))) {
+        if (item['intentada'] != true &&
+            (creada == null ||
+                reloj().difference(creada) > const Duration(hours: 24) ||
+                creada.isAfter(reloj().add(const Duration(minutes: 5))))) {
           item['estado'] = 'expirada';
           item['mensaje'] = 'Pasaron 24 horas. Revisa los datos y crea una nueva transferencia.';
           await guardar();
@@ -169,7 +244,18 @@ class ColaTransferencias extends ChangeNotifier {
           continue;
         }
         item['estado'] = 'enviando';
-        await guardar();
+        final anteriorIntento = item['intentada'];
+        item['intentada'] = true;
+        try {
+          await guardar();
+        } catch (_) {
+          item['estado'] = 'pendiente';
+          item['intentada'] = anteriorIntento;
+          throw const FalloApp(
+            'No pudimos conservar el envío. No lo enviamos; revisa el almacenamiento de tu dispositivo.',
+          );
+        }
+        if (generacion != _generacion || sesion() != u) break;
         avisar();
         try {
           final recibo = await enviar(
@@ -184,14 +270,14 @@ class ColaTransferencias extends ChangeNotifier {
             item['mensaje'] = e.mensaje;
           } else {
             item['estado'] = 'pendiente';
-            item['mensaje'] =
-                'Estamos esperando conexión. Conservamos la misma referencia.';
+            item['mensaje'] = 'Estamos verificando la confirmación. Conservamos la misma referencia; no prepares otro envío para reemplazarlo.';
           }
         }
-        if (uid == u) {
+        if (generacion == _generacion) {
           await guardar();
           avisar();
         } else {
+          await _escritura.catchError((Object _) {});
           final raw = await almacen.leer(clave(u!));
           final antiguos = (jsonDecode(raw ?? '[]') as List)
               .map((v) => Map<String, dynamic>.from(v as Map))
@@ -201,7 +287,10 @@ class ColaTransferencias extends ChangeNotifier {
           );
           if (ix >= 0) {
             antiguos[ix] = item;
-            await almacen.escribir(clave(u), jsonEncode(antiguos));
+            _escritura = _escritura
+                .catchError((Object _) {})
+                .then((_) => almacen.escribir(clave(u), jsonEncode(antiguos)));
+            await _escritura;
           }
           break;
         }

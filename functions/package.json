@@ -10,7 +10,7 @@
   },
   "scripts": {
     "test": "node --test test/*.test.js",
-    "test:integracion": "node --test test/integracion/*.test.js"
+    "test:integracion": "node --test --test-concurrency=1 test/integracion/*.test.js"
   },
   "dependencies": {
     "firebase-admin": "14.5.0",

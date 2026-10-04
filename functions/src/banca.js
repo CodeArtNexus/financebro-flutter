@@ -549,7 +549,12 @@ export class Banco {
       snapshot.data().tipo !== "propia"
     )
       falla("not-found", "No encontramos tu tarjeta de crédito FinanceBro.");
-    return snapshot.data();
+    const t = snapshot.data();
+    entero(t.cupoCentavos, "el cupo registrado", 1, 5000000);
+    entero(t.deudaCentavos, "la deuda registrada", 0, t.cupoCentavos);
+    entero(t.totalPagarCentavos, "el total facturado", 0, t.deudaCentavos);
+    entero(t.minimoPagarCentavos, "el mínimo registrado", 0, t.totalPagarCentavos);
+    return t;
   }
   async elegirCorteTarjeta(auth, d) {
     const uid = this.actor(auth),
@@ -941,6 +946,8 @@ export class Banco {
         await this.cuenta(titular.uid, titular.cuenta).get(),
         { entrada: true },
       );
+    if (c.numeroCuenta !== numero)
+      falla("failed-precondition", "No pudimos verificar esa cuenta.");
     return { numero, titular: titular.titular, tipo: c.tipo, estado: c.estado };
   }
   async transferir(auth, d) {
@@ -981,6 +988,8 @@ export class Banco {
         destino = this.cuentaDisponible(await tx.get(destinoRef), {
           entrada: true,
         });
+      if (destino.numeroCuenta !== numero)
+        falla("failed-precondition", "No pudimos verificar el destino. Revisa la cuenta antes de continuar.");
       const perfil = await tx.get(this.usuario(uid));
       if (origen.saldoCentavos < importe)
         falla(

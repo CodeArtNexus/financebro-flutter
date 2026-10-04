@@ -162,15 +162,16 @@ class _QrEstado extends EstadoBanco<QrPantalla> {
           : nota.text.trim(),
       'referencia': referencia,
     };
-    if (sinConexion) {
-      await ref
-          .read(colaTransferenciasProvider)
-          .agregar(datos, receptor!['titular'] as String);
-      if (mounted) setState(() => pendiente = true);
-      return;
+    // Se conserva la autorización antes de cualquier llamada, también con internet.
+    final r = await ref
+        .read(colaTransferenciasProvider)
+        .agregar(datos, receptor!['titular'] as String);
+    if (mounted) {
+      setState(() {
+        recibo = r;
+        pendiente = r == null;
+      });
     }
-    final r = await llamar('transferir', datos);
-    if (mounted) setState(() => recibo = r);
   });
   @override
   Widget build(
@@ -208,11 +209,11 @@ class _QrEstado extends EstadoBanco<QrPantalla> {
           children: [
             const Icon(Icons.schedule_send, size: 56),
             const Text(
-              'Transferencia preparada',
+              'Consulta el estado de tu envío',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.w600),
             ),
             const Text(
-              'Aún no descontamos dinero. Al reconectar validaremos la cuenta, los fondos y el monto.',
+              'Conservamos tu autorización y referencia. En el estado del envío podrás comprobar si está pendiente, confirmado o rechazado.',
             ),
             FilledButton.icon(
               onPressed: () => context.push('/pendientes'),

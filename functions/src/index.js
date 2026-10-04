@@ -48,6 +48,16 @@ export const pagosMensuales = onSchedule(
   async () => banco.procesarAutopagos(),
 );
 
+export const cortesTarjetas = onSchedule(
+  {
+    schedule: "every day 09:05",
+    timeZone: "America/Guayaquil",
+    maxInstances: 1,
+    timeoutSeconds: 300,
+  },
+  async () => banco.procesarCortesTarjetas(),
+);
+
 export const enviarAviso = onDocumentCreated(
   { document: "enviosPush/{evento}", retry: true },
   async (event) => {

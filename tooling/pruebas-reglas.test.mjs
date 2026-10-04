@@ -26,7 +26,7 @@ test('El propietario actualiza un perfil válido sin crear roles',async()=>{awai
 test('Los datos de identidad son privados incluso para el panel',async()=>{await assertSucceeds(getDoc(doc(cliente('ana').firestore(),'usuarios/ana/datosPersonales/uno')));for(const c of [cliente('bruno'),admin()])await assertFails(getDoc(doc(c.firestore(),'usuarios/ana/datosPersonales/uno')));});
 test('La persona no aprueba solicitudes ni programa cobros escribiendo documentos',async()=>{for(const r of ['solicitudes/corriente','autopagos/uno','contactos/uno','tarjetas/uno'])await assertFails(setDoc(doc(cliente('ana').firestore(),`usuarios/ana/${r}`),{estado:'activa'}));});
 test('El catálogo se consulta autenticado y se administra únicamente en el servidor',async()=>{await assertSucceeds(getDoc(doc(cliente('ana').firestore(),'servicios/luz')));await assertFails(getDoc(doc(entorno.unauthenticatedContext().firestore(),'servicios/luz')));for(const c of [cliente('ana'),admin()])await assertFails(setDoc(doc(c.firestore(),'servicios/luz'),{activo:true}));});
-test('El rol especial consulta cuentas y solicitudes globales; otro usuario no',async()=>{for(const col of ['cuentas','solicitudes','movimientosGlobales']){await assertSucceeds(getDocs(collectionGroup(admin().firestore(),col)));await assertFails(getDocs(collectionGroup(cliente('ana').firestore(),col)));}});
+test('El rol especial consulta cuentas y solicitudes globales; otro usuario no',async()=>{for(const col of ['cuentas','solicitudes','movimientosGlobales','tarjetas']){await assertSucceeds(getDocs(collectionGroup(admin().firestore(),col)));await assertFails(getDocs(collectionGroup(cliente('ana').firestore(),col)));}});
 test('El dispositivo y sus tokens solo pertenecen a su sesión',async()=>{const r='usuarios/ana/dispositivos/android';await assertSucceeds(setDoc(doc(cliente('ana').firestore(),r),{token:'token-de-prueba',actualizado:serverTimestamp()}));await assertFails(getDoc(doc(admin().firestore(),r)));await assertFails(deleteDoc(doc(cliente('bruno').firestore(),r)));await assertSucceeds(deleteDoc(doc(cliente('ana').firestore(),r)));});
 test('El cliente no fabrica notificaciones ni solicitudes de push',async()=>{await assertFails(setDoc(doc(cliente('ana').firestore(),'usuarios/ana/notificaciones/nuevo'),{titulo:'Falso'}));await assertFails(setDoc(doc(cliente('ana').firestore(),'enviosPush/nuevo'),{uid:'ana'}));});
 test('Se permite guardar una meta propia con cuenta y valores válidos',async()=>{const m={nombre:'Viaje',cuenta:'ahorros',objetivoCentavos:100000,aporteMensualCentavos:5000,fechaObjetivo:new Date(Date.now()+86400000),actualizado:serverTimestamp()};await assertSucceeds(setDoc(doc(cliente('ana').firestore(),'usuarios/ana/metas/viaje'),m));await assertFails(setDoc(doc(cliente('bruno').firestore(),'usuarios/ana/metas/viaje'),m));await assertFails(setDoc(doc(cliente('ana').firestore(),'usuarios/ana/metas/otra'),{...m,cuenta:'ajena'}));});
@@ -48,4 +48,16 @@ test('El registro de identidad no es consultable y el domicilio de una solicitud
  for(const c of [cliente('ana'),admin()])await assertSucceeds(getDoc(doc(c.firestore(),'usuarios/ana/solicitudes/fisica_bro_ahorros')));
  await assertFails(getDoc(doc(cliente('bruno').firestore(),'usuarios/ana/solicitudes/fisica_bro_ahorros')));
  for(const c of [cliente('ana'),admin()])await assertFails(setDoc(doc(c.firestore(),'usuarios/ana/solicitudes/fisica_bro_ahorros'),{estado:'enviada'}));
+});
+
+test('El cupo, los consumos y los estados de cuenta de una tarjeta propia solo los escribe el servidor',async()=>{
+ await entorno.withSecurityRulesDisabled(async c=>{
+  await setDoc(doc(c.firestore(),'usuarios/ana/tarjetas/bro_credito'),{clase:'credito',cupoCentavos:150000,deudaCentavos:20000});
+  await setDoc(doc(c.firestore(),'usuarios/ana/tarjetas/bro_credito/estadosCuenta/2026-10-15'),{totalCentavos:20000});
+ });
+ for(const r of ['usuarios/ana/tarjetas/bro_credito','usuarios/ana/tarjetas/bro_credito/estadosCuenta/2026-10-15']){
+  for(const c of [cliente('ana'),admin()])await assertSucceeds(getDoc(doc(c.firestore(),r)));
+  await assertFails(getDoc(doc(cliente('bruno').firestore(),r)));
+  for(const c of [cliente('ana'),admin()])await assertFails(setDoc(doc(c.firestore(),r),{cupoCentavos:999999}));
+ }
 });

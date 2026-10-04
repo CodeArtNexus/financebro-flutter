@@ -1,5 +1,13 @@
 import { randomBytes, createHash } from "node:crypto";
 import { Timestamp } from "firebase-admin/firestore";
+import {
+  POLITICA_TARJETA,
+  fechaEcuador,
+  siguienteCorte,
+  ultimoCorte,
+  vencimiento,
+  pagoMinimo,
+} from "./ciclo-tarjeta.js";
 
 export class FalloBanco extends Error {
   constructor(codigo, mensaje) {
@@ -309,7 +317,7 @@ export class Banco {
         );
       if (
         anterior.exists &&
-        ["revision", "preaprobada"].includes(anterior.data().estado)
+        ["revision", "preaprobada", "aprobada"].includes(anterior.data().estado)
       )
         return { id: "credito", estado: anterior.data().estado };
       tx.set(ref, {
@@ -371,14 +379,10 @@ export class Banco {
         tx.get(this.usuario(uid)),
         tx.get(ref),
       ]);
-      if (
-        !t.exists ||
-        t.data().tipo !== "propia" ||
-        t.data().clase === "credito"
-      )
+      if (!t.exists || t.data().tipo !== "propia")
         falla(
           "failed-precondition",
-          "Selecciona una tarjeta de débito FinanceBro.",
+          "Selecciona una tarjeta FinanceBro emitida a tu nombre.",
         );
       if (s.exists && s.data().referencia === id)
         return { id: ref.id, estado: s.data().estado };
@@ -438,13 +442,51 @@ export class Banco {
       if (!s.exists) falla("not-found", "No encontramos la solicitud.");
       const datos = s.data();
       let estado;
+      let cupoCentavos;
       if (
         datos.tipo === "credito" &&
-        datos.estado === "revision" &&
-        ["preaprobar", "rechazar"].includes(accion)
-      )
-        estado = accion === "preaprobar" ? "preaprobada" : "rechazada";
-      else if (datos.tipo === "fisica") {
+        ["revision", "preaprobada"].includes(datos.estado) &&
+        ["aprobar", "rechazar"].includes(accion)
+      ) {
+        estado = accion === "aprobar" ? "aprobada" : "rechazada";
+        if (accion === "aprobar") {
+          cupoCentavos = entero(
+            d.cupoCentavos,
+            "el cupo de la tarjeta",
+            100,
+            5000000,
+          );
+          const tarjetaRef = this.privado(uid, "tarjetas", "bro_credito"),
+            existente = await tx.get(tarjetaRef);
+          if (existente.exists)
+            falla(
+              "already-exists",
+              "La persona ya tiene una tarjeta de crédito.",
+            );
+          tx.create(tarjetaRef, {
+            tipo: "propia",
+            clase: "credito",
+            uid,
+            titular: datos.nombre,
+            cuenta: "ahorros",
+            banco: "FinanceBro",
+            nombre: "Mi tarjeta de crédito",
+            ultimos4: String(randomBytes(2).readUInt16BE() % 10000).padStart(
+              4,
+              "0",
+            ),
+            color: "lavanda",
+            personalizada: false,
+            estado: "pendiente_corte",
+            cupoCentavos,
+            deudaCentavos: 0,
+            totalPagarCentavos: 0,
+            minimoPagarCentavos: 0,
+            politica: POLITICA_TARJETA,
+            actualizado: fecha,
+          });
+        }
+      } else if (datos.tipo === "fisica") {
         const pasos = {
           aprobar_diseno: ["revision_diseno", "preparacion"],
           rechazar: ["revision_diseno", "rechazada"],
@@ -464,7 +506,13 @@ export class Banco {
           );
         estado = paso[1];
       } else falla("failed-precondition", "La solicitud ya fue revisada.");
-      tx.update(ref, { estado, nota, asesor: actor, actualizado: fecha });
+      tx.update(ref, {
+        estado,
+        nota,
+        ...(cupoCentavos ? { cupoCentavos, tarjeta: "bro_credito" } : {}),
+        asesor: actor,
+        actualizado: fecha,
+      });
       tx.create(ref.collection("revision").doc(), {
         accion,
         estado,
@@ -477,13 +525,264 @@ export class Banco {
         uid,
         `${id}_${randomBytes(8).toString("hex")}`,
         datos.tipo === "credito"
-          ? "Tu solicitud de crédito"
+          ? estado === "aprobada"
+            ? "Tu tarjeta de crédito está aprobada"
+            : "Tu solicitud de tarjeta de crédito"
           : "Tu tarjeta física",
-        nota,
-        "/tarjetas",
+        cupoCentavos
+          ? `Tu cupo es USD ${(cupoCentavos / 100).toFixed(2)}. Elige tu corte mensual para activar tu tarjeta.`
+          : nota,
+        datos.tipo === "credito" && estado === "aprobada"
+          ? "/tarjetas/credito/detalle"
+          : "/tarjetas",
         fecha,
       );
       return { id, estado };
+    });
+  }
+  tarjetaCredito(snapshot) {
+    if (
+      !snapshot.exists ||
+      snapshot.data().clase !== "credito" ||
+      snapshot.data().tipo !== "propia"
+    )
+      falla("not-found", "No encontramos tu tarjeta de crédito FinanceBro.");
+    return snapshot.data();
+  }
+  async elegirCorteTarjeta(auth, d) {
+    const uid = this.actor(auth),
+      dia = entero(d.dia, "el día de corte", 1, 28),
+      fecha = this.ahora();
+    if (d.aceptaCondiciones !== true)
+      falla("failed-precondition", "Acepta las condiciones de corte y pago.");
+    const ref = this.privado(uid, "tarjetas", "bro_credito");
+    return this.db.runTransaction(async (tx) => {
+      const t = this.tarjetaCredito(await tx.get(ref));
+      if (t.estado === "activa") {
+        if (t.diaCorte === dia) return { dia, proximoCorte: t.proximoCorte };
+        falla(
+          "failed-precondition",
+          "Tu corte ya está elegido. Contacta a un asesor para cambiarlo.",
+        );
+      }
+      const proximoCorte = siguienteCorte(fechaEcuador(this.reloj()), dia);
+      tx.update(ref, {
+        estado: "activa",
+        diaCorte: dia,
+        proximoCorte,
+        condicionesAceptadas: fecha,
+        actualizado: fecha,
+      });
+      this.avisarCliente(
+        tx,
+        uid,
+        "credito_activada",
+        "Tu tarjeta está lista",
+        `Tu corte será el día ${dia} de cada mes. Cupo USD ${(t.cupoCentavos / 100).toFixed(2)}.`,
+        "/tarjetas/credito/detalle",
+        fecha,
+      );
+      return { dia, proximoCorte };
+    });
+  }
+  async sincronizarCorte(uid) {
+    const ref = this.privado(uid, "tarjetas", "bro_credito"),
+      hoy = fechaEcuador(this.reloj()),
+      fecha = this.ahora();
+    return this.db.runTransaction(async (tx) => {
+      const t = this.tarjetaCredito(await tx.get(ref));
+      if (t.estado !== "activa" || t.proximoCorte > hoy) return t;
+      const corte = ultimoCorte(hoy, t.diaCorte),
+        minimo = pagoMinimo(t.deudaCentavos),
+        pagoHasta = vencimiento(corte);
+      const cambios = {
+        totalPagarCentavos: t.deudaCentavos,
+        minimoPagarCentavos: minimo,
+        ultimoCorte: corte,
+        pagoHasta,
+        proximoCorte: siguienteCorte(hoy, t.diaCorte),
+        actualizado: fecha,
+      };
+      tx.create(ref.collection("estadosCuenta").doc(corte), {
+        corte,
+        totalCentavos: t.deudaCentavos,
+        minimoCentavos: minimo,
+        pagoHasta,
+        politica: t.politica,
+        fecha,
+      });
+      tx.update(ref, cambios);
+      this.avisarCliente(
+        tx,
+        uid,
+        `corte_credito_${corte}`,
+        "Tu estado de cuenta está listo",
+        `Total USD ${(t.deudaCentavos / 100).toFixed(2)} · mínimo USD ${(minimo / 100).toFixed(2)} · paga hasta ${pagoHasta}.`,
+        "/tarjetas/credito/detalle",
+        fecha,
+      );
+      return { ...t, ...cambios };
+    });
+  }
+  async consultarTarjetaCredito(auth) {
+    return this.sincronizarCorte(this.actor(auth));
+  }
+  async procesarCortesTarjetas(auth) {
+    if (auth) this.actor(auth, true);
+    const hoy = fechaEcuador(this.reloj()),
+      tarjetas = await this.db
+        .collectionGroup("tarjetas")
+        .where("clase", "==", "credito")
+        .get();
+    let procesados = 0;
+    for (const doc of tarjetas.docs)
+      if (doc.data().estado === "activa" && doc.data().proximoCorte <= hoy) {
+        await this.sincronizarCorte(doc.ref.parent.parent.id);
+        procesados++;
+      }
+    return { procesados };
+  }
+  async registrarConsumoTarjeta(auth, d) {
+    const actor = this.actor(auth, true),
+      uid = identificador(d.uid),
+      id = referencia(d.referencia),
+      centavos = entero(d.centavos, "el importe del consumo", 10, 5000000),
+      comercio = texto(d.comercio, "el comercio", 2, 80),
+      fecha = this.ahora();
+    await this.sincronizarCorte(uid);
+    const ref = this.privado(uid, "tarjetas", "bro_credito"),
+      fingerprint = huella(["consumo_credito", uid, centavos, comercio]);
+    return this.db.runTransaction(async (tx) => {
+      const operacion = this.privado(uid, "operaciones", id),
+        previo = await tx.get(operacion);
+      if (previo.exists) {
+        if (previo.data().huella !== fingerprint)
+          falla("already-exists", "La referencia ya fue usada.");
+        return previo.data().recibo;
+      }
+      const t = this.tarjetaCredito(await tx.get(ref));
+      if (t.estado !== "activa")
+        falla(
+          "failed-precondition",
+          "La persona debe elegir el corte mensual para activar su tarjeta.",
+        );
+      if (t.deudaCentavos + centavos > t.cupoCentavos)
+        falla("failed-precondition", "El consumo supera el cupo disponible.");
+      const recibo = {
+        referencia: id,
+        centavos,
+        titular: comercio,
+        tipo: "consumo_credito",
+        tarjeta: "bro_credito",
+        fecha: fecha.toDate().toISOString(),
+      };
+      const movimiento = {
+        uid,
+        cuenta: "tarjeta_bro_credito",
+        destino: "bro_credito",
+        descripcion: `Compra · ${comercio}`,
+        centavos: -centavos,
+        categoria: "Compras con crédito",
+        tipo: "consumo_credito",
+        referencia: id,
+        actor,
+        fecha,
+      };
+      tx.update(ref, {
+        deudaCentavos: t.deudaCentavos + centavos,
+        actualizado: fecha,
+      });
+      tx.create(ref.collection("movimientos").doc(id), movimiento);
+      tx.create(
+        this.privado(uid, "movimientosGlobales", `credito_${id}`),
+        movimiento,
+      );
+      tx.create(operacion, { huella: fingerprint, recibo, fecha });
+      this.avisarCliente(
+        tx,
+        uid,
+        `consumo_${id}`,
+        "Compra con tu tarjeta de crédito",
+        `${comercio} · USD ${(centavos / 100).toFixed(2)}. Disponible USD ${((t.cupoCentavos - t.deudaCentavos - centavos) / 100).toFixed(2)}.`,
+        "/tarjetas/credito/detalle",
+        fecha,
+      );
+      return recibo;
+    });
+  }
+  async pagarTarjetaCredito(auth, d) {
+    const uid = this.actor(auth),
+      cuenta = identificador(d.cuenta),
+      id = referencia(d.referencia),
+      importe = entero(d.centavos, "el importe del pago", 1, 5000000),
+      fecha = this.ahora(),
+      fingerprint = huella(["pago_credito", cuenta, importe]);
+    await this.sincronizarCorte(uid);
+    return this.db.runTransaction(async (tx) => {
+      const operacion = this.privado(uid, "operaciones", id),
+        previo = await tx.get(operacion);
+      if (previo.exists) {
+        if (previo.data().huella !== fingerprint)
+          falla("already-exists", "La referencia ya fue usada.");
+        return previo.data().recibo;
+      }
+      const tarjetaRef = this.privado(uid, "tarjetas", "bro_credito"),
+        cuentaRef = this.cuenta(uid, cuenta);
+      const [ts, cs] = await Promise.all([
+          tx.get(tarjetaRef),
+          tx.get(cuentaRef),
+        ]),
+        t = this.tarjetaCredito(ts),
+        c = this.cuentaDisponible(cs);
+      if (importe > t.deudaCentavos)
+        falla(
+          "failed-precondition",
+          "El pago no puede superar lo que debes en tu tarjeta.",
+        );
+      if (c.saldoCentavos < importe)
+        falla("failed-precondition", "No tienes fondos suficientes.");
+      const recibo = {
+        referencia: id,
+        cuenta,
+        centavos: importe,
+        titular: t.nombre,
+        tipo: "pago_credito",
+        destino: "bro_credito",
+        fecha: fecha.toDate().toISOString(),
+      };
+      tx.update(cuentaRef, {
+        saldoCentavos: c.saldoCentavos - importe,
+        actualizado: fecha,
+      });
+      tx.update(tarjetaRef, {
+        deudaCentavos: t.deudaCentavos - importe,
+        totalPagarCentavos: Math.max(0, t.totalPagarCentavos - importe),
+        minimoPagarCentavos: Math.max(0, t.minimoPagarCentavos - importe),
+        actualizado: fecha,
+      });
+      this.registrarMovimiento(tx, uid, cuenta, id, {
+        descripcion: `Pago · ${t.nombre}`,
+        centavos: -importe,
+        categoria: "Pago de tarjeta",
+        tipo: "pago_credito",
+        destino: "bro_credito",
+        actor: uid,
+        fecha,
+      });
+      // En la tarjeta el abono es positivo; en la cuenta y el histórico global es una única salida.
+      tx.create(tarjetaRef.collection("movimientos").doc(id), {
+        descripcion: `Pago desde ${c.nombre}`,
+        centavos: importe,
+        categoria: "Pago de tarjeta",
+        tipo: "pago_credito",
+        cuenta,
+        referencia: id,
+        uid,
+        actor: uid,
+        fecha,
+      });
+      tx.create(operacion, { huella: fingerprint, recibo, fecha });
+      return recibo;
     });
   }
   async abrirAhorros(auth, d) {
@@ -804,53 +1103,64 @@ export class Banco {
   async guardarTarjeta(auth, d) {
     const uid = this.actor(auth),
       id = d.id ? identificador(d.id) : randomBytes(12).toString("hex"),
-      color = d.color ?? "durazno";
+      color = d.color ?? "durazno",
+      nombre = texto(d.nombre, "el nombre", 2, 40),
+      fecha = this.ahora();
     if (!COLORES.includes(color))
       falla("invalid-argument", "Selecciona un color disponible.");
-    let tarjeta;
+    const ref = this.privado(uid, "tarjetas", id);
     if (d.tipo === "propia") {
       if (!d.id)
         falla(
           "failed-precondition",
-          "Tu tarjeta FinanceBro se emite al abrir tus ahorros.",
+          "Tu tarjeta FinanceBro se emite al abrir ahorros o al aprobar tu solicitud de crédito.",
         );
-      const anterior = await this.privado(uid, "tarjetas", id).get();
-      if (!anterior.exists || anterior.data().tipo !== "propia")
-        falla("not-found", "No encontramos tu tarjeta FinanceBro.");
-      const cuenta = identificador(anterior.data().cuenta),
-        c = this.cuentaDisponible(await this.cuenta(uid, cuenta).get());
-      if (c.tipo === "corriente")
+      return this.db.runTransaction(async (tx) => {
+        const anterior = await tx.get(ref);
+        if (!anterior.exists || anterior.data().tipo !== "propia")
+          falla("not-found", "No encontramos tu tarjeta FinanceBro.");
+        const t = anterior.data(),
+          c = this.cuentaDisponible(
+            await tx.get(this.cuenta(uid, identificador(t.cuenta))),
+          );
+        if (c.tipo === "corriente")
+          falla(
+            "failed-precondition",
+            "Esta cuenta no emite una tarjeta automáticamente.",
+          );
+        // Cambiar el diseño nunca reescribe deuda, cupo ni corte leídos antes de un pago concurrente.
+        const cambios = {
+          nombre,
+          color,
+          personalizada: true,
+          actualizado: fecha,
+        };
+        tx.update(ref, cambios);
+        return { id, ...t, ...cambios };
+      });
+    }
+    if (d.tipo !== "externa")
+      falla("invalid-argument", "Revisa el tipo de tarjeta.");
+    if (typeof d.ultimos4 !== "string" || !/^\d{4}$/.test(d.ultimos4))
+      falla("invalid-argument", "Ingresa solo los últimos cuatro dígitos.");
+    const tarjeta = {
+      tipo: "externa",
+      nombre,
+      banco: texto(d.banco, "el banco", 2, 60),
+      ultimos4: d.ultimos4,
+      color,
+      actualizado: fecha,
+    };
+    return this.db.runTransaction(async (tx) => {
+      const anterior = await tx.get(ref);
+      if (anterior.exists && anterior.data().tipo === "propia")
         falla(
           "failed-precondition",
-          "Esta cuenta no emite una tarjeta automáticamente.",
+          "Una tarjeta FinanceBro no se puede convertir en una tarjeta externa.",
         );
-      tarjeta = {
-        ...anterior.data(),
-        tipo: "propia",
-        clase: "debito",
-        personalizada: true,
-        cuenta,
-        nombre: texto(d.nombre, "el nombre", 2, 40),
-        banco: "FinanceBro",
-        ultimos4: c.tarjetaUltimos4,
-        color,
-      };
-    } else if (d.tipo === "externa") {
-      if (typeof d.ultimos4 !== "string" || !/^\d{4}$/.test(d.ultimos4))
-        falla("invalid-argument", "Ingresa solo los últimos cuatro dígitos.");
-      tarjeta = {
-        tipo: "externa",
-        nombre: texto(d.nombre, "el nombre", 2, 40),
-        banco: texto(d.banco, "el banco", 2, 60),
-        ultimos4: d.ultimos4,
-        color,
-      };
-    } else falla("invalid-argument", "Revisa el tipo de tarjeta.");
-    await this.privado(uid, "tarjetas", id).set({
-      ...tarjeta,
-      actualizado: this.ahora(),
+      tx.set(ref, tarjeta);
+      return { id, ...tarjeta };
     });
-    return { id, ...tarjeta };
   }
   async pagarExterno(auth, d) {
     const uid = this.actor(auth),
@@ -1442,6 +1752,12 @@ export class Banco {
     const metodos = {
       registrarCliente: "registrarCliente",
       solicitarCredito: "solicitarCredito",
+      solicitarTarjetaCredito: "solicitarCredito",
+      elegirCorteTarjeta: "elegirCorteTarjeta",
+      consultarTarjetaCredito: "consultarTarjetaCredito",
+      registrarConsumoTarjeta: "registrarConsumoTarjeta",
+      pagarTarjetaCredito: "pagarTarjetaCredito",
+      procesarCortesTarjetas: "procesarCortesTarjetas",
       solicitarFisica: "solicitarFisica",
       revisarTarjeta: "revisarTarjeta",
       abrirAhorros: "abrirAhorros",
@@ -1470,7 +1786,8 @@ export class Banco {
       Array.isArray(datos)
     )
       falla("invalid-argument", "Operación no disponible.");
-    if (operacion === "procesarAutopagos") this.actor(auth, true);
+    if (["procesarAutopagos", "procesarCortesTarjetas"].includes(operacion))
+      this.actor(auth, true);
     if (operacion === "pagarServicio") {
       datos = {
         cuenta: datos.cuenta,

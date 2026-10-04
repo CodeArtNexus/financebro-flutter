@@ -407,28 +407,22 @@ test("Preparar cuentas antiguas conserva saldos, tarjetas e históricos y comple
     saldoCentavos: 12345,
     moneda: "USD",
   });
-  await cuenta
-    .collection("movimientos")
-    .doc("historia_original")
-    .set({
-      descripcion: "Fondos anteriores",
-      centavos: 12345,
-      fecha: banco.ahora(),
-    });
+  await cuenta.collection("movimientos").doc("historia_original").set({
+    descripcion: "Fondos anteriores",
+    centavos: 12345,
+    fecha: banco.ahora(),
+  });
   await banco.migrarCuentas(admin, { uid });
   const preparado = (await cuenta.get()).data();
   assert.equal(preparado.saldoCentavos, 12345);
   assert.equal(preparado.tarjetaUltimos4, "1234");
   const tarjeta = banco.privado(uid, "tarjetas", "bro_principal");
   await tarjeta.update({ color: "menta" });
-  await cuenta
-    .collection("movimientos")
-    .doc("pagina_pendiente")
-    .set({
-      descripcion: "Movimiento pendiente de preparar",
-      centavos: 0,
-      fecha: banco.ahora(),
-    });
+  await cuenta.collection("movimientos").doc("pagina_pendiente").set({
+    descripcion: "Movimiento pendiente de preparar",
+    centavos: 0,
+    fecha: banco.ahora(),
+  });
   await banco.migrarCuentas(admin, { uid });
   await banco.migrarCuentas(admin, { uid });
   assert.equal(
@@ -596,12 +590,13 @@ test("El registro crea ahorros, débito y contrato juntos; reintentos conservan 
   await b.revisarTarjeta(admin, {
     uid,
     id: "credito",
-    accion: "preaprobar",
-    nota: "Evaluación inicial registrada",
+    accion: "aprobar",
+    cupoCentavos: 150000,
+    nota: "Evaluación y cupo aprobados",
   });
   assert.equal(
     (await b.privado(uid, "solicitudes", "credito").get()).data().estado,
-    "preaprobada",
+    "aprobada",
   );
   assert.ok(
     (await b.usuario(uid).collection("notificaciones").get()).size >= 6,
@@ -645,4 +640,180 @@ test("El diseño predeterminado pasa a preparación y no se puede pedir una tarj
     color: "menta",
   });
   await assert.rejects(b.solicitarFisica(actor, { ...d, tarjeta: externa.id }));
+});
+
+test("La tarjeta aprobada tiene cupo, corte privado, consumos y pagos atómicos sin duplicación", async () => {
+  let reloj = new Date("2026-12-20T14:00:00Z");
+  const b = new Banco(db, { reloj: () => reloj }),
+    uid = `tarjeta_${marca}`,
+    actor = { uid, token: { email: `${uid}@financebro.test` } };
+  await b.registrarCliente(actor, {
+    nombres: "Andrea",
+    apellidos: "Torres",
+    correo: actor.token.email,
+    cedula: String((Date.now() + 100) % 10000000000).padStart(10, "0"),
+    direccion: "Calle Alborada 120",
+    ciudad: "Quito",
+    telefono: "0991234567",
+    aceptaContrato: true,
+    versionContrato: "2026-10-v1",
+  });
+  await b.solicitarCredito(actor, {
+    ingresosCentavos: 220000,
+    ocupacion: "Arquitecta",
+    aceptaEvaluacion: true,
+  });
+  const decision = {
+    uid,
+    id: "credito",
+    accion: "aprobar",
+    cupoCentavos: 150000,
+    nota: "Cupo aprobado tras revisión",
+  };
+  await assert.rejects(
+    b.revisarTarjeta(actor, decision),
+    (e) => e.codigo === "permission-denied",
+  );
+  await assert.rejects(
+    b.revisarTarjeta(admin, { ...decision, cupoCentavos: 0 }),
+  );
+  await b.revisarTarjeta(admin, decision);
+  await assert.rejects(b.revisarTarjeta(admin, decision));
+  const ref = b.privado(uid, "tarjetas", "bro_credito");
+  assert.equal((await ref.get()).data().cupoCentavos, 150000);
+  const consumo = {
+    uid,
+    referencia: `compra_${marca}`,
+    centavos: 20000,
+    comercio: "Librería Alameda",
+  };
+  await assert.rejects(b.registrarConsumoTarjeta(admin, consumo));
+  await assert.rejects(
+    b.elegirCorteTarjeta(actor, { dia: 31, aceptaCondiciones: true }),
+  );
+  await assert.rejects(
+    b.elegirCorteTarjeta(actor, { dia: 25, aceptaCondiciones: false }),
+  );
+  await b.elegirCorteTarjeta(actor, { dia: 25, aceptaCondiciones: true });
+  assert.equal((await ref.get()).data().proximoCorte, "2026-12-25");
+  await assert.rejects(b.registrarConsumoTarjeta(actor, consumo));
+  await Promise.all([
+    b.registrarConsumoTarjeta(admin, consumo),
+    b.registrarConsumoTarjeta(admin, consumo),
+  ]);
+  await assert.rejects(
+    b.registrarConsumoTarjeta(admin, { ...consumo, centavos: 20001 }),
+    (e) => e.codigo === "already-exists",
+  );
+  await assert.rejects(
+    b.registrarConsumoTarjeta(admin, {
+      ...consumo,
+      referencia: `exceso_${marca}`,
+      centavos: 150000,
+    }),
+  );
+  assert.equal((await ref.get()).data().deudaCentavos, 20000);
+  await b.guardarTarjeta(actor, {
+    id: "bro_credito",
+    tipo: "propia",
+    nombre: "Mis planes",
+    color: "noche",
+  });
+  await assert.rejects(
+    b.guardarTarjeta(actor, {
+      id: "bro_credito",
+      tipo: "externa",
+      nombre: "Otro banco",
+      banco: "Externo",
+      ultimos4: "1234",
+    }),
+  );
+  assert.equal((await ref.get()).data().clase, "credito");
+  assert.equal((await ref.get()).data().cupoCentavos, 150000);
+  reloj = new Date("2026-12-25T05:00:00Z");
+  await Promise.all([
+    b.consultarTarjetaCredito(actor),
+    b.consultarTarjetaCredito(actor),
+  ]);
+  const corte = (await ref.get()).data();
+  assert.equal(corte.totalPagarCentavos, 20000);
+  assert.equal(corte.minimoPagarCentavos, 1000);
+  assert.equal(corte.pagoHasta, "2027-01-09");
+  assert.equal(corte.proximoCorte, "2027-01-25");
+  assert.equal((await ref.collection("estadosCuenta").get()).size, 1);
+  await b.registrarConsumoTarjeta(admin, {
+    ...consumo,
+    referencia: `posterior_${marca}`,
+    centavos: 5000,
+  });
+  assert.equal((await ref.get()).data().totalPagarCentavos, 20000);
+  await b.ajustar(admin, {
+    uid,
+    cuenta: "ahorros",
+    centavos: 30000,
+    motivo: "Fondos para abono",
+    referencia: `abono_fondos_${marca}`,
+  });
+  const pago = {
+    cuenta: "ahorros",
+    referencia: `pago_tc_${marca}`,
+    centavos: 1000,
+  };
+  await Promise.all([
+    b.pagarTarjetaCredito(actor, pago),
+    b.pagarTarjetaCredito(actor, pago),
+  ]);
+  assert.equal(
+    (await b.cuenta(uid, "ahorros").get()).data().saldoCentavos,
+    29000,
+  );
+  const abonada = (await ref.get()).data();
+  assert.equal(abonada.deudaCentavos, 24000);
+  assert.equal(abonada.totalPagarCentavos, 19000);
+  assert.equal(abonada.minimoPagarCentavos, 0);
+  await assert.rejects(
+    b.pagarTarjetaCredito(actor, {
+      ...pago,
+      referencia: `sobrepago_${marca}`,
+      centavos: 24001,
+    }),
+  );
+  assert.equal((await ref.collection("movimientos").get()).size, 3);
+  assert.equal(
+    (
+      await b
+        .usuario(uid)
+        .collection("movimientosGlobales")
+        .where("tipo", "==", "pago_credito")
+        .get()
+    ).size,
+    1,
+  );
+  const aviso = (
+    await b.usuario(uid).collection("notificaciones").get()
+  ).docs.find((d) => d.data().titulo === "Tu tarjeta de crédito está aprobada");
+  assert.match(aviso.data().cuerpo, /1500.00/);
+  assert.equal(aviso.data().destino, "/tarjetas/credito/detalle");
+  // Un abono parcial puede dejar centavos residuales: también debe poder cancelarlos.
+  await b.pagarTarjetaCredito(actor, {
+    cuenta: "ahorros",
+    referencia: `casi_total_${marca}`,
+    centavos: 23995,
+  });
+  assert.equal((await ref.get()).data().deudaCentavos, 5);
+  await b.pagarTarjetaCredito(actor, {
+    cuenta: "ahorros",
+    referencia: `saldo_residual_${marca}`,
+    centavos: 5,
+  });
+  assert.equal((await ref.get()).data().deudaCentavos, 0);
+  assert.equal((await ref.get()).data().totalPagarCentavos, 0);
+  assert.equal(
+    (await b.cuenta(uid, "ahorros").get()).data().saldoCentavos,
+    5000,
+  );
+  reloj = new Date("2026-10-03T14:00:00Z");
+  await b.procesarCortesTarjetas(admin);
+  assert.equal((await ref.get()).data().proximoCorte, "2027-01-25");
+  await assert.rejects(b.procesarCortesTarjetas(actor));
 });

@@ -1,4 +1,5 @@
 import {
+  doc,
   collection,
   collectionGroup,
   query,
@@ -63,7 +64,7 @@ export function iniciarBanca({
     const accion = (s, valor, nombre) =>
       `<button class="${valor === "rechazar" ? "secundario" : "primario"}" data-tarjeta-revision="${valor}" data-id="${escapar(s.id)}" data-uid="${escapar(s.uid)}">${nombre}</button>`;
     const tarjeta = (s) =>
-      `<article class="solicitud"><div class="cabecera"><div><h2>${s.tipo === "credito" ? "Solicitud de tarjeta de crédito" : "Tarjeta física"} · ${escapar(s.nombre)}</h2><p>${escapar(estados[s.estado] ?? s.estado)}</p></div></div>${s.tipo === "credito" ? `<p>${escapar(s.ocupacion)} · Ingresos mensuales ${dinero(s.ingresosCentavos)}</p>${s.cupoCentavos ? `<p><strong>Cupo aprobado ${dinero(s.cupoCentavos)}</strong> · El titular elige su corte en la app.</p>` : `<p>Aprueba la tarjeta asignando un cupo. La app solicitará al titular elegir su corte mensual.</p>`}` : `<div class="vista-tarjeta tono-${escapar(s.diseno.color)}"><strong>fb.</strong><p>${escapar(s.diseno.nombre)}</p><span>•••• ${escapar(s.diseno.ultimos4)}</span></div><p>${s.personalizada ? "Diseño personalizado · revisión en 3 días" : "Diseño predeterminado"}<br>Envío solicitado: ${escapar(s.fechaEnvio)}<br>${escapar(s.domicilio.direccion)} · ${escapar(s.domicilio.ciudad)}<br>Contacto: ${escapar(s.domicilio.telefono)}</p>`}${s.nota ? `<p>${escapar(s.nota)}</p>` : ""}<div class="acciones">${s.tipo === "credito" && ["revision", "preaprobada"].includes(s.estado) ? accion(s, "rechazar", "No aprobar") + accion(s, "aprobar", "Aprobar tarjeta y cupo") : s.estado === "revision_diseno" ? accion(s, "rechazar", "No aprobar diseño") + accion(s, "aprobar_diseno", "Aprobar diseño") : s.estado === "preparacion" ? accion(s, "enviar", "Registrar envío") : s.estado === "enviada" ? accion(s, "entregar", "Registrar entrega") : ""}</div></article>`;
+      `<article class="solicitud"><div class="cabecera"><div><h2>${s.tipo === "credito" ? "Solicitud de tarjeta de crédito" : "Tarjeta física"} · ${escapar(s.nombre)}</h2><p>${escapar(estados[s.estado] ?? s.estado)}</p></div></div>${s.tipo === "credito" ? `<p>${escapar(s.ocupacion)} · Ingresos mensuales ${dinero(s.ingresosCentavos)}</p>${s.cupoCentavos ? `<p><strong>Cupo aprobado ${dinero(s.cupoCentavos)}</strong> · El titular elige su corte en la app.</p>` : `<p>Aprueba la tarjeta asignando un cupo. La app solicitará al titular elegir su corte mensual.</p>`}` : `<div class="vista-tarjeta tono-${escapar(s.diseno.color)}"><strong>fb.</strong><p>${escapar(s.diseno.nombre)}</p><span>•••• ${escapar(s.diseno.ultimos4)}</span></div><p>${s.diseno.fondoRuta ? `<button class="secundario" data-documento="${escapar(s.diseno.fondoRuta)}">Ver fondo personalizado</button>` : ""}${s.personalizada ? "Diseño personalizado · revisión en 3 días" : "Diseño predeterminado"}<br>Envío solicitado: ${escapar(s.fechaEnvio)}<br>${escapar(s.domicilio.direccion)} · ${escapar(s.domicilio.ciudad)}<br>Contacto: ${escapar(s.domicilio.telefono)}</p>`}${s.nota ? `<p>${escapar(s.nota)}</p>` : ""}<div class="acciones">${s.tipo === "credito" && ["revision", "preaprobada"].includes(s.estado) ? accion(s, "rechazar", "No aprobar") + accion(s, "aprobar", "Aprobar tarjeta y cupo") : s.estado === "revision_diseno" ? accion(s, "rechazar", "No aprobar diseño") + accion(s, "aprobar_diseno", "Aprobar diseño") : s.estado === "preparacion" ? accion(s, "enviar", "Registrar envío") : s.estado === "enviada" ? accion(s, "entregar", "Registrar entrega") : ""}</div></article>`;
     const corporativa = (s) =>
       `<article class="solicitud"><div class="cabecera"><div><h2>${escapar(s.empresa)}</h2><p>${escapar(s.representante)} · RUC ${escapar(s.ruc)}<br>${escapar(estados[s.estado] ?? s.estado)} · ${s.depositoCentavos ? dinero(s.depositoCentavos) : s.escala === "pyme" ? "Depósito USD 1.000" : "Depósito USD 2.000"}</p></div></div><div class="documentos">${Object.entries(
         s.documentos ?? {},
@@ -172,6 +173,7 @@ export function iniciarBanca({
         icono: $("servicio-icono").value,
         baseCentavos: centavos($("servicio-base").value),
         activo: $("servicio-activo").value === "true",
+        visibleEnApp: $("servicio-visible").value === "true",
       });
       avisar("Servicio actualizado en el catálogo de la app.");
     } catch (error) {
@@ -189,6 +191,7 @@ export function iniciarBanca({
     $("servicio-icono").value = s.icono;
     $("servicio-base").value = (s.baseCentavos / 100).toFixed(2);
     $("servicio-activo").value = String(s.activo);
+    $("servicio-visible").value = String(s.visibleEnApp !== false);
   });
   $("procesar-autopagos").addEventListener("click", async (e) => {
     e.target.disabled = true;
@@ -249,8 +252,26 @@ export function iniciarBanca({
       e.target.disabled = false;
     }
   };
+  let decoracionEditada=false;
+  const hoy=new Date(Date.now()-5*3600000).toISOString().slice(0,10);
+  $("decoracion-desde").value=hoy;$("decoracion-hasta").value=hoy;
+  $("decoracion-form").addEventListener("input",()=>{decoracionEditada=true;});
+  $("decoracion-form").addEventListener("submit",async(e)=>{
+    e.preventDefault();e.submitter.disabled=true;
+    try {
+      await ejecutar("guardarDecoracion",{activa:$("decoracion-activa").value==="true",tema:$("decoracion-tema").value,desde:$("decoracion-desde").value,hasta:$("decoracion-hasta").value,titulo:$("decoracion-titulo").value,mensaje:$("decoracion-mensaje").value});
+      decoracionEditada=false;avisar("Temporada guardada. La app recibirá el cambio.");
+    } catch(error) {avisar(fallo(error),true);} finally {e.submitter.disabled=false;}
+  });
   return {
     escuchar() {
+      suscripciones.push(onSnapshot(doc(db,"experiencias/decoracion"),(s)=>{
+        const d=s.data();if(!d || decoracionEditada)return;
+        for(const campo of ["tema","desde","hasta","titulo","mensaje","activa"])$("decoracion-"+campo).value=String(d[campo]);
+        const activa=d.activa && d.desde<=hoy && d.hasta>=hoy;
+        document.body.dataset.temporada=activa?d.tema:"habitual";
+      },e=>avisar(fallo(e),true)));
+
       observar(collectionGroup(db, "tarjetas"), (items) => {
         tarjetasCredito = items.filter(
           (t) => t.clase === "credito" && t.tipo === "propia",
@@ -308,6 +329,7 @@ export function iniciarBanca({
       $("autopagos-lista").replaceChildren();
       $("tarjetas-credito-lista").replaceChildren();
       tarjetasCredito = [];
+      decoracionEditada=false;document.body.dataset.temporada="habitual";
     },
   };
 }

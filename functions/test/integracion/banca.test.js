@@ -280,6 +280,7 @@ test("Una planilla pagada no se vuelve a cobrar con otra referencia", async () =
   await banco.guardarServicio(admin, {
     id: `luz_${marca}`,
     nombre: "Luz de prueba",
+    visibleEnApp: false,
     icono: "luz",
     activo: true,
     baseCentavos: 1000,
@@ -829,4 +830,31 @@ test("La actividad de un contacto conserva envíos y recibos por número de cuen
   assert.equal(recibidos.docs.filter(d=>d.data().nota==="Pedido compartido").length,1);
   assert.equal(await saldo(ana),antesA+100);
   assert.equal(await saldo(bruno),antesB-100);
+});
+
+test("Solo el asesor activa temporadas válidas sin modificar fondos",async()=>{
+  const d={activa:true,tema:"navidad",desde:"2026-12-01",hasta:"2026-12-31",titulo:"Tus planes también celebran",mensaje:"Una temporada para compartir."};
+  const antes=await saldo(ana);
+  await assert.rejects(banco.guardarDecoracion(authA,d));
+  await assert.rejects(banco.guardarDecoracion(admin,{...d,desde:"2026-02-30"}));
+  await assert.rejects(banco.guardarDecoracion(admin,{...d,hasta:"2027-12-31"}));
+  await banco.guardarDecoracion(admin,d);
+  assert.equal((await db.doc("experiencias/decoracion").get()).data().tema,"navidad");
+  assert.equal(await saldo(ana),antes);
+  await banco.guardarDecoracion(admin,{...d,activa:false});
+});
+test("El fondo privado pertenece a la tarjeta y permanece en la solicitud física",async()=>{
+  ahora=new Date("2026-10-03T14:00:00Z");
+  const uid=`fondo_${marca}`,email=`${uid}@financebro.test`,auth={uid,token:{email}};
+  await banco.registrarCliente(auth,{nombres:"Persona",apellidos:"Imagen",correo:email,cedula:`99${Date.now().toString().slice(-8)}`,clave:"FinanceBro-test-2026!",direccion:"Calle Aurora 100",ciudad:"Quito",telefono:"0991234567",aceptaContrato:true,versionContrato:"2026-10-v1"});
+  const ruta=`tarjetas/${uid}/bro_ahorros/fondos/fondo_${marca}.png`;
+  await bucket.file(ruta).save(Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aazcAAAAASUVORK5CYII=","base64"),{resumable:false,metadata:{contentType:"image/png"}});
+  const d={id:"bro_ahorros",tipo:"propia",nombre:"Mi estilo",color:"menta",fondoRuta:ruta};
+  await assert.rejects(banco.guardarTarjeta(authA,d));
+  await banco.guardarTarjeta(auth,d);
+  assert.equal((await banco.privado(uid,"tarjetas","bro_ahorros").get()).data().fondoRuta,ruta);
+  await banco.solicitarFisica(auth,{tarjeta:"bro_ahorros",referencia:`fisicaf_${marca}`,direccion:"Calle Aurora 100",ciudad:"Quito",telefono:"0991234567",fechaEnvio:"2026-10-06",aceptaEnvio:true});
+  assert.equal((await banco.privado(uid,"solicitudes","fisica_bro_ahorros").get()).data().diseno.fondoRuta,ruta);
+  await banco.guardarTarjeta(auth,{...d,fondoRuta:null});
+  assert.equal((await banco.privado(uid,"tarjetas","bro_ahorros").get()).data().fondoRuta,null);
 });

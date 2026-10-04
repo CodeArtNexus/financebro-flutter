@@ -31,7 +31,14 @@ class _CreditoDetalleEstado extends EstadoBanco<CreditoDetallePantalla> {
     mostrarPago = widget.pagoInicial;
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => trabajar(() async {
-        await llamar('consultarTarjetaCredito');
+        final datos = await llamar('consultarTarjetaCredito');
+        if (widget.pagoInicial && importe.text.isEmpty) {
+          importe.text =
+              ((datos['totalPagarCentavos'] as num) > 0
+                      ? (datos['totalPagarCentavos'] as num) / 100
+                      : (datos['deudaCentavos'] as num) / 100)
+                  .toStringAsFixed(2);
+        }
       }),
     );
   }

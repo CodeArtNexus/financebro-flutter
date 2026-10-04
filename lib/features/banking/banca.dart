@@ -115,7 +115,11 @@ final serviciosBroProvider = StreamProvider<List<Map<String, dynamic>>>(
   (ref) => ref
       .watch(bancaProvider)
       .observar('servicios')
-      .map((v) => v.where((s) => s['activo'] == true).toList()),
+      .map(
+        (v) => v
+            .where((s) => s['activo'] == true && s['visibleEnApp'] != false)
+            .toList(),
+      ),
 );
 final autopagosBroProvider = StreamProvider<List<Map<String, dynamic>>>((ref) {
   final uid = ref.watch(sesionProvider).value?.uid;
@@ -132,4 +136,13 @@ final solicitudBroProvider = StreamProvider<Map<String, dynamic>?>((ref) {
             .doc('usuarios/$uid/solicitudes/corriente')
             .snapshots()
             .map((s) => s.data());
+});
+
+final solicitudesBroProvider = StreamProvider<List<Map<String, dynamic>>>((
+  ref,
+) {
+  final uid = ref.watch(sesionProvider).value?.uid;
+  return uid == null
+      ? const Stream.empty()
+      : ref.watch(bancaProvider).observar('usuarios/$uid/solicitudes');
 });

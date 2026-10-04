@@ -602,3 +602,6 @@ dialog::backdrop {
 .solicitud .metrica strong { font-size: clamp(18px, 2vw, 27px); }
 @media (max-width: 900px) { .solicitud .metricas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 420px) { .solicitud .metricas { grid-template-columns: 1fr; } }
+
+body[data-temporada="navidad"]{background:radial-gradient(ellipse at top right,#d9eadf88,transparent 65%),linear-gradient(135deg,#fff7ee,#f4f3ff)}
+body[data-temporada="aniversario"]{background:radial-gradient(ellipse at top right,#ffe5ba88,transparent 65%),linear-gradient(135deg,#fff7ee,#f4f3ff)}

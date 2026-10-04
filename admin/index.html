@@ -72,7 +72,7 @@
           ><button data-vista="qr">QR de cuentas</button
           ><button data-vista="solicitudes">Solicitudes</button
           ><button data-vista="tarjetas">Tarjetas de crédito</button
-          ><button data-vista="servicios">Servicios y pagos mensuales</button>
+          ><button data-vista="servicios">Servicios y pagos mensuales</button><button data-vista="experiencia">Experiencia y temporadas</button>
         </nav>
         <section id="vista-cuentas">
           <div class="rejilla">
@@ -215,6 +215,19 @@
           </button>
           <div id="tarjetas-credito-lista"></div>
         </section>
+        <section id="vista-experiencia" class="oculto cristal">
+          <span class="eyebrow">MARCA Y PERSONALIZACIÓN</span>
+          <h2>Una temporada para compartir.</h2>
+          <p>Activa la decoración y el saludo para todos los usuarios, con fechas de inicio y fin. La app recibe el cambio sin reinstalar.</p>
+          <form id="decoracion-form" class="rejilla">
+            <div><label>Tema<select id="decoracion-tema"><option value="habitual">FinanceBro habitual</option><option value="navidad">Navidad</option><option value="aniversario">Aniversario</option></select></label>
+            <label>Desde<input id="decoracion-desde" type="date" required></label><label>Hasta<input id="decoracion-hasta" type="date" required></label></div>
+            <div><label>Saludo de temporada<input id="decoracion-titulo" minlength="2" maxlength="60" value="Tus planes también celebran" required></label>
+            <label>Mensaje<input id="decoracion-mensaje" minlength="2" maxlength="140" value="Comparte esta temporada con tu financebro." required></label>
+            <label>Disponibilidad<select id="decoracion-activa"><option value="false">Desactivada</option><option value="true">Activada</option></select></label>
+            <button class="primario" type="submit">Guardar temporada</button><p class="nota">Hasta 90 días. La decoración se retira al terminar el período.</p></div>
+          </form>
+        </section>
         <section id="vista-servicios" class="oculto">
           <div class="rejilla">
             <form id="servicio-form" class="cristal">
@@ -249,7 +262,7 @@
                   <option value="true">Habilitado</option>
                   <option value="false">Deshabilitado</option>
                 </select></label
-              ><button class="primario" type="submit">Guardar servicio</button>
+              ><label>Mostrar en la app<select id="servicio-visible"><option value="true">Visible</option><option value="false">Oculto</option></select></label><button class="primario" type="submit">Guardar servicio</button>
               <p class="nota">
                 Configura los servicios disponibles y su valor base.
                 Deshabilitar un servicio conserva su histórico.

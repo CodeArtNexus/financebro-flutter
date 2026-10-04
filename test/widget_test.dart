@@ -1,4 +1,5 @@
 import 'package:financebro/features/banking/banca.dart';
+import 'package:financebro/core/apariencia.dart';
 import 'package:financebro/app/financebro_app.dart';
 import 'package:financebro/app/proveedores.dart';
 import 'package:financebro/app/rutas.dart';
@@ -55,6 +56,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          decoracionProvider.overrideWith((ref) => Stream.value({})),
           tarjetasBroProvider.overrideWith((ref) => Stream.value([])),
           identidadProvider.overrideWithValue(identidad),
           cuentasProvider.overrideWith(
@@ -93,6 +95,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          decoracionProvider.overrideWith((ref) => Stream.value({})),
           cuentasProvider.overrideWith((ref) => const Stream.empty()),
         ],
         child: const MaterialApp(home: CuentasPantalla()),
@@ -109,6 +112,7 @@ void main() {
         ProviderScope(
           retry: (int intento, Object error) => null,
           overrides: [
+            decoracionProvider.overrideWith((ref) => Stream.value({})),
             cuentasProvider.overrideWith(
               (ref) => ++intentos == 1
                   ? Stream.error(
@@ -142,6 +146,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          decoracionProvider.overrideWith((ref) => Stream.value({})),
           tarjetasBroProvider.overrideWith((ref) => Stream.value([])),
           identidadProvider.overrideWithValue(identidad),
           preferenciasLocalesProvider.overrideWithValue(preferencias),
@@ -168,6 +173,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          decoracionProvider.overrideWith((ref) => Stream.value({})),
           tarjetasBroProvider.overrideWith((ref) => Stream.value([])),
           identidadProvider.overrideWithValue(identidad),
           cuentasRepositorioProvider.overrideWithValue(CuentasPrueba()),

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/proveedores.dart';
 import '../../core/componentes.dart';
 import '../../core/diseno_bro.dart';
+import '../../core/apariencia.dart';
 import '../banking/banca.dart';
 import '../banking/tarjetas_pantalla.dart';
 import '../experience/tarjeta_remota.dart';
@@ -31,6 +32,39 @@ class InicioPantalla extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(22, 8, 22, 32),
         children: [
+          if (decoracionVigente(ref.watch(decoracionProvider).value)
+              case final temporada?)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: CristalBro(
+                color: const Color(0xFFE7F2E9),
+                child: Row(
+                  children: [
+                    Icon(
+                      temporada['tema'] == 'navidad'
+                          ? Icons.park_outlined
+                          : Icons.celebration_outlined,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            temporada['titulo'] as String,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          Text(
+                            temporada['mensaje'] as String,
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           EntradaBro(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

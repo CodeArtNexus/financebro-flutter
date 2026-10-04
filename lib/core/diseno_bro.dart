@@ -2,35 +2,54 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'apariencia.dart';
 
 import '../app/tema.dart';
 
-class FondoBro extends StatelessWidget {
+class FondoBro extends ConsumerWidget {
   const FondoBro({super.key, required this.child});
   final Widget child;
   @override
-  Widget build(BuildContext context) => Stack(
-    children: [
-      const Positioned.fill(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFFFFF6EE), fondoFinanceBro, Color(0xFFF0EFFB)],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final temporada = decoracionVigente(ref.watch(decoracionProvider).value);
+    return Stack(
+      children: [
+        const Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFFFFF6EE), fondoFinanceBro, Color(0xFFF0EFFB)],
+              ),
             ),
           ),
         ),
-      ),
-      Positioned(top: -130, right: -140, child: _luz(const Color(0xFFFFBD98))),
-      Positioned(
-        bottom: -160,
-        left: -160,
-        child: _luz(const Color(0xFFC7C3EC)),
-      ),
-      child,
-    ],
-  );
+        Positioned(
+          top: -130,
+          right: -140,
+          child: _luz(const Color(0xFFFFBD98)),
+        ),
+        Positioned(
+          bottom: -160,
+          left: -160,
+          child: _luz(const Color(0xFFC7C3EC)),
+        ),
+        if (temporada != null)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: CustomPaint(
+                painter: _TemporadaBro(temporada['tema'] as String),
+              ),
+            ),
+          ),
+        child,
+      ],
+    );
+  }
+
   Widget _luz(Color color) => Container(
     width: 420,
     height: 420,
@@ -208,4 +227,31 @@ class VolverBro extends StatelessWidget {
       }
     },
   );
+}
+
+class _TemporadaBro extends CustomPainter {
+  const _TemporadaBro(this.tema);
+  final String tema;
+  @override
+  void paint(Canvas canvas, Size size) {
+    final pintura = Paint()
+      ..color =
+          (tema == 'navidad'
+                  ? const Color(0xFF47826A)
+                  : const Color(0xFFAE8B48))
+              .withValues(alpha: .12)
+      ..strokeWidth = 2;
+    for (var i = 0; i < 18; i++) {
+      final x = (i * 137.0 + 35) % size.width,
+          y = (i * 211.0 + 65) % size.height;
+      for (var j = 0; j < 3; j++) {
+        final a = j * 3.14159265 / 3;
+        final vector = Offset.fromDirection(a, 7);
+        canvas.drawLine(Offset(x, y) - vector, Offset(x, y) + vector, pintura);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_TemporadaBro old) => old.tema != tema;
 }

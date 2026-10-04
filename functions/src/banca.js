@@ -411,6 +411,7 @@ export class Banco {
           nombre: t.data().nombre,
           color: t.data().color,
           ultimos4: t.data().ultimos4,
+          ...(t.data().fondoRuta ? {fondoRuta:t.data().fondoRuta} : {}),
         },
         aceptado: fecha,
         actualizado: fecha,
@@ -1111,6 +1112,13 @@ export class Banco {
       falla("invalid-argument", "Selecciona un color disponible.");
     const ref = this.privado(uid, "tarjetas", id);
     if (d.tipo === "propia") {
+      if(d.fondoRuta != null) {
+        const ruta=texto(d.fondoRuta,"el fondo de tarjeta",10,240);
+        if(!new RegExp(`^tarjetas/${uid}/${id}/fondos/[a-zA-Z0-9_-]{8,80}\\.(png|jpg)$`).test(ruta)) falla("permission-denied","El fondo debe pertenecer a esta tarjeta.");
+        if(!this.bucket) falla("unavailable","No pudimos guardar el fondo. Vuelve a intentarlo.");
+        const [m]=await this.bucket.file(ruta).getMetadata();
+        if(!['image/png','image/jpeg'].includes(m.contentType) || Number(m.size)<=0 || Number(m.size)>2*1024*1024) falla("invalid-argument","El fondo debe ser PNG o JPG de hasta 2 MB.");
+      }
       if (!d.id)
         falla(
           "failed-precondition",
@@ -1134,6 +1142,7 @@ export class Banco {
           nombre,
           color,
           personalizada: true,
+          ...(Object.hasOwn(d,'fondoRuta') ? {fondoRuta: d.fondoRuta ?? null} : {}),
           actualizado: fecha,
         };
         tx.update(ref, cambios);
@@ -1469,6 +1478,19 @@ export class Banco {
       };
     });
   }
+  async guardarDecoracion(auth,d) {
+    const actor=this.actor(auth,true);
+    if(typeof d.activa!=='boolean' || !['habitual','navidad','aniversario'].includes(d.tema)) falla('invalid-argument','Revisa el tema y su disponibilidad.');
+    function fecha(v) {
+      if(typeof v!=='string' || !/^\d{4}-\d{2}-\d{2}$/.test(v) || !Number.isFinite(Date.parse(`${v}T05:00:00Z`)) || new Date(`${v}T05:00:00Z`).toISOString().slice(0,10)!==v) falla('invalid-argument','Revisa las fechas de la temporada.');
+      return v;
+    }
+    const desde=fecha(d.desde),hasta=fecha(d.hasta);
+    if(hasta<desde || Date.parse(hasta)-Date.parse(desde)>90*86400000) falla('invalid-argument','La temporada admite hasta 90 días.');
+    const configuracion={activa:d.activa,tema:d.tema,desde,hasta,titulo:texto(d.titulo,'el saludo de temporada',2,60),mensaje:texto(d.mensaje,'el mensaje de temporada',2,140),actor,actualizado:this.ahora()};
+    await this.db.doc('experiencias/decoracion').set(configuracion);
+    return {guardada:true};
+  }
   async guardarServicio(auth, d) {
     const actor = this.actor(auth, true),
       id = identificador(d.id);
@@ -1482,6 +1504,7 @@ export class Banco {
       activo: d.activo,
       baseCentavos: entero(d.baseCentavos, "el valor base", 10, 100000),
       proveedor: "demostracion",
+      visibleEnApp: d.visibleEnApp !== false,
       actor,
       actualizado: this.ahora(),
     };
@@ -1778,6 +1801,7 @@ export class Banco {
       migrarCuentas: "migrarCuentas",
       revisarSolicitud: "revisarSolicitud",
       guardarServicio: "guardarServicio",
+      guardarDecoracion: "guardarDecoracion",
       procesarAutopagos: "procesarAutopagos",
     };
     if (

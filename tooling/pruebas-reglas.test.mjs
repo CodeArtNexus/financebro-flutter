@@ -61,3 +61,19 @@ test('El cupo, los consumos y los estados de cuenta de una tarjeta propia solo l
   for(const c of [cliente('ana'),admin()])await assertFails(setDoc(doc(c.firestore(),r),{cupoCentavos:999999}));
  }
 });
+
+test('El fondo de una tarjeta propia es privado, inmutable y tiene un tamaño máximo',async()=>{
+ await entorno.withSecurityRulesDisabled(c=>setDoc(doc(c.firestore(),'usuarios/ana/tarjetas/bro_ahorros'),{tipo:'propia'}));
+ const ruta=`tarjetas/ana/bro_ahorros/fondos/imagen_${Date.now()}.png`,foto=new Uint8Array([137,80,78,71,13,10,26,10]);
+ await assertSucceeds(uploadBytes(ref(cliente('ana').storage(),ruta),foto,{contentType:'image/png'}));
+ await assertSucceeds(getBytes(ref(cliente('ana').storage(),ruta)));
+ await assertSucceeds(getBytes(ref(admin().storage(),ruta)));
+ await assertFails(getBytes(ref(cliente('bruno').storage(),ruta)));
+ await assertFails(uploadBytes(ref(cliente('bruno').storage(),ruta),foto,{contentType:'image/png'}));
+ await assertFails(uploadBytes(ref(cliente('ana').storage(),ruta),foto,{contentType:'image/png'}));
+ await assertFails(uploadBytes(ref(cliente('ana').storage(),ruta.replace('.png','_grande.png')),new Uint8Array(2*1024*1024+1),{contentType:'image/png'}));
+});
+test('Una tarjeta externa no permite subir un fondo FinanceBro',async()=>{
+ await entorno.withSecurityRulesDisabled(c=>setDoc(doc(c.firestore(),'usuarios/ana/tarjetas/externa'),{tipo:'externa'}));
+ await assertFails(uploadBytes(ref(cliente('ana').storage(),`tarjetas/ana/externa/fondos/imagen_${Date.now()}.png`),new Uint8Array([137,80,78,71]),{contentType:'image/png'}));
+});

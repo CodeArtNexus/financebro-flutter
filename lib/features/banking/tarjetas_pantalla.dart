@@ -1,3 +1,7 @@
+import 'dart:ui' as ui;
+
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +12,7 @@ import '../../core/componentes.dart';
 import '../../core/errores.dart';
 import 'banca.dart';
 import 'componentes_banca.dart';
+import 'fondos_tarjeta.dart';
 
 const coloresTarjeta = {
   'durazno': Color(0xFFFFCEAE),
@@ -32,7 +37,8 @@ class TarjetaVisualBro extends StatelessWidget {
   Widget build(BuildContext context) {
     final color =
             coloresTarjeta[tarjeta['color']] ?? coloresTarjeta['durazno']!,
-        oscuro = tarjeta['color'] == 'noche';
+        fondo = tarjeta['fondoRuta'] as String?,
+        oscuro = tarjeta['color'] == 'noche' || tarjeta['fondoRuta'] != null;
     return Semantics(
       label: 'Tarjeta ${tarjeta['banco']} terminada en ${tarjeta['ultimos4']}',
       button: onTap != null,
@@ -41,7 +47,7 @@ class TarjetaVisualBro extends StatelessWidget {
         borderRadius: BorderRadius.circular(26),
         child: Container(
           constraints: const BoxConstraints(minHeight: 190),
-          padding: EdgeInsets.all(compacta ? 20 : 24),
+          padding: EdgeInsets.zero,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(26),
             border: Border.all(color: Colors.white.withValues(alpha: .9)),
@@ -58,64 +64,92 @@ class TarjetaVisualBro extends StatelessWidget {
               ),
             ],
           ),
-          child: DefaultTextStyle(
-            style: TextStyle(
-              fontFamily: 'Poppins',
-              color: oscuro ? Colors.white : const Color(0xFF242735),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        tarjeta['banco'] == 'FinanceBro' ? 'fb.' : 'Otro banco',
-                        maxLines: 2,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -1,
-                        ),
-                      ),
-                    ),
-                    Icon(
-                      tarjeta['tipo'] == 'propia'
-                          ? Icons.shield_outlined
-                          : Icons.credit_card,
-                    ),
-                  ],
-                ),
-                SizedBox(height: compacta ? 16 : 24),
-                Text(
-                  tarjeta['nombre'] as String? ?? 'Mi tarjeta',
-                  style: const TextStyle(fontSize: 13),
-                ),
-                const SizedBox(height: 8),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    '••••  ••••  ••••  ${tarjeta['ultimos4']}',
-                    style: const TextStyle(fontSize: 18, letterSpacing: 1.2),
+          child: Stack(
+            children: [
+              if (fondo != null)
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: FondoTarjeta(fondo),
                   ),
                 ),
-                SizedBox(height: compacta ? 14 : 18),
-                Text(
-                  titular.toUpperCase(),
-                  style: const TextStyle(fontSize: 10, letterSpacing: 1),
+              if (fondo != null)
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.black.withValues(alpha: .48),
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  tarjeta['tipo'] == 'propia'
-                      ? tarjeta['clase'] == 'credito'
-                            ? 'CRÉDITO · FINANCEBRO'
-                            : 'DÉBITO · FINANCEBRO'
-                      : 'TARJETA ASOCIADA',
-                  style: TextStyle(fontSize: 8, letterSpacing: 1.2),
+              Padding(
+                padding: EdgeInsets.all(compacta ? 20 : 24),
+                child: DefaultTextStyle(
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    color: oscuro ? Colors.white : const Color(0xFF242735),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              tarjeta['banco'] == 'FinanceBro'
+                                  ? 'fb.'
+                                  : 'Otro banco',
+                              maxLines: 2,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -1,
+                              ),
+                            ),
+                          ),
+                          Icon(
+                            tarjeta['tipo'] == 'propia'
+                                ? Icons.shield_outlined
+                                : Icons.credit_card,
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: compacta ? 16 : 24),
+                      Text(
+                        tarjeta['nombre'] as String? ?? 'Mi tarjeta',
+                        style: const TextStyle(fontSize: 13),
+                      ),
+                      const SizedBox(height: 8),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          '••••  ••••  ••••  ${tarjeta['ultimos4']}',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: compacta ? 14 : 18),
+                      Text(
+                        titular.toUpperCase(),
+                        style: const TextStyle(fontSize: 10, letterSpacing: 1),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        tarjeta['tipo'] == 'propia'
+                            ? tarjeta['clase'] == 'credito'
+                                  ? 'CRÉDITO · FINANCEBRO'
+                                  : 'DÉBITO · FINANCEBRO'
+                            : 'TARJETA ASOCIADA',
+                        style: TextStyle(fontSize: 8, letterSpacing: 1.2),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -134,7 +168,7 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
       banco = TextEditingController(),
       ultimos = TextEditingController();
   String tipo = 'externa', color = 'durazno';
-  String? cuenta, editar;
+  String? cuenta, editar, fondoRuta;
   bool formulario = false;
   @override
   void dispose() {
@@ -153,6 +187,7 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
       'ultimos4': ultimos.text,
       'cuenta': cuenta,
       'color': color,
+      if (tipo == 'propia') 'fondoRuta': fondoRuta,
     });
     if (mounted) setState(() => formulario = false);
   });
@@ -166,9 +201,64 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
       ultimos.text = t['ultimos4'] as String;
       cuenta = t['cuenta'] as String?;
       color = t['color'] as String;
+      fondoRuta = t['fondoRuta'] as String?;
     });
   }
 
+  Future<void> subirFondo() => trabajar(() async {
+    if (editar == null || tipo != 'propia') return;
+    final archivo = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['png', 'jpg', 'jpeg'],
+    );
+    if (archivo.isEmpty) return;
+    final longitud = await archivo.single.length();
+    if (longitud != null && longitud > 2 * 1024 * 1024) {
+      throw const FalloApp('Elige una imagen PNG o JPG de hasta 2 MB.');
+    }
+    final bytes = await archivo.single.readAsBytes();
+    if (bytes.isEmpty || bytes.length > 2 * 1024 * 1024) {
+      throw const FalloApp('Elige una imagen PNG o JPG de hasta 2 MB.');
+    }
+    final png =
+        bytes.length > 8 &&
+        bytes[0] == 137 &&
+        bytes[1] == 80 &&
+        bytes[2] == 78 &&
+        bytes[3] == 71;
+    final jpg =
+        bytes.length > 3 &&
+        bytes[0] == 255 &&
+        bytes[1] == 216 &&
+        bytes[2] == 255;
+    if (!png && !jpg) {
+      throw const FalloApp('Ese archivo no es una imagen PNG o JPG.');
+    }
+    final buffer = await ui.ImmutableBuffer.fromUint8List(bytes);
+    final descriptor = await ui.ImageDescriptor.encoded(buffer);
+    try {
+      if (descriptor.width > 4096 ||
+          descriptor.height > 4096 ||
+          descriptor.width * descriptor.height > 16000000) {
+        throw const FalloApp('Usa una imagen de hasta 4096 píxeles por lado.');
+      }
+    } finally {
+      descriptor.dispose();
+      buffer.dispose();
+    }
+    final uid = ref.read(identidadProvider).actual!.uid;
+    final ruta =
+        'tarjetas/$uid/$editar/fondos/${nuevaReferencia()}.${png ? 'png' : 'jpg'}';
+    await ref
+        .read(bancaProvider)
+        .storage
+        .ref(ruta)
+        .putData(
+          bytes,
+          SettableMetadata(contentType: png ? 'image/png' : 'image/jpeg'),
+        );
+    if (mounted) setState(() => fondoRuta = ruta);
+  });
   void abrirTarjeta(Map<String, dynamic> t) {
     if (t['clase'] == 'credito') {
       context.push('/tarjetas/credito/detalle');
@@ -269,7 +359,19 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
       OutlinedButton.icon(
         onPressed: () => context.push('/tarjetas/credito'),
         icon: const Icon(Icons.auto_awesome_outlined),
-        label: const Text('Solicitar tarjeta de crédito'),
+        label: Text(
+          ref
+                      .watch(solicitudesBroProvider)
+                      .value
+                      ?.any(
+                        (s) =>
+                            s['tipo'] == 'credito' &&
+                            !['rechazada', 'cancelada'].contains(s['estado']),
+                      ) ==
+                  true
+              ? 'Ver mi solicitud de crédito'
+              : 'Solicitar tarjeta de crédito',
+        ),
       ),
     if (formulario)
       Padding(
@@ -319,6 +421,46 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
                     .toList(),
                 onChanged: ocupado ? null : (v) => setState(() => color = v!),
               ),
+              if (tipo == 'propia') ...[
+                const SizedBox(height: 16),
+                OutlinedButton.icon(
+                  onPressed: ocupado ? null : subirFondo,
+                  icon: const Icon(Icons.image_outlined),
+                  label: Text(
+                    fondoRuta == null ? 'Subir mi fondo' : 'Cambiar mi fondo',
+                  ),
+                ),
+                if (fondoRuta != null) ...[
+                  const SizedBox(height: 12),
+                  TarjetaVisualBro(
+                    {
+                      'tipo': 'propia',
+                      'clase': 'debito',
+                      'banco': 'FinanceBro',
+                      'nombre': nombre.text,
+                      'ultimos4': ultimos.text,
+                      'color': color,
+                      'fondoRuta': fondoRuta,
+                    },
+                    titular:
+                        ref.read(identidadProvider).actual?.nombre ?? 'Bro',
+                  ),
+                  OutlinedButton.icon(
+                    onPressed: ocupado
+                        ? null
+                        : () => setState(() => fondoRuta = null),
+                    icon: const Icon(Icons.hide_image_outlined),
+                    label: const Text('Usar solo color'),
+                  ),
+                ],
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Text(
+                    'PNG o JPG · hasta 2 MB. El diseño físico será revisado antes del envío.',
+                    style: TextStyle(fontSize: 11),
+                  ),
+                ),
+              ],
               const SizedBox(height: 16),
               FilledButton(
                 onPressed: ocupado ? null : guardar,
@@ -406,7 +548,24 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
                             OutlinedButton(
                               onPressed: () =>
                                   context.push('/tarjetas/fisica/${t['id']}'),
-                              child: const Text('Pedir tarjeta física'),
+                              child: Text(
+                                ref
+                                            .watch(solicitudesBroProvider)
+                                            .value
+                                            ?.any(
+                                              (s) =>
+                                                  s['id'] ==
+                                                      'fisica_${t['id']}' &&
+                                                  ![
+                                                    'cancelada',
+                                                    'rechazada',
+                                                    'entregada',
+                                                  ].contains(s['estado']),
+                                            ) ==
+                                        true
+                                    ? 'Seguir mi envío'
+                                    : 'Pedir tarjeta física',
+                              ),
                             ),
                         ],
                       ),

@@ -1,4 +1,5 @@
 import '../core/conexion_pantalla.dart';
+import '../core/diseno_bro.dart';
 import '../features/banking/pendientes_pantalla.dart';
 import '../features/banking/chequera_pantallas.dart';
 
@@ -187,9 +188,9 @@ class NavegacionPantalla extends StatelessWidget {
   const NavegacionPantalla(this.ruta, this.child, {super.key});
   final String ruta;
   final Widget child;
+  static const destinos = ['/inicio', '/tarjetas', '/qr', '/pagos', '/perfil'];
   @override
   Widget build(BuildContext context) {
-    const destinos = ['/inicio', '/tarjetas', '/qr', '/pagos', '/perfil'];
     final indice = destinos.indexWhere(
       (d) => ruta == d || ruta.startsWith('$d/'),
     );
@@ -254,11 +255,20 @@ class NavegacionPantalla extends StatelessWidget {
   }
 }
 
-GoRoute pantalla(String ruta, Widget Function(GoRouterState) construir) =>
-    GoRoute(
-      path: ruta,
-      pageBuilder: (context, state) =>
-          Theme.of(context).platform == TargetPlatform.iOS
-          ? CupertinoPage<void>(key: state.pageKey, child: construir(state))
-          : MaterialPage<void>(key: state.pageKey, child: construir(state)),
-    );
+GoRoute pantalla(
+  String ruta,
+  Widget Function(GoRouterState) construir,
+) => GoRoute(
+  path: ruta,
+  pageBuilder: (context, state) {
+    // Cada ruta pinta su fondo para que el cristal no revele la vista anterior.
+    final vista = FondoBro(child: construir(state));
+    // Las pestañas sustituyen su contenido; los detalles conservan el gesto nativo.
+    if (NavegacionPantalla.destinos.contains(ruta)) {
+      return NoTransitionPage<void>(key: state.pageKey, child: vista);
+    }
+    return Theme.of(context).platform == TargetPlatform.iOS
+        ? CupertinoPage<void>(key: state.pageKey, child: vista)
+        : MaterialPage<void>(key: state.pageKey, child: vista);
+  },
+);

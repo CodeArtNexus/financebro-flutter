@@ -123,11 +123,7 @@ class _ContactosEstado extends EstadoBanco<ContactosPantalla> {
                         style: const TextStyle(fontSize: 11),
                       ),
                       trailing: const Icon(Icons.arrow_outward),
-                      onTap: () => context.push(
-                        c['tipo'] == 'interno'
-                            ? '/transferir?numero=${c['numero']}'
-                            : '/pagar-externo?tipo=contacto&id=${c['id']}',
-                      ),
+                      onTap: () => context.push('/contactos/${c['id']}'),
                     ),
                   ),
                 ),

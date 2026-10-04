@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../app/tema.dart';
 
@@ -185,5 +186,26 @@ class EncabezadoBro extends StatelessWidget {
         ?accion,
       ],
     ),
+  );
+}
+
+class VolverBro extends StatelessWidget {
+  const VolverBro({super.key});
+  @override
+  Widget build(BuildContext context) => IconButton(
+    tooltip: 'Volver',
+    icon: const Icon(Icons.arrow_back_rounded),
+    onPressed: () {
+      final router = GoRouter.maybeOf(context);
+      if (router == null) {
+        Navigator.maybePop(context);
+        return;
+      }
+      if (router.canPop()) {
+        router.pop();
+      } else {
+        router.go('/inicio');
+      }
+    },
   );
 }

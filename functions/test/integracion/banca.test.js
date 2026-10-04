@@ -817,3 +817,16 @@ test("La tarjeta aprobada tiene cupo, corte privado, consumos y pagos atómicos 
   assert.equal((await ref.get()).data().proximoCorte, "2027-01-25");
   await assert.rejects(b.procesarCortesTarjetas(actor));
 });
+
+test("La actividad de un contacto conserva envíos y recibos por número de cuenta", async () => {
+  await banco.ajustar(admin, {uid: bruno, cuenta: "ahorros", centavos: 1000, motivo: "Fondos para actividad de contactos", referencia: `contactof_${marca}`});
+  const antesA=await saldo(ana), antesB=await saldo(bruno);
+  const contacto=await banco.guardarContacto(authA,{tipo:"interno",numero:numeroB});
+  assert.equal(contacto.nombre,"Bruno Demo");
+  const datos={cuenta:"ahorros",numero:numeroA,centavos:100,referencia:`contactom_${marca}`,nota:"Pedido compartido"};
+  await Promise.all([banco.transferir(authB,datos),banco.transferir(authB,datos)]);
+  const recibidos=await banco.usuario(ana).collection("movimientosGlobales").where("numeroOrigen","==",numeroB).get();
+  assert.equal(recibidos.docs.filter(d=>d.data().nota==="Pedido compartido").length,1);
+  assert.equal(await saldo(ana),antesA+100);
+  assert.equal(await saldo(bruno),antesB-100);
+});

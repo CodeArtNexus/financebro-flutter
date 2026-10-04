@@ -4,13 +4,17 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/proveedores.dart';
 import '../../core/componentes.dart';
+import '../../core/diseno_bro.dart';
 import 'cuentas.dart';
 
 class CuentasPantalla extends ConsumerWidget {
   const CuentasPantalla({super.key});
   @override
   Widget build(BuildContext context, WidgetRef ref) => Scaffold(
-    appBar: AppBar(title: const Text('Tus cuentas')),
+    appBar: AppBar(
+      leading: const VolverBro(),
+      title: const Text('Tus cuentas'),
+    ),
     body: ListView(
       padding: const EdgeInsets.all(20),
       children: [
@@ -33,25 +37,21 @@ class CuentasPantalla extends ConsumerWidget {
                           : 'Abre una cuenta para transferir, pagar y empezar tus planes.',
                     ),
                   for (final cuenta in datos.valor) TarjetaCuenta(cuenta),
-                  TextButton.icon(
-                    onPressed: () => context.push('/apertura/ahorros'),
-                    icon: const Icon(Icons.savings_outlined),
-                    label: const Text('Abrir cuenta de ahorros'),
-                  ),
-                  TextButton.icon(
-                    onPressed: () => context.push('/apertura/corriente'),
-                    icon: const Icon(Icons.business_outlined),
-                    label: const Text('Solicitar cuenta corriente'),
-                  ),
-                  TextButton(
+                  if (!datos.valor.any((c) => c.tipo == 'corriente'))
+                    OutlinedButton.icon(
+                      onPressed: () => context.push('/apertura/corriente'),
+                      icon: const Icon(Icons.business_outlined),
+                      label: const Text('Solicitar cuenta corriente'),
+                    ),
+                  OutlinedButton(
                     onPressed: () => context.push('/contactos'),
                     child: const Text('Mis contactos'),
                   ),
-                  TextButton(
+                  OutlinedButton(
                     onPressed: () => context.push('/tarjetas'),
                     child: const Text('Gestionar tarjetas'),
                   ),
-                  TextButton(
+                  OutlinedButton(
                     onPressed: () => context.push('/historial'),
                     child: const Text('Todos mis movimientos'),
                   ),

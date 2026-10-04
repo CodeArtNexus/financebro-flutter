@@ -9,6 +9,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:financebro/main.dart' as app;
 import 'package:financebro/app/financebro_app.dart';
 import 'package:financebro/app/proveedores.dart';
+import 'package:financebro/app/rutas.dart';
 import 'package:financebro/core/control_red.dart';
 import 'package:financebro/core/configuracion.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,6 +31,14 @@ Future<void> esperar(WidgetTester tester, Finder finder) async {
   throw TestFailure(
     'No apareció el elemento esperado: $finder. Pantalla: $textos',
   );
+}
+
+Future<void> abrirCuentas(WidgetTester tester) async {
+  final c = ProviderScope.containerOf(
+    tester.element(find.byType(FinanceBroApp)),
+  );
+  c.read(rutasProvider).go('/cuentas');
+  await tester.pump(const Duration(milliseconds: 700));
 }
 
 void main() {
@@ -75,7 +84,7 @@ void main() {
     await tester.tap(find.byKey(const Key('enviar-acceso')));
     await esperar(tester, find.text('Tu dinero, a tu manera'));
     await captura(tester, '02-inicio');
-    await tester.tap(find.text('Cuentas'));
+    await abrirCuentas(tester);
     await esperar(tester, find.text('Tus cuentas'));
     await tester.tap(find.text('Cuenta del día a día'));
     await esperar(tester, find.text('Movimientos de tu cuenta'));
@@ -96,7 +105,7 @@ void main() {
     expect(find.text('Ingreso de prueba'), findsNothing);
     expect(find.text('Supermercado de prueba'), findsOneWidget);
     await captura(tester, '03-movimientos');
-    await tester.tap(find.byType(BackButton));
+    await tester.tap(find.byTooltip('Volver'));
     await tester.pump(const Duration(milliseconds: 700));
     await tester.tap(find.text('Mi perfil'));
     await esperar(tester, find.text('Organizar mis finanzas'));
@@ -178,7 +187,7 @@ void main() {
     await tester.tap(find.text('Actualizar tasa'));
     await esperar(tester, find.textContaining('guardada'));
     await captura(tester, '06-sin-conexion');
-    await tester.tap(find.text('Cuentas'));
+    await abrirCuentas(tester);
     await esperar(tester, find.text('Cuenta del día a día'));
     await red.cambiar(EscenarioRed.normal);
     await red.cambiar(EscenarioRed.divisasCaidas);
@@ -188,7 +197,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 700));
     await tester.tap(find.text('Divisas'));
     await esperar(tester, find.textContaining('guardada'));
-    await tester.tap(find.text('Cuentas'));
+    await abrirCuentas(tester);
     await esperar(tester, find.text('Cuenta del día a día'));
     await red.cambiar(EscenarioRed.latencia);
     await tester.tap(find.text('Mi perfil'));
@@ -209,7 +218,7 @@ void main() {
     await tester.tap(find.text('Quiero crear una cuenta'));
     await llenarRegistro(tester);
     await esperar(tester, find.textContaining('Hola, Lucía'));
-    await tester.tap(find.text('Cuentas'));
+    await abrirCuentas(tester);
     await esperar(tester, find.text('Cuenta de ahorros'));
   });
 }

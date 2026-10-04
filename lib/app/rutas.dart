@@ -1,5 +1,9 @@
 import 'dart:ui';
 
+import 'package:flutter/cupertino.dart' show CupertinoPage;
+
+import '../features/banking/contacto_detalle_pantalla.dart';
+
 import '../features/auth/acceso_rapido.dart';
 import '../features/banking/apertura_pantallas.dart';
 import '../features/banking/contactos_pantalla.dart';
@@ -71,93 +75,81 @@ final rutasProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/bienvenida',
-        builder: (_, _) => const BienvenidaPantalla(),
-      ),
-      GoRoute(path: '/ingresar', builder: (_, _) => const AccesoPantalla()),
-      GoRoute(
-        path: '/registrar',
-        builder: (_, _) => const AccesoPantalla(registro: true),
-      ),
-      GoRoute(
-        path: '/qr-acceso',
-        builder: (_, _) => const QrPantalla(accesoRapido: true),
-      ),
-      GoRoute(path: '/apertura/ahorros', redirect: (_, _) => '/registrar'),
-      GoRoute(
-        path: '/apertura/corriente',
-        builder: (_, _) => const AperturaCorrientePantalla(),
-      ),
-      GoRoute(path: '/contactos', builder: (_, _) => const ContactosPantalla()),
-      GoRoute(
-        path: '/tarjetas/credito/detalle',
-        builder: (_, _) => const CreditoDetallePantalla(),
-      ),
-      GoRoute(path: '/tarjetas', builder: (_, _) => const TarjetasPantalla()),
-      GoRoute(
-        path: '/tarjetas/credito',
-        builder: (_, _) => const CreditoSolicitudPantalla(),
-      ),
-      GoRoute(
-        path: '/tarjetas/fisica/:tarjeta',
-        builder: (_, s) =>
-            FisicaSolicitudPantalla(s.pathParameters['tarjeta']!),
-      ),
-      GoRoute(
-        path: '/historial',
-        builder: (_, s) => HistorialPantalla(
-          tipo: s.uri.queryParameters['tipo'],
-          destino: s.uri.queryParameters['id'],
-        ),
-      ),
-      GoRoute(
-        path: '/transferir',
-        builder: (_, s) =>
-            QrPantalla(numeroInicial: s.uri.queryParameters['numero']),
-      ),
-      GoRoute(
-        path: '/pagar-externo',
-        builder: (_, s) => PagoExternoPantalla(
-          tipo: s.uri.queryParameters['tipo'] ?? 'contacto',
-          destino: s.uri.queryParameters['id'] ?? '',
-        ),
-      ),
-      GoRoute(
-        path: '/pagos/:servicio',
-        builder: (_, s) => ServicioPagoPantalla(s.pathParameters['servicio']!),
-      ),
+      pantalla('/bienvenida', (_) => const BienvenidaPantalla()),
+      pantalla('/ingresar', (_) => const AccesoPantalla()),
+      pantalla('/registrar', (_) => const AccesoPantalla(registro: true)),
+      pantalla('/qr-acceso', (_) => const QrPantalla(accesoRapido: true)),
       ShellRoute(
         builder: (context, state, child) =>
             NavegacionPantalla(state.uri.path, child),
         routes: [
-          GoRoute(path: '/inicio', builder: (_, _) => const InicioPantalla()),
-          GoRoute(path: '/cuentas', builder: (_, _) => const CuentasPantalla()),
-          GoRoute(path: '/divisas', builder: (_, _) => const DivisasPantalla()),
-          GoRoute(
-            path: '/qr',
-            builder: (_, s) => QrPantalla(
+          pantalla('/inicio', (_) => const InicioPantalla()),
+          pantalla('/cuentas', (_) => const CuentasPantalla()),
+          pantalla(
+            '/cuentas/:cuenta',
+            (s) => HistorialPantalla(cuenta: s.pathParameters['cuenta']!),
+          ),
+          pantalla('/divisas', (_) => const DivisasPantalla()),
+          pantalla(
+            '/qr',
+            (s) => QrPantalla(
               recibirInicial: s.uri.queryParameters['recibir'] == 'true',
             ),
           ),
-          GoRoute(path: '/pagos', builder: (_, _) => const PagosPantalla()),
-          GoRoute(path: '/metas', builder: (_, _) => const MetasPantalla()),
-          GoRoute(path: '/perfil', builder: (_, _) => const PerfilPantalla()),
+          pantalla(
+            '/transferir',
+            (s) => QrPantalla(numeroInicial: s.uri.queryParameters['numero']),
+          ),
+          pantalla('/pagos', (_) => const PagosPantalla()),
+          pantalla(
+            '/pagos/:servicio',
+            (s) => ServicioPagoPantalla(s.pathParameters['servicio']!),
+          ),
+          pantalla('/metas', (_) => const MetasPantalla()),
+          pantalla('/perfil', (_) => const PerfilPantalla()),
+          pantalla('/notificaciones', (_) => const NotificacionesPantalla()),
+          GoRoute(path: '/apertura/ahorros', redirect: (_, _) => '/cuentas'),
+          pantalla(
+            '/apertura/corriente',
+            (_) => const AperturaCorrientePantalla(),
+          ),
+          pantalla('/contactos', (_) => const ContactosPantalla()),
+          pantalla(
+            '/contactos/:contacto',
+            (s) => ContactoDetallePantalla(s.pathParameters['contacto']!),
+          ),
+          pantalla('/tarjetas', (_) => const TarjetasPantalla()),
+          pantalla(
+            '/tarjetas/credito',
+            (_) => const CreditoSolicitudPantalla(),
+          ),
+          pantalla(
+            '/tarjetas/credito/detalle',
+            (s) => CreditoDetallePantalla(
+              pagoInicial: s.uri.queryParameters['pagar'] == 'true',
+            ),
+          ),
+          pantalla(
+            '/tarjetas/fisica/:tarjeta',
+            (s) => FisicaSolicitudPantalla(s.pathParameters['tarjeta']!),
+          ),
+          pantalla(
+            '/historial',
+            (s) => HistorialPantalla(
+              tipo: s.uri.queryParameters['tipo'],
+              destino: s.uri.queryParameters['id'],
+            ),
+          ),
+          pantalla(
+            '/pagar-externo',
+            (s) => PagoExternoPantalla(
+              tipo: s.uri.queryParameters['tipo'] ?? 'contacto',
+              destino: s.uri.queryParameters['id'] ?? '',
+            ),
+          ),
+          if (habilitarLaboratorio)
+            pantalla('/laboratorio', (_) => const LaboratorioPantalla()),
         ],
-      ),
-      if (habilitarLaboratorio)
-        GoRoute(
-          path: '/laboratorio',
-          builder: (_, _) => const LaboratorioPantalla(),
-        ),
-      GoRoute(
-        path: '/notificaciones',
-        builder: (_, _) => const NotificacionesPantalla(),
-      ),
-      GoRoute(
-        path: '/cuentas/:cuenta',
-        builder: (_, state) =>
-            HistorialPantalla(cuenta: state.pathParameters['cuenta']!),
       ),
     ],
     errorBuilder: (_, _) => const Scaffold(
@@ -177,7 +169,11 @@ class NavegacionPantalla extends StatelessWidget {
   final Widget child;
   @override
   Widget build(BuildContext context) {
-    const destinos = ['/inicio', '/cuentas', '/qr', '/pagos', '/perfil'];
+    const destinos = ['/inicio', '/tarjetas', '/qr', '/pagos', '/perfil'];
+    final indice = destinos.indexWhere(
+      (d) => ruta == d || ruta.startsWith('$d/'),
+    );
+    final seleccionado = indice < 0 ? 0 : indice;
     return Scaffold(
       extendBody: true,
       body: Padding(
@@ -202,7 +198,7 @@ class NavegacionPantalla extends StatelessWidget {
               elevation: 0,
               height: 80,
               indicatorColor: naranjaFinanceBro.withValues(alpha: .42),
-              selectedIndex: destinos.indexOf(ruta).clamp(0, 4),
+              selectedIndex: seleccionado,
               onDestinationSelected: (i) => context.go(destinos[i]),
               destinations: const [
                 NavigationDestination(
@@ -211,8 +207,8 @@ class NavegacionPantalla extends StatelessWidget {
                   label: 'Inicio',
                 ),
                 NavigationDestination(
-                  icon: Icon(Icons.account_balance_outlined),
-                  label: 'Cuentas',
+                  icon: Icon(Icons.credit_card_outlined),
+                  label: 'Tarjetas',
                 ),
                 NavigationDestination(
                   icon: Icon(Icons.qr_code_scanner_rounded),
@@ -234,3 +230,12 @@ class NavegacionPantalla extends StatelessWidget {
     );
   }
 }
+
+GoRoute pantalla(String ruta, Widget Function(GoRouterState) construir) =>
+    GoRoute(
+      path: ruta,
+      pageBuilder: (context, state) =>
+          Theme.of(context).platform == TargetPlatform.iOS
+          ? CupertinoPage<void>(key: state.pageKey, child: construir(state))
+          : MaterialPage<void>(key: state.pageKey, child: construir(state)),
+    );

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +8,7 @@ import 'package:intl/intl.dart';
 import '../../app/proveedores.dart';
 import '../../core/componentes.dart';
 import '../../core/diseno_bro.dart';
+import '../../core/errores.dart';
 import 'componentes_banca.dart';
 
 class HistorialPantalla extends ConsumerStatefulWidget {
@@ -17,7 +20,8 @@ class HistorialPantalla extends ConsumerStatefulWidget {
 
 class _HistorialEstado extends EstadoBanco<HistorialPantalla> {
   final items = <QueryDocumentSnapshot<Map<String, dynamic>>>[];
-  bool mas = true;
+  bool mas = true, cache = false;
+  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? suscripcion;
   String filtro = 'Todos';
   Query<Map<String, dynamic>> consulta() {
     final uid = ref.read(identidadProvider).actual!.uid;
@@ -44,15 +48,63 @@ class _HistorialEstado extends EstadoBanco<HistorialPantalla> {
   Future<void> cargar({bool inicial = false}) => trabajar(() async {
     var q = consulta().limit(30);
     if (!inicial && items.isNotEmpty) q = q.startAfterDocument(items.last);
-    final s = await q.get();
+    QuerySnapshot<Map<String, dynamic>> s;
+    try {
+      s = await q
+          .get(const GetOptions(source: Source.server))
+          .timeout(const Duration(seconds: 8));
+    } on TimeoutException {
+      s = await q.get(const GetOptions(source: Source.cache));
+    } on FirebaseException catch (e) {
+      if (e.code != 'unavailable') rethrow;
+      s = await q.get(const GetOptions(source: Source.cache));
+    }
     if (mounted) {
       setState(() {
+        cache = s.metadata.isFromCache;
         if (inicial) items.clear();
-        items.addAll(s.docs);
+        final existentes = items.map((d) => d.id).toSet();
+        items.addAll(s.docs.where((d) => !existentes.contains(d.id)));
         mas = s.docs.length == 30;
       });
+      if (inicial) {
+        await suscripcion?.cancel();
+        suscripcion = consulta()
+            .limit(30)
+            .snapshots(includeMetadataChanges: true)
+            .listen(
+              (n) {
+                if (!mounted) return;
+                setState(() {
+                  cache = n.metadata.isFromCache;
+                  final documentos = {
+                    for (final d in items) d.id: d,
+                    for (final d in n.docs) d.id: d,
+                  };
+                  items
+                    ..clear()
+                    ..addAll(documentos.values);
+                  items.sort((a, b) {
+                    final c = (b.data()['fecha'] as Timestamp).compareTo(
+                      a.data()['fecha'] as Timestamp,
+                    );
+                    return c == 0 ? b.id.compareTo(a.id) : c;
+                  });
+                });
+              },
+              onError: (Object e) {
+                if (mounted) setState(() => error = mensajeError(e));
+              },
+            );
+      }
     }
   });
+  @override
+  void dispose() {
+    suscripcion?.cancel();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) => pagina(
     widget.cuenta != null
@@ -83,6 +135,20 @@ class _HistorialEstado extends EstadoBanco<HistorialPantalla> {
             .toList(),
       ),
       const SizedBox(height: 16),
+      if (cache)
+        const CristalBro(
+          child: Row(
+            children: [
+              Icon(Icons.wifi_off_rounded),
+              SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Mostramos los movimientos guardados. Conéctate para actualizarlos.',
+                ),
+              ),
+            ],
+          ),
+        ),
       if (items.isEmpty && !ocupado)
         const CristalBro(child: Text('Todavía no hay movimientos.')),
       for (final doc in items.where(

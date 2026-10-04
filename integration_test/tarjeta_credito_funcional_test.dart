@@ -113,6 +113,12 @@ void main() {
         'motivo': 'Fondos sintéticos para abono',
         'referencia': 'fondos_${DateTime.now().microsecondsSinceEpoch}',
       });
+      await tester.scrollUntilVisible(
+        find.text('Pagar mi tarjeta'),
+        -250,
+        scrollable: find.byType(Scrollable).first,
+        maxScrolls: 20,
+      );
       await pulsar(find.text('Pagar mi tarjeta'));
       await pulsar(find.byKey(const Key('cuenta-pago')));
       final ahorro = (await tester.runAsync(

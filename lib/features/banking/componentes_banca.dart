@@ -52,7 +52,7 @@ abstract class EstadoBanco<T extends ConsumerStatefulWidget>
     ],
   );
   Widget pagina(String titulo, List<Widget> contenido) => Scaffold(
-    appBar: AppBar(title: Text(titulo)),
+    appBar: AppBar(leading: const VolverBro(), title: Text(titulo)),
     body: ListView(
       padding: const EdgeInsets.fromLTRB(22, 8, 22, 32),
       children: [...contenido, estado()],
@@ -100,10 +100,7 @@ class ElegirCuentaBro extends ConsumerWidget {
               child: Column(
                 children: [
                   const Text('Abre una cuenta para transferir y pagar.'),
-                  TextButton(
-                    onPressed: () => context.push('/apertura/ahorros'),
-                    child: const Text('Abrir cuenta de ahorros'),
-                  ),
+                  const Text('Tu cuenta debe estar activa para operar.'),
                 ],
               ),
             );

@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/proveedores.dart';
 import '../../core/componentes.dart';
+import '../../core/diseno_bro.dart';
 import '../../core/errores.dart';
 import 'experiencia.dart';
 
@@ -69,10 +70,49 @@ class _PerfilEstado extends ConsumerState<PerfilPantalla> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Mi perfil')),
+    appBar: AppBar(leading: const VolverBro(), title: const Text('Mi perfil')),
     body: ListView(
       padding: const EdgeInsets.all(24),
       children: [
+        CristalBro(
+          child: Column(
+            children: [
+              CircleAvatar(
+                radius: 36,
+                backgroundColor: const Color(0xFFFFDCC4),
+                child: Text(
+                  (ref.watch(sesionProvider).value?.nombre ?? 'Bro')
+                      .split(' ')
+                      .where((v) => v.isNotEmpty)
+                      .take(2)
+                      .map((v) => v[0])
+                      .join(),
+                  style: const TextStyle(
+                    fontSize: 25,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                ref.watch(sesionProvider).value?.nombre ?? 'Tu perfil',
+                style: const TextStyle(
+                  fontSize: 23,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 6),
+              const Text('Tus datos, tus preferencias, tu espacio.'),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        OutlinedButton.icon(
+          onPressed: () => context.push('/cuentas'),
+          icon: const Icon(Icons.account_balance_outlined),
+          label: const Text('Mis cuentas'),
+        ),
+        const SizedBox(height: 20),
         Text(
           'Una experiencia hecha para ti',
           style: Theme.of(context).textTheme.headlineSmall,

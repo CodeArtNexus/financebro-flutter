@@ -261,11 +261,16 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
       icon: const Icon(Icons.add_card),
       label: const Text('Asociar tarjeta'),
     ),
-    TextButton.icon(
-      onPressed: () => context.push('/tarjetas/credito'),
-      icon: const Icon(Icons.auto_awesome_outlined),
-      label: const Text('Solicitar tarjeta de crédito'),
-    ),
+    if (ref.watch(tarjetasBroProvider).hasValue &&
+        !ref
+            .watch(tarjetasBroProvider)
+            .value!
+            .any((t) => t['clase'] == 'credito'))
+      OutlinedButton.icon(
+        onPressed: () => context.push('/tarjetas/credito'),
+        icon: const Icon(Icons.auto_awesome_outlined),
+        label: const Text('Solicitar tarjeta de crédito'),
+      ),
     if (formulario)
       Padding(
         padding: const EdgeInsets.only(top: 16),
@@ -368,29 +373,37 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
                         alignment: WrapAlignment.center,
                         spacing: 8,
                         children: [
-                          TextButton(
+                          if (t['clase'] == 'credito')
+                            FilledButton.icon(
+                              onPressed: () => context.push(
+                                '/tarjetas/credito/detalle?pagar=true',
+                              ),
+                              icon: const Icon(Icons.payments_outlined),
+                              label: const Text('Pagar mi tarjeta'),
+                            ),
+                          OutlinedButton(
                             onPressed: () => personalizar(t),
                             child: const Text('Personalizar'),
                           ),
                           if (t['tipo'] == 'externa')
-                            TextButton(
+                            OutlinedButton(
                               onPressed: () => context.push(
                                 '/pagar-externo?tipo=tarjeta&id=${t['id']}',
                               ),
                               child: const Text('Pagar tarjeta'),
                             ),
-                          TextButton(
+                          OutlinedButton(
                             onPressed: () => context.push(
                               t['tipo'] == 'propia'
                                   ? t['clase'] == 'credito'
-                                        ? '/tarjetas/credito/detalle'
+                                        ? '/historial?tipo=tarjeta&id=${t['id']}'
                                         : '/cuentas/${t['cuenta']}'
                                   : '/historial?tipo=tarjeta&id=${t['id']}',
                             ),
                             child: const Text('Movimientos'),
                           ),
                           if (t['tipo'] == 'propia')
-                            TextButton(
+                            OutlinedButton(
                               onPressed: () =>
                                   context.push('/tarjetas/fisica/${t['id']}'),
                               child: const Text('Pedir tarjeta física'),

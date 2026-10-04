@@ -43,10 +43,11 @@ class InicioPantalla extends ConsumerWidget {
                     letterSpacing: -1,
                   ),
                 ),
-                const Text(
-                  'Aquí tienes a tu financebro de confianza.',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF6E7181)),
-                ),
+                Text(switch (ref.watch(perfilProvider).value?.valor.segmento) {
+                  'viajes' => 'Ya casi despegamos. Vamos por tu próximo viaje.',
+                  'ahorro' => 'Cada paso cuenta. Hagamos crecer tus planes.',
+                  _ => 'Aquí tienes a tu financebro de confianza.',
+                }, style: TextStyle(fontSize: 12, color: Color(0xFF6E7181))),
                 const SizedBox(height: 8),
               ],
             ),
@@ -211,7 +212,11 @@ class InicioPantalla extends ConsumerWidget {
                                       todas[i],
                                       compacta: true,
                                       titular: usuario?.nombre ?? 'Bro',
-                                      onTap: () => context.push('/tarjetas'),
+                                      onTap: () => context.push(
+                                        todas[i]['clase'] == 'credito'
+                                            ? '/tarjetas/credito/detalle'
+                                            : '/tarjetas',
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -349,7 +354,7 @@ class CuentaInicioBro extends StatelessWidget {
                       ? (compacta
                             ? 'Abre tu solicitud'
                             : 'Abre tu solicitud y guarda cada paso.')
-                      : 'Ábrela cuando quieras. Tú decides.',
+                      : 'Estamos completando tu apertura.',
                   style: const TextStyle(fontSize: 11),
                 ),
               ] else ...[

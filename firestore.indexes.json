@@ -13,6 +13,34 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "movimientosGlobales",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "numeroDestino",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fecha",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "movimientosGlobales",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "numeroOrigen",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fecha",
+          "order": "DESCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": [

@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 import '../../app/proveedores.dart';
 import '../../core/componentes.dart';
+import '../../core/diseno_bro.dart';
 import '../../core/errores.dart';
 
 class NotificacionesPantalla extends ConsumerStatefulWidget {
@@ -19,7 +20,10 @@ class _NotificacionesEstado extends ConsumerState<NotificacionesPantalla> {
   String? mensaje;
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Notificaciones')),
+    appBar: AppBar(
+      leading: const VolverBro(),
+      title: const Text('Notificaciones'),
+    ),
     body: ListView(
       padding: const EdgeInsets.all(24),
       children: [
@@ -81,7 +85,7 @@ class _NotificacionesEstado extends ConsumerState<NotificacionesPantalla> {
                         subtitle: Text(
                           '${aviso.texto}\n${DateFormat("dd/MM HH:mm").format(aviso.fecha)}',
                         ),
-                        onTap: () => context.go(aviso.destino),
+                        onTap: () => context.push(aviso.destino),
                       ),
                     ),
                 ],

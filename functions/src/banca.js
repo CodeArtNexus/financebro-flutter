@@ -1022,6 +1022,7 @@ export class Banco {
         categoria: "Transferencias",
         tipo: "transferencia",
         actor: uid,
+        numeroOrigen: origen.numeroCuenta,
         nota,
         fecha,
       });

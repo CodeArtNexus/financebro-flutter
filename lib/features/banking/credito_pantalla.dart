@@ -11,7 +11,8 @@ import 'tarjetas_pantalla.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class CreditoDetallePantalla extends ConsumerStatefulWidget {
-  const CreditoDetallePantalla({super.key});
+  const CreditoDetallePantalla({super.key, this.pagoInicial = false});
+  final bool pagoInicial;
   @override
   ConsumerState<CreditoDetallePantalla> createState() =>
       _CreditoDetalleEstado();
@@ -27,6 +28,7 @@ class _CreditoDetalleEstado extends EstadoBanco<CreditoDetallePantalla> {
   @override
   void initState() {
     super.initState();
+    mostrarPago = widget.pagoInicial;
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => trabajar(() async {
         await llamar('consultarTarjetaCredito');
@@ -50,7 +52,7 @@ class _CreditoDetalleEstado extends EstadoBanco<CreditoDetallePantalla> {
           'Abonarás ${dinero(centavos)} desde tu cuenta. Tu pago quedará en ambos históricos y recuperará cupo disponible.',
         ),
         actions: [
-          TextButton(
+          OutlinedButton(
             onPressed: () => Navigator.pop(c, false),
             child: const Text('Volver'),
           ),
@@ -86,7 +88,7 @@ class _CreditoDetalleEstado extends EstadoBanco<CreditoDetallePantalla> {
     if (tarjeta == null) {
       return pagina('Tu tarjeta de crédito', [
         const CristalBro(child: Text('Estamos buscando tu tarjeta.')),
-        TextButton(
+        OutlinedButton(
           onPressed: () => context.push('/tarjetas/credito'),
           child: const Text('Ver mi solicitud'),
         ),
@@ -110,6 +112,23 @@ class _CreditoDetalleEstado extends EstadoBanco<CreditoDetallePantalla> {
         tarjeta,
         titular: ref.watch(sesionProvider).value?.nombre ?? 'FinanceBro',
       ),
+      if (activa)
+        Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: FilledButton.icon(
+            onPressed: deuda == 0 || ocupado
+                ? null
+                : () => setState(() {
+                    mostrarPago = true;
+                    recibo = null;
+                    referencia = nuevaReferencia();
+                    importe.text = (total > 0 ? total / 100 : deuda / 100)
+                        .toStringAsFixed(2);
+                  }),
+            icon: const Icon(Icons.payments_outlined),
+            label: const Text('Pagar mi tarjeta'),
+          ),
+        ),
       const SizedBox(height: 20),
       CristalBro(
         child: Column(
@@ -218,19 +237,6 @@ class _CreditoDetalleEstado extends EstadoBanco<CreditoDetallePantalla> {
                 'Próximo corte: ${tarjeta['proximoCorte']} · día ${tarjeta['diaCorte']}',
               ),
               const SizedBox(height: 16),
-              FilledButton.icon(
-                onPressed: deuda == 0 || ocupado
-                    ? null
-                    : () => setState(() {
-                        mostrarPago = !mostrarPago;
-                        recibo = null;
-                        referencia = nuevaReferencia();
-                        importe.text = (total > 0 ? total / 100 : deuda / 100)
-                            .toStringAsFixed(2);
-                      }),
-                icon: const Icon(Icons.payments_outlined),
-                label: const Text('Pagar mi tarjeta'),
-              ),
             ],
           ),
         ),
@@ -257,7 +263,7 @@ class _CreditoDetalleEstado extends EstadoBanco<CreditoDetallePantalla> {
                     spacing: 8,
                     children: [
                       if (minimo > 0)
-                        TextButton(
+                        OutlinedButton(
                           onPressed: () => setState(
                             () => importe.text = (minimo / 100).toStringAsFixed(
                               2,
@@ -266,7 +272,7 @@ class _CreditoDetalleEstado extends EstadoBanco<CreditoDetallePantalla> {
                           child: const Text('Pagar mínimo'),
                         ),
                       if (total > 0)
-                        TextButton(
+                        OutlinedButton(
                           onPressed: () => setState(
                             () =>
                                 importe.text = (total / 100).toStringAsFixed(2),
@@ -290,16 +296,16 @@ class _CreditoDetalleEstado extends EstadoBanco<CreditoDetallePantalla> {
           ),
       ],
       const SizedBox(height: 12),
-      TextButton.icon(
+      OutlinedButton.icon(
         onPressed: () => context.push('/historial?tipo=tarjeta&id=bro_credito'),
         icon: const Icon(Icons.history_rounded),
         label: const Text('Compras y pagos de esta tarjeta'),
       ),
-      TextButton(
+      OutlinedButton(
         onPressed: () => context.push('/tarjetas/fisica/bro_credito'),
         child: const Text('Solicitar tarjeta física'),
       ),
-      TextButton(
+      OutlinedButton(
         onPressed: () => context.push('/tarjetas'),
         child: const Text('Personalizar mi diseño'),
       ),

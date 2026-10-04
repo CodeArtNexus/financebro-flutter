@@ -24,15 +24,19 @@ final avisosSesionProvider = Provider<void>((ref) {
         content: Text(aviso.texto),
         action: SnackBarAction(
           label: 'Ver',
-          onPressed: () => router.go(aviso.destino),
+          onPressed: () => router.push(aviso.destino),
         ),
       ),
     );
   });
   unawaited(
-    repositorio.conectar(usuario.uid, router.go).catchError((Object e) {
-      registrarEvento('push_no_disponible', servicio: 'notificaciones');
-    }),
+    repositorio
+        .conectar(usuario.uid, (ruta) {
+          router.push(ruta);
+        })
+        .catchError((Object e) {
+          registrarEvento('push_no_disponible', servicio: 'notificaciones');
+        }),
   );
   ref.onDispose(suscripcion.cancel);
 });

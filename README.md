@@ -4,11 +4,11 @@ Aplicación financiera en Flutter para Android e iOS, acompañada de un panel we
 
 FinanceBro es un prototipo para evaluación técnica. Los fondos, cuentas, tarjetas, documentos y proveedores utilizados en el recorrido son sintéticos: no custodia dinero ni ejecuta pagos bancarios reales. Deben emplearse exclusivamente identidades y documentos ficticios.
 
-## Versión actual · 1.6.0
+## Versión actual · 1.6.1
 
-El [panel de administración](https://financebro-sb-20261003.web.app) y la aplicación móvil comparten Firebase Authentication, Firestore, Storage y Functions. La compilación normal utiliza este servidor; no requiere mantener encendido un servidor en el equipo del evaluador. El acceso de asesor se proporciona por separado, sin publicar credenciales en este repositorio.
+El [panel de administración](https://financebro-sb-20261003.web.app) y la aplicación móvil comparten Firebase Authentication, Firestore, Storage y Functions. La compilación normal utiliza este servidor; no requiere mantener encendido un servidor en el equipo del evaluador. Los accesos de evaluación se proporcionan por separado, sin publicar credenciales en este repositorio. Hay perfiles con productos e históricos cargados, una contraparte para transferencias y cheques, y solicitudes pendientes para el asesor.
 
-La identidad visual usa la marca `fb.`, naranja, superficies de cristal, iconos y espacios consistentes. Tarjetas y acciones están dentro del mismo bloque. Los temas claro, oscuro y automático se eligen en el perfil y se conservan en el dispositivo; el panel dispone de su propio selector. El logo tiene una entrada animada y las transiciones respetan la preferencia de reducir movimiento.
+La identidad visual usa la marca `fb.`, naranja, superficies de cristal, iconos y espacios consistentes. Tarjetas y acciones están dentro del mismo bloque. Los temas claro, oscuro y automático se eligen en el perfil y se conservan en el dispositivo; el panel dispone de su propio selector. El logo tiene una entrada animada y las transiciones respetan la preferencia de reducir movimiento. Las pestañas sustituyen su contenido sin superponer la vista anterior; las pantallas de detalle conservan la navegación nativa y el gesto de volver en iOS.
 
 ## Recorrido funcional
 

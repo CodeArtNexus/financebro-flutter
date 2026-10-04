@@ -95,7 +95,7 @@ export function iniciarBanca({
         )}</div>${s.nota ? `<p>${escapar(s.nota)}</p>` : ""}<div class="acciones">${s.estado === "revision" ? `<button class="secundario" data-revision="corregir" data-uid="${escapar(s.uid)}">Solicitar correcciones</button><button class="primario" data-revision="aprobar" data-uid="${escapar(s.uid)}">Aprobar cuenta temporal</button>` : ""}${s.estado === "deposito" ? `<button class="primario" data-revision="activar" data-uid="${escapar(s.uid)}">Validar depósito y activar</button>` : ""}</div></article>`;
     const buscar = $("buscar-solicitud").value.trim().toLocaleLowerCase("es");
     const visibles = solicitudes.filter((s) =>
-      [s.nombre, s.empresa, s.uid].some((v) =>
+      [s.nombre, s.representante, s.empresa, s.uid].some((v) =>
         String(v ?? "")
           .toLocaleLowerCase("es")
           .includes(buscar),

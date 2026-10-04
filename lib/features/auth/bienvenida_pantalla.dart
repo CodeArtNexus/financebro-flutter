@@ -48,17 +48,21 @@ class BienvenidaPantalla extends ConsumerWidget {
                               ],
                             ),
                             const SizedBox(height: 30),
-                            const Icon(
-                              Icons.account_balance_wallet_rounded,
-                              size: 68,
-                              color: tintaBro,
+                            Text(
+                              'fb.',
+                              style: TextStyle(
+                                fontSize: 64,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -5,
+                                color: textoBro(context),
+                              ),
                             ),
                             const SizedBox(height: 20),
                             Text(
                               recuerdo == null
                                   ? 'Un lugar para tus próximos planes.'
                                   : 'Hola, ${recuerdo.saludo}.\nQué bueno tenerte aquí.',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w600,
                                 letterSpacing: -.8,
@@ -78,7 +82,7 @@ class BienvenidaPantalla extends ConsumerWidget {
                       recuerdo == null
                           ? 'Tus finanzas,\na tu ritmo.'
                           : 'Tu financebro\nde confianza.',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 34,
                         fontWeight: FontWeight.w600,
                         height: 1.15,
@@ -86,9 +90,12 @@ class BienvenidaPantalla extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'Menos vueltas. Más claridad. Un espacio para cuidar tu dinero y dar forma a lo que viene.',
-                      style: TextStyle(color: Color(0xFF686C7D), height: 1.7),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        height: 1.7,
+                      ),
                     ),
                     const SizedBox(height: 28),
                     FilledButton.icon(
@@ -100,15 +107,20 @@ class BienvenidaPantalla extends ConsumerWidget {
                       ),
                       icon: const Icon(Icons.arrow_forward_rounded),
                     ),
-                    TextButton(
+                    TextButton.icon(
                       onPressed: () => context.go('/ingresar'),
-                      child: const Text('Ya tengo una cuenta'),
+                      icon: const Icon(Icons.login_rounded, size: 19),
+
+                      label: const Text('Ya tengo una cuenta'),
                     ),
                     const SizedBox(height: 18),
-                    const Text(
+                    Text(
                       'Tu dinero, con claridad y confianza.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 10, color: Color(0xFF686C7D)),
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),

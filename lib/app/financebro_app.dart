@@ -13,6 +13,7 @@ import 'tema.dart';
 import 'proveedores.dart';
 import '../core/errores.dart';
 import '../core/diseno_bro.dart';
+import '../core/apariencia.dart';
 
 final mensajero = GlobalKey<ScaffoldMessengerState>();
 
@@ -58,11 +59,14 @@ class FinanceBroApp extends ConsumerWidget {
       title: 'FinanceBro',
       debugShowCheckedModeBanner: false,
       theme: crearTema(),
+      darkTheme: crearTema(brillo: Brightness.dark),
+      themeMode: ref.watch(modoTemaProvider),
       locale: const Locale('es', 'EC'),
       supportedLocales: const [Locale('es', 'EC')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       routerConfig: ref.watch(rutasProvider),
-      builder: (context, child) => FondoBro(child: child!),
+      builder: (context, child) =>
+          EntradaMarcaBro(child: FondoBro(child: child!)),
     );
   }
 }

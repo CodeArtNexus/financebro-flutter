@@ -1,3 +1,5 @@
+import '../../core/apariencia.dart';
+
 import 'package:go_router/go_router.dart';
 
 import '../../core/configuracion.dart';
@@ -90,7 +92,10 @@ class _PerfilEstado extends ConsumerState<PerfilPantalla> {
             children: [
               CircleAvatar(
                 radius: 36,
-                backgroundColor: const Color(0xFFFFDCC4),
+                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                foregroundColor: Theme.of(context)
+                    .colorScheme
+                    .onPrimaryContainer,
                 child: Text(
                   (ref.watch(sesionProvider).value?.nombre ?? 'Bro')
                       .split(' ')
@@ -142,6 +147,43 @@ class _PerfilEstado extends ConsumerState<PerfilPantalla> {
               ),
             ),
           ),
+        const SizedBox(height: 20),
+        CristalBro(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.contrast_rounded),
+                title: Text('Apariencia'),
+                subtitle: Text('Elige cómo quieres ver tu espacio.'),
+              ),
+              SegmentedButton<ThemeMode>(
+                showSelectedIcon: false,
+                segments: const [
+                  ButtonSegment(
+                    value: ThemeMode.light,
+                    icon: Icon(Icons.light_mode_outlined),
+                    label: Text('Claro'),
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.dark,
+                    icon: Icon(Icons.dark_mode_outlined),
+                    label: Text('Oscuro'),
+                  ),
+                  ButtonSegment(
+                    value: ThemeMode.system,
+                    icon: Icon(Icons.phone_iphone_outlined),
+                    label: Text('Auto'),
+                  ),
+                ],
+                selected: {ref.watch(modoTemaProvider)},
+                onSelectionChanged: (valor) =>
+                    ref.read(modoTemaProvider.notifier).cambiar(valor.single),
+              ),
+            ],
+          ),
+        ),
         const SizedBox(height: 20),
         OutlinedButton.icon(
           onPressed: () => context.push('/cuentas'),
@@ -203,9 +245,11 @@ class _PerfilEstado extends ConsumerState<PerfilPantalla> {
                     if (datos.pendiente || datos.desdeCache)
                       AvisoCache(datos.actualizado, pendiente: datos.pendiente),
                     const SizedBox(height: 16),
-                    FilledButton(
+                    FilledButton.icon(
                       onPressed: _guardando ? null : () => _guardar(perfil),
-                      child: Text(
+                      icon: const Icon(Icons.check_circle_outline, size: 19),
+
+                      label: Text(
                         _guardando ? 'Guardando…' : 'Guardar preferencias',
                       ),
                     ),
@@ -246,9 +290,11 @@ class _PerfilEstado extends ConsumerState<PerfilPantalla> {
           onTap: () => context.push('/notificaciones'),
         ),
         const SizedBox(height: 32),
-        OutlinedButton(
+        OutlinedButton.icon(
           onPressed: _guardando ? null : _salir,
-          child: const Text('Cerrar sesión'),
+          icon: const Icon(Icons.close_rounded, size: 19),
+
+          label: const Text('Cerrar sesión'),
         ),
       ],
     ),

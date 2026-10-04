@@ -97,7 +97,7 @@ class _ChequeraEstado extends EstadoBanco<ChequeraPantalla> {
     final motivo = TextEditingController();
     final v = await showDialog<String>(
       context: context,
-      builder: (c) => AlertDialog(
+      builder: (c) => AlertaBro(
         title: const Text('Tu asesor de cuenta'),
         content: TextField(
           controller: motivo,
@@ -108,13 +108,17 @@ class _ChequeraEstado extends EstadoBanco<ChequeraPantalla> {
           ),
         ),
         actions: [
-          TextButton(
+          TextButton.icon(
             onPressed: () => Navigator.pop(c),
-            child: const Text('Volver'),
+            icon: const Icon(Icons.close_rounded, size: 19),
+
+            label: const Text('Volver'),
           ),
-          FilledButton(
+          FilledButton.icon(
             onPressed: () => Navigator.pop(c, motivo.text),
-            child: const Text('Enviar consulta'),
+            icon: const Icon(Icons.send_rounded, size: 19),
+
+            label: const Text('Enviar consulta'),
           ),
         ],
       ),
@@ -685,7 +689,7 @@ class _ChequeDetalleEstado extends EstadoBanco<ChequeDetallePantalla> {
     final motivo = TextEditingController();
     final nota = await showDialog<String>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (ctx) => AlertaBro(
         title: Text(switch (accion) {
           'posponer' => 'Cambiar fecha de cobro',
           'bloquear' => 'Bloquear cheque',
@@ -706,13 +710,17 @@ class _ChequeDetalleEstado extends EstadoBanco<ChequeDetallePantalla> {
           ],
         ),
         actions: [
-          TextButton(
+          TextButton.icon(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Volver'),
+            icon: const Icon(Icons.close_rounded, size: 19),
+
+            label: const Text('Volver'),
           ),
-          FilledButton(
+          FilledButton.icon(
             onPressed: () => Navigator.pop(ctx, motivo.text),
-            child: const Text('Confirmar cambio'),
+            icon: const Icon(Icons.check_rounded, size: 19),
+
+            label: const Text('Confirmar cambio'),
           ),
         ],
       ),

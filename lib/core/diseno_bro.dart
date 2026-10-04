@@ -16,26 +16,28 @@ class FondoBro extends ConsumerWidget {
     final temporada = decoracionVigente(ref.watch(decoracionProvider).value);
     return Stack(
       children: [
-        const Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Color(0xFFFFF6EE), fondoFinanceBro, Color(0xFFF0EFFB)],
-              ),
-            ),
+        Positioned.fill(
+          child: ColoredBox(
+            color: oscuroBro(context)
+                ? const Color(0xFF111923)
+                : fondoFinanceBro,
           ),
         ),
         Positioned(
-          top: -130,
-          right: -140,
-          child: _luz(const Color(0xFFFFBD98)),
-        ),
-        Positioned(
-          bottom: -160,
-          left: -160,
-          child: _luz(const Color(0xFFC7C3EC)),
+          top: -120,
+          right: -100,
+          child: IgnorePointer(
+            child: Container(
+              width: 310,
+              height: 310,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: naranjaFinanceBro.withValues(
+                  alpha: oscuroBro(context) ? .035 : .075,
+                ),
+              ),
+            ),
+          ),
         ),
         if (temporada != null)
           Positioned.fill(
@@ -49,26 +51,15 @@ class FondoBro extends ConsumerWidget {
       ],
     );
   }
-
-  Widget _luz(Color color) => Container(
-    width: 420,
-    height: 420,
-    decoration: BoxDecoration(
-      shape: BoxShape.circle,
-      gradient: RadialGradient(
-        colors: [color.withValues(alpha: .5), color.withValues(alpha: 0)],
-      ),
-    ),
-  );
 }
 
 class CristalBro extends StatelessWidget {
   const CristalBro({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(22),
+    this.padding = const EdgeInsets.all(20),
     this.color,
-    this.radio = 28,
+    this.radio = 24,
   });
   final Widget child;
   final EdgeInsetsGeometry padding;
@@ -80,8 +71,10 @@ class CristalBro extends StatelessWidget {
       borderRadius: BorderRadius.circular(radio),
       boxShadow: [
         BoxShadow(
-          color: tintaBro.withValues(alpha: .045),
-          blurRadius: 28,
+          color: Colors.black.withValues(
+            alpha: oscuroBro(context) ? .12 : .035,
+          ),
+          blurRadius: 24,
           offset: const Offset(0, 10),
         ),
       ],
@@ -89,15 +82,13 @@ class CristalBro extends StatelessWidget {
     child: ClipRRect(
       borderRadius: BorderRadius.circular(radio),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: Container(
           padding: padding,
           decoration: BoxDecoration(
-            color: MediaQuery.highContrastOf(context)
-                ? Colors.white
-                : color ?? Colors.white.withValues(alpha: .65),
+            color: cristalBro(context, color),
             borderRadius: BorderRadius.circular(radio),
-            border: Border.all(color: Colors.white.withValues(alpha: .9)),
+            border: Border.all(color: bordeBro(context)),
           ),
           child: Material(type: MaterialType.transparency, child: child),
         ),
@@ -139,7 +130,7 @@ class MarcaBro extends StatelessWidget {
           fontSize: compacta ? 19 : 23,
           fontWeight: FontWeight.w700,
           letterSpacing: -.9,
-          color: tintaBro,
+          color: textoBro(context),
         ),
       ),
       const Text(' •', style: TextStyle(color: naranjaTextoBro, fontSize: 24)),
@@ -173,7 +164,7 @@ class EncabezadoBro extends StatelessWidget {
   final Widget? accion;
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 14),
+    padding: const EdgeInsets.only(top: 22, bottom: 14),
     child: Row(
       children: [
         Expanded(
@@ -191,9 +182,10 @@ class EncabezadoBro extends StatelessWidget {
               if (subtitulo != null)
                 Text(
                   subtitulo!,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF686C7D),
+                    color: secundarioBro(context),
+                    height: 1.5,
                   ),
                 ),
             ],
@@ -251,4 +243,125 @@ class _TemporadaBro extends CustomPainter {
 
   @override
   bool shouldRepaint(_TemporadaBro old) => old.tema != tema;
+}
+
+/// Entrada breve: anima solo la marca y deja las superficies de cristal fuera
+/// de capas de opacidad para mantener el renderizado nativo de iOS y Android.
+class EntradaMarcaBro extends StatefulWidget {
+  const EntradaMarcaBro({super.key, required this.child});
+  final Widget child;
+  @override
+  State<EntradaMarcaBro> createState() => _EntradaMarcaEstado();
+}
+
+class _EntradaMarcaEstado extends State<EntradaMarcaBro>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _animacion = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 950),
+  );
+  bool _termino = false;
+  @override
+  void initState() {
+    super.initState();
+    _animacion.addStatusListener((estado) {
+      if (estado == AnimationStatus.completed && mounted) {
+        setState(() => _termino = true);
+      }
+    });
+    _animacion.forward();
+  }
+
+  @override
+  void dispose() {
+    _animacion.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_termino || MediaQuery.disableAnimationsOf(context)) {
+      return widget.child;
+    }
+    return Stack(
+      children: [
+        widget.child,
+        Positioned.fill(
+          child: ColoredBox(
+            color: oscuroBro(context)
+                ? const Color(0xFF111923)
+                : fondoFinanceBro,
+            child: Center(
+              child: AnimatedBuilder(
+                animation: _animacion,
+                builder: (context, _) {
+                  final valor = Curves.easeOutBack.transform(
+                    (_animacion.value / .7).clamp(0, 1),
+                  );
+                  return Transform.scale(
+                    scale: .8 + .2 * valor,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const MarcaBro(),
+                        const SizedBox(height: 18),
+                        Text(
+                          'Contigo, a tu ritmo.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: secundarioBro(context),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class AlertaBro extends StatelessWidget {
+  const AlertaBro({
+    super.key,
+    this.title,
+    this.content,
+    this.actions,
+    this.scrollable = false,
+    this.icon,
+  });
+  final Widget? title, content, icon;
+  final List<Widget>? actions;
+  final bool scrollable;
+  @override
+  Widget build(BuildContext context) => BackdropFilter(
+    filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+    child: AlertDialog(
+      icon:
+          icon ??
+          Icon(Icons.shield_outlined, color: acentoBro(context), size: 30),
+      title: title,
+      content: content,
+      scrollable: scrollable,
+      actions: actions,
+      contentPadding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+      actionsPadding: const EdgeInsets.fromLTRB(18, 16, 18, 20),
+      actionsOverflowButtonSpacing: 8,
+    ),
+  );
+}
+
+/// Superficie de lista con separación consistente entre movimientos y avisos.
+class TarjetaCristalBro extends StatelessWidget {
+  const TarjetaCristalBro({super.key, required this.child});
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: CristalBro(padding: EdgeInsets.zero, child: child),
+  );
 }

@@ -1,3 +1,5 @@
+import '../../core/diseno_bro.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -64,7 +66,7 @@ class _MovimientosEstado extends ConsumerState<MovimientosPantalla> {
                           mensaje: 'No hay movimientos para este filtro.',
                         ),
                       for (final m in movimientos)
-                        Card(
+                        TarjetaCristalBro(
                           child: Padding(
                             padding: const EdgeInsets.all(16),
                             child: Column(

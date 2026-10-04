@@ -29,7 +29,7 @@ class _NotificacionesEstado extends ConsumerState<NotificacionesPantalla> {
       children: [
         const Text('Las novedades que te importan, en el momento indicado.'),
         const SizedBox(height: 16),
-        FilledButton(
+        FilledButton.icon(
           onPressed: activando
               ? null
               : () async {
@@ -54,7 +54,9 @@ class _NotificacionesEstado extends ConsumerState<NotificacionesPantalla> {
                     if (mounted) setState(() => activando = false);
                   }
                 },
-          child: Text(activando ? 'Activando…' : 'Activar notificaciones'),
+          icon: const Icon(Icons.notifications_outlined, size: 19),
+
+          label: Text(activando ? 'Activando…' : 'Activar notificaciones'),
         ),
         if (mensaje != null)
           Padding(
@@ -79,8 +81,14 @@ class _NotificacionesEstado extends ConsumerState<NotificacionesPantalla> {
                       mensaje: 'Tus avisos aparecerán aquí.',
                     ),
                   for (final aviso in avisos)
-                    Card(
+                    TarjetaCristalBro(
                       child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 10,
+                        ),
+                        leading: const Icon(Icons.notifications_outlined),
+                        trailing: const Icon(Icons.chevron_right),
                         title: Text(aviso.titulo),
                         subtitle: Text(
                           '${aviso.texto}\n${DateFormat("dd/MM HH:mm").format(aviso.fecha)}',

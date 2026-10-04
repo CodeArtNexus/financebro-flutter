@@ -1,3 +1,5 @@
+import '../../core/diseno_bro.dart';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -7,7 +9,7 @@ class TarjetaContenido extends StatelessWidget {
   const TarjetaContenido(this.tarjeta, {super.key});
   final TarjetaRemota tarjeta;
   @override
-  Widget build(BuildContext context) => Card(
+  Widget build(BuildContext context) => TarjetaCristalBro(
     child: Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -23,9 +25,11 @@ class TarjetaContenido extends StatelessWidget {
           const SizedBox(height: 8),
           Text(tarjeta.texto),
           const SizedBox(height: 12),
-          TextButton(
+          TextButton.icon(
             onPressed: () => context.go(tarjeta.destino),
-            child: const Text('Explorar'),
+            icon: const Icon(Icons.arrow_forward_rounded, size: 19),
+
+            label: const Text('Explorar'),
           ),
         ],
       ),

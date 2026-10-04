@@ -142,13 +142,15 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
   );
   Future<void> _contrato() => showDialog<void>(
     context: context,
-    builder: (c) => AlertDialog(
+    builder: (c) => AlertaBro(
       title: const Text('Contrato, términos y condiciones'),
       content: const SingleChildScrollView(child: Text(contratoRegistro)),
       actions: [
-        TextButton(
+        TextButton.icon(
           onPressed: () => Navigator.pop(c),
-          child: const Text('Entendido'),
+          icon: const Icon(Icons.arrow_forward_rounded, size: 19),
+
+          label: const Text('Entendido'),
         ),
       ],
     ),
@@ -207,6 +209,7 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
                             controller: _nombre,
                             decoration: const InputDecoration(
                               labelText: 'Nombres',
+                              prefixIcon: Icon(Icons.person_outline),
                             ),
                             textCapitalization: TextCapitalization.words,
                             validator: (v) =>
@@ -230,6 +233,7 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
                             keyboardType: TextInputType.number,
                             decoration: const InputDecoration(
                               labelText: 'Cédula',
+                              prefixIcon: Icon(Icons.badge_outlined),
                             ),
                             validator: (v) =>
                                 RegExp(r'^\d{10}$').hasMatch(v?.trim() ?? '')
@@ -245,6 +249,7 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
                           autofillHints: const [AutofillHints.email],
                           decoration: const InputDecoration(
                             labelText: 'Correo electrónico',
+                            prefixIcon: Icon(Icons.alternate_email),
                           ),
                           validator: validarCorreo,
                         ),
@@ -260,6 +265,7 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
                           ],
                           decoration: InputDecoration(
                             labelText: 'Contraseña',
+                            prefixIcon: const Icon(Icons.lock_outline_rounded),
                             suffixIcon: IconButton(
                               tooltip: _ocultar
                                   ? 'Mostrar contraseña'
@@ -307,9 +313,14 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
                             'Tu cuenta se abrirá con USD 0 y tu tarjeta de débito digital quedará lista. Los pagos y transferencias se confirman antes de ejecutarse.',
                           ),
                         ),
-                        TextButton(
+                        TextButton.icon(
                           onPressed: _cargando ? null : _contrato,
-                          child: const Text(
+                          icon: const Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 19,
+                          ),
+
+                          label: const Text(
                             'Leer contrato, términos y condiciones',
                           ),
                         ),
@@ -325,11 +336,13 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
                             style: TextStyle(fontSize: 12),
                           ),
                         ),
-                        TextButton(
+                        TextButton.icon(
                           onPressed: _cargando
                               ? null
                               : () => setState(() => _paso = 0),
-                          child: const Text('Revisar mis datos'),
+                          icon: const Icon(Icons.search_rounded, size: 19),
+
+                          label: const Text('Revisar mis datos'),
                         ),
                       ],
                       const SizedBox(height: 20),
@@ -344,46 +357,60 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
                             ),
                           ),
                         ),
-                      FilledButton(
+                      FilledButton.icon(
                         key: const Key('enviar-acceso'),
                         onPressed:
                             _cargando ||
                                 widget.registro && _paso == 1 && !_acepta
                             ? null
                             : _enviar,
-                        child: _cargando
+                        icon: _cargando
                             ? const SizedBox(
-                                width: 24,
-                                height: 24,
+                                width: 18,
+                                height: 18,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                 ),
                               )
-                            : Text(
+                            : Icon(
                                 widget.registro
-                                    ? (_paso == 0
-                                          ? 'Continuar'
-                                          : 'Crear mi cuenta y tarjeta')
-                                    : 'Ingresar',
+                                    ? Icons.person_add_outlined
+                                    : Icons.login_rounded,
                               ),
+                        label: Text(
+                          _cargando
+                              ? 'Conectando…'
+                              : widget.registro
+                              ? (_paso == 0
+                                    ? 'Continuar'
+                                    : 'Crear mi cuenta y tarjeta')
+                              : 'Ingresar',
+                        ),
                       ),
                       const SizedBox(height: 12),
-                      TextButton(
+                      TextButton.icon(
                         onPressed: _cargando
                             ? null
                             : () => context.go(
                                 widget.registro ? '/ingresar' : '/registrar',
                               ),
-                        child: Text(
+                        icon: const Icon(Icons.login_rounded, size: 19),
+
+                        label: Text(
                           widget.registro
                               ? 'Ya tengo una cuenta'
                               : 'Quiero crear una cuenta',
                         ),
                       ),
                       if (!widget.registro)
-                        TextButton(
+                        TextButton.icon(
                           onPressed: _cargando ? null : _recuperar,
-                          child: const Text('Olvidé mi contraseña'),
+                          icon: const Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 19,
+                          ),
+
+                          label: const Text('Olvidé mi contraseña'),
                         ),
                       if (!widget.registro &&
                           ref.watch(recuerdoAccesoProvider) != null)

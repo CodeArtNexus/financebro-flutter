@@ -213,16 +213,14 @@ class NavegacionPantalla extends StatelessWidget {
           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: MediaQuery.highContrastOf(context)
-                  ? Colors.white
-                  : Colors.white.withValues(alpha: .82),
-              border: const Border(top: BorderSide(color: Colors.white)),
+              color: cristalBro(context),
+              border: Border(top: BorderSide(color: bordeBro(context))),
             ),
             child: NavigationBar(
               backgroundColor: Colors.transparent,
               elevation: 0,
               height: 80,
-              indicatorColor: naranjaFinanceBro.withValues(alpha: .42),
+              indicatorColor: naranjaFinanceBro.withValues(alpha: .9),
               selectedIndex: seleccionado,
               onDestinationSelected: (i) => context.go(destinos[i]),
               destinations: const [

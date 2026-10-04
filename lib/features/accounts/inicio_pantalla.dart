@@ -52,11 +52,11 @@ class InicioPantalla extends ConsumerWidget {
                         children: [
                           Text(
                             temporada['titulo'] as String,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
+                            style: TextStyle(fontWeight: FontWeight.w600),
                           ),
                           Text(
                             temporada['mensaje'] as String,
-                            style: const TextStyle(fontSize: 12),
+                            style: TextStyle(fontSize: 12),
                           ),
                         ],
                       ),
@@ -71,17 +71,24 @@ class InicioPantalla extends ConsumerWidget {
               children: [
                 Text(
                   'Hola, $nombre ✨',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w600,
                     letterSpacing: -1,
                   ),
                 ),
-                Text(switch (ref.watch(perfilProvider).value?.valor.segmento) {
-                  'viajes' => 'Ya casi despegamos. Vamos por tu próximo viaje.',
-                  'ahorro' => 'Cada paso cuenta. Hagamos crecer tus planes.',
-                  _ => 'Aquí tienes a tu financebro de confianza.',
-                }, style: TextStyle(fontSize: 12, color: Color(0xFF6E7181))),
+                Text(
+                  switch (ref.watch(perfilProvider).value?.valor.segmento) {
+                    'viajes' =>
+                      'Ya casi despegamos. Vamos por tu próximo viaje.',
+                    'ahorro' => 'Cada paso cuenta. Hagamos crecer tus planes.',
+                    _ => 'Aquí tienes a tu financebro de confianza.',
+                  },
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
                 const SizedBox(height: 8),
               ],
             ),
@@ -184,9 +191,14 @@ class InicioPantalla extends ConsumerWidget {
                       EncabezadoBro(
                         'Mis tarjetas',
                         subtitulo: 'Tu estilo, tus bancos',
-                        accion: TextButton(
+                        accion: TextButton.icon(
                           onPressed: () => context.push('/tarjetas'),
-                          child: const Text('Gestionar'),
+                          icon: const Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 19,
+                          ),
+
+                          label: const Text('Gestionar'),
                         ),
                       ),
                       ref
@@ -222,10 +234,15 @@ class InicioPantalla extends ConsumerWidget {
                                       const Text(
                                         'Dale tu estilo a una tarjeta FinanceBro.',
                                       ),
-                                      TextButton(
+                                      TextButton.icon(
                                         onPressed: () =>
                                             context.push('/tarjetas'),
-                                        child: const Text('Asociar tarjeta'),
+                                        icon: const Icon(
+                                          Icons.credit_card_outlined,
+                                          size: 19,
+                                        ),
+
+                                        label: const Text('Asociar tarjeta'),
                                       ),
                                     ],
                                   ),
@@ -282,7 +299,7 @@ class InicioPantalla extends ConsumerWidget {
               leading: const Icon(Icons.bolt_outlined),
               title: const Text('Tus servicios, al día'),
               subtitle: const Text(
-                'Consulta una planilla o activa un pago mensual.',
+                'Consulta tu planilla y organiza tus pagos.',
                 style: TextStyle(fontSize: 11),
               ),
               trailing: const Icon(Icons.chevron_right),
@@ -362,7 +379,7 @@ class CuentaInicioBro extends StatelessWidget {
                   Expanded(
                     child: Text(
                       corriente ? 'Cuenta corriente' : 'Cuenta de ahorros',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -377,10 +394,7 @@ class CuentaInicioBro extends StatelessWidget {
                   corriente
                       ? (compacta ? 'Tu empresa' : 'Un espacio para tu empresa')
                       : 'Empieza con tus ahorros',
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 6),
                 Text(
@@ -389,7 +403,7 @@ class CuentaInicioBro extends StatelessWidget {
                             ? 'Abre tu solicitud'
                             : 'Abre tu solicitud y guarda cada paso.')
                       : 'Estamos completando tu apertura.',
-                  style: const TextStyle(fontSize: 11),
+                  style: TextStyle(fontSize: 11),
                 ),
               ] else ...[
                 FittedBox(
@@ -397,7 +411,7 @@ class CuentaInicioBro extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     mostrar ? dinero(cuenta!.saldoCentavos) : '••••••',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.w600,
                       letterSpacing: -1,
@@ -407,7 +421,7 @@ class CuentaInicioBro extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   '${cuenta!.numero} · ${cuenta!.activa ? 'Disponible' : 'Temporal · depósito inicial'}',
-                  style: const TextStyle(fontSize: 11),
+                  style: TextStyle(fontSize: 11),
                 ),
               ],
             ],
@@ -435,9 +449,11 @@ class AccionBro extends StatelessWidget {
           width: 44,
           height: 44,
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: .7),
+            color: Theme.of(context).colorScheme.surface.withValues(alpha: .7),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outlineVariant,
+            ),
           ),
           child: Icon(icono, size: 22),
         ),
@@ -445,7 +461,7 @@ class AccionBro extends StatelessWidget {
         Text(
           texto,
           textAlign: TextAlign.center,
-          style: const TextStyle(fontSize: 11),
+          style: TextStyle(fontSize: 11),
         ),
       ],
     ),

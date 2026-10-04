@@ -43,17 +43,23 @@ class CuentasPantalla extends ConsumerWidget {
                       icon: const Icon(Icons.business_outlined),
                       label: const Text('Solicitar cuenta corriente'),
                     ),
-                  OutlinedButton(
+                  OutlinedButton.icon(
                     onPressed: () => context.push('/contactos'),
-                    child: const Text('Mis contactos'),
+                    icon: const Icon(Icons.arrow_forward_rounded, size: 19),
+
+                    label: const Text('Mis contactos'),
                   ),
-                  OutlinedButton(
+                  OutlinedButton.icon(
                     onPressed: () => context.push('/tarjetas'),
-                    child: const Text('Gestionar tarjetas'),
+                    icon: const Icon(Icons.credit_card_outlined, size: 19),
+
+                    label: const Text('Gestionar tarjetas'),
                   ),
-                  OutlinedButton(
+                  OutlinedButton.icon(
                     onPressed: () => context.push('/historial'),
-                    child: const Text('Todos mis movimientos'),
+                    icon: const Icon(Icons.history_rounded, size: 19),
+
+                    label: const Text('Todos mis movimientos'),
                   ),
                 ],
               ),
@@ -67,7 +73,7 @@ class TarjetaCuenta extends ConsumerWidget {
   const TarjetaCuenta(this.cuenta, {super.key});
   final Cuenta cuenta;
   @override
-  Widget build(BuildContext context, WidgetRef ref) => Card(
+  Widget build(BuildContext context, WidgetRef ref) => TarjetaCristalBro(
     child: ListTile(
       contentPadding: const EdgeInsets.all(20),
       leading: Icon(

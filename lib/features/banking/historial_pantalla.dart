@@ -201,7 +201,7 @@ class _HistorialEstado extends EstadoBanco<HistorialPantalla> {
                             fontWeight: FontWeight.w600,
                             color: centavos > 0
                                 ? const Color(0xFF356B53)
-                                : const Color(0xFF8B4624),
+                                : Theme.of(context).colorScheme.primary,
                           ),
                         ),
                       ],
@@ -232,9 +232,11 @@ class _HistorialEstado extends EstadoBanco<HistorialPantalla> {
           ),
         ),
       if (mas)
-        TextButton(
+        TextButton.icon(
           onPressed: ocupado ? null : () => cargar(),
-          child: const Text('Cargar movimientos anteriores'),
+          icon: const Icon(Icons.history_rounded, size: 19),
+
+          label: const Text('Cargar movimientos anteriores'),
         )
       else if (items.isNotEmpty)
         const Text(

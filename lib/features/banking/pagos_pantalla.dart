@@ -46,7 +46,12 @@ class _PagosEstado extends EstadoBanco<PagosPantalla> {
                     padding: const EdgeInsets.all(14),
                     child: ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: const Color(0xFFFFE8D7),
+                        backgroundColor: Theme.of(context)
+                            .colorScheme
+                            .primaryContainer,
+                        foregroundColor: Theme.of(context)
+                            .colorScheme
+                            .onPrimaryContainer,
                         child: Icon(iconoServicio(s['icono'] as String?)),
                       ),
                       title: Text(s['nombre'] as String),
@@ -62,9 +67,20 @@ class _PagosEstado extends EstadoBanco<PagosPantalla> {
             ],
           ),
         ),
+    const CristalBro(
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(Icons.event_available_outlined),
+        title: Text('Tú confirmas cada pago'),
+        subtitle: Text(
+          'La programación conserva el día y el límite. Los pagos se consultan y confirman desde la app; no se ejecutan débitos automáticos.',
+          style: TextStyle(fontSize: 11),
+        ),
+      ),
+    ),
     const EncabezadoBro(
       'Tus pagos mensuales',
-      subtitulo: 'Tú decides el día y el límite. Puedes pausarlos.',
+      subtitulo: 'Organiza el día y el límite de cada servicio.',
     ),
     ref
         .watch(autopagosBroProvider)
@@ -75,7 +91,7 @@ class _PagosEstado extends EstadoBanco<PagosPantalla> {
             children: [
               if (autos.isEmpty)
                 const Text(
-                  'Después de pagar puedes activar el pago mensual.',
+                  'Después de pagar puedes guardar tu programación mensual.',
                   style: TextStyle(fontSize: 12),
                 ),
               for (final a in autos)
@@ -86,7 +102,7 @@ class _PagosEstado extends EstadoBanco<PagosPantalla> {
                     child: ListTile(
                       title: Text(a['nombre'] as String),
                       subtitle: Text(
-                        '${a['contrato']} · ${a['activo'] == true ? 'Próximo: ${a['siguiente']}' : 'Pausado'}\nLímite ${dinero((a['maximoCentavos'] as num).toInt())}${a['ultimoEstado'] == 'requiere_atencion' ? ' · Revisa tus avisos' : ''}',
+                        '${a['contrato']} · ${a['activo'] == true ? 'Planificado: ${a['siguiente']}' : 'Pausado'}\nLímite ${dinero((a['maximoCentavos'] as num).toInt())}${a['ultimoEstado'] == 'requiere_atencion' ? ' · Revisa tus avisos' : ''}',
                         style: const TextStyle(fontSize: 11),
                       ),
                       trailing: a['activo'] == true
@@ -153,19 +169,23 @@ class _ServicioEstado extends EstadoBanco<ServicioPagoPantalla> {
   Future<void> pagar() => trabajar(() async {
     final si = await showDialog<bool>(
       context: context,
-      builder: (c) => AlertDialog(
+      builder: (c) => AlertaBro(
         title: const Text('Confirmar planilla'),
         content: Text(
           '${factura!['nombre']} · ${factura!['contrato']}\n${dinero((factura!['centavos'] as num).toInt())} · ${factura!['periodo']}',
         ),
         actions: [
-          TextButton(
+          TextButton.icon(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Volver'),
+            icon: const Icon(Icons.close_rounded, size: 19),
+
+            label: const Text('Volver'),
           ),
-          FilledButton(
+          FilledButton.icon(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Confirmar pago'),
+            icon: const Icon(Icons.payments_outlined, size: 19),
+
+            label: const Text('Confirmar pago'),
           ),
         ],
       ),
@@ -183,8 +203,8 @@ class _ServicioEstado extends EstadoBanco<ServicioPagoPantalla> {
     if (recibo != null) ...[
       ReciboBro(recibo!),
       const EncabezadoBro(
-        '¿Lo dejamos para cada mes?',
-        subtitulo: 'Autoriza el pago automático con un límite.',
+        'Organiza tu próximo pago',
+        subtitulo: 'Guarda el día y un límite para tu planificación.',
       ),
       CristalBro(
         child: Column(
@@ -210,11 +230,11 @@ class _ServicioEstado extends EstadoBanco<ServicioPagoPantalla> {
                   ? null
                   : (v) => setState(() => acepta = v ?? false),
               title: const Text(
-                'Autorizo consultar y pagar cada mes con esta cuenta, sin superar mi límite.',
+                'Acepto guardar esta programación. Confirmaré cada pago antes de que se descuente de mi cuenta.',
                 style: TextStyle(fontSize: 12),
               ),
             ),
-            FilledButton(
+            FilledButton.icon(
               onPressed: ocupado || !acepta
                   ? null
                   : () => trabajar(() async {
@@ -229,11 +249,15 @@ class _ServicioEstado extends EstadoBanco<ServicioPagoPantalla> {
                       });
                       if (context.mounted) context.go('/pagos');
                     }),
-              child: const Text('Activar pago mensual'),
+              icon: const Icon(Icons.payments_outlined, size: 19),
+
+              label: const Text('Guardar pago mensual'),
             ),
-            TextButton(
+            TextButton.icon(
               onPressed: () => context.go('/pagos'),
-              child: const Text('Solo por esta vez'),
+              icon: const Icon(Icons.close_rounded, size: 19),
+
+              label: const Text('Solo por esta vez'),
             ),
           ],
         ),
@@ -249,9 +273,11 @@ class _ServicioEstado extends EstadoBanco<ServicioPagoPantalla> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             campo(contrato, 'Código de contrato', maximo: 30),
-            FilledButton(
+            FilledButton.icon(
               onPressed: ocupado ? null : consultar,
-              child: const Text('Consultar valor'),
+              icon: const Icon(Icons.payments_outlined, size: 19),
+
+              label: const Text('Consultar valor'),
             ),
           ],
         ),
@@ -291,9 +317,11 @@ class _ServicioEstado extends EstadoBanco<ServicioPagoPantalla> {
                     cambiar: ocupado ? null : (v) => setState(() => cuenta = v),
                   ),
                   const SizedBox(height: 16),
-                  FilledButton(
+                  FilledButton.icon(
                     onPressed: ocupado || cuenta == null ? null : pagar,
-                    child: const Text('Revisar y pagar'),
+                    icon: const Icon(Icons.payments_outlined, size: 19),
+
+                    label: const Text('Revisar y pagar'),
                   ),
                 ],
                 const SizedBox(height: 12),

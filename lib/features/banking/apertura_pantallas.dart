@@ -175,9 +175,11 @@ class _CorrienteEstado extends EstadoBanco<AperturaCorrientePantalla> {
                             : (v) => setState(() => escala = v!),
                       ),
                       const SizedBox(height: 16),
-                      FilledButton(
+                      FilledButton.icon(
                         onPressed: ocupado ? null : guardar,
-                        child: const Text('Guardar datos y continuar'),
+                        icon: const Icon(Icons.check_circle_outline, size: 19),
+
+                        label: const Text('Guardar datos y continuar'),
                       ),
                     ],
                   ),
@@ -232,13 +234,15 @@ class _CorrienteEstado extends EstadoBanco<AperturaCorrientePantalla> {
                       style: TextStyle(fontSize: 12),
                     ),
                   ),
-                  FilledButton(
+                  FilledButton.icon(
                     onPressed: ocupado || docs.length != 5 || !acepta
                         ? null
                         : () => trabajar(() async {
                             await llamar('enviarSolicitud', {'acepta': true});
                           }),
-                    child: const Text('Enviar al asesor'),
+                    icon: const Icon(Icons.send_rounded, size: 19),
+
+                    label: const Text('Enviar al asesor'),
                   ),
                 ],
               ],

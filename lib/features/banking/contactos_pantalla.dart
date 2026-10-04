@@ -81,9 +81,11 @@ class _ContactosEstado extends EstadoBanco<ContactosPantalla> {
                 ),
               ],
               const SizedBox(height: 16),
-              FilledButton(
+              FilledButton.icon(
                 onPressed: ocupado ? null : guardar,
-                child: Text(
+                icon: const Icon(Icons.check_circle_outline, size: 19),
+
+                label: Text(
                   interno ? 'Verificar y guardar' : 'Guardar contacto',
                 ),
               ),
@@ -185,26 +187,30 @@ class _ExternoEstado extends EstadoBanco<PagoExternoPantalla> {
                 cambiar: ocupado ? null : (v) => setState(() => cuenta = v),
               ),
               const SizedBox(height: 20),
-              FilledButton(
+              FilledButton.icon(
                 onPressed: ocupado || cuenta == null
                     ? null
                     : () => trabajar(() async {
                         final centavos = montoCentavos(monto.text);
                         final si = await showDialog<bool>(
                           context: context,
-                          builder: (c) => AlertDialog(
+                          builder: (c) => AlertaBro(
                             title: const Text('Confirmar pago'),
                             content: Text(
                               'Descontar USD ${(centavos / 100).toStringAsFixed(2)} de tu cuenta.',
                             ),
                             actions: [
-                              TextButton(
+                              TextButton.icon(
                                 onPressed: () => Navigator.pop(c, false),
-                                child: const Text('Volver'),
+                                icon: const Icon(Icons.close_rounded, size: 19),
+
+                                label: const Text('Volver'),
                               ),
-                              FilledButton(
+                              FilledButton.icon(
                                 onPressed: () => Navigator.pop(c, true),
-                                child: const Text('Confirmar'),
+                                icon: const Icon(Icons.check_rounded, size: 19),
+
+                                label: const Text('Confirmar'),
                               ),
                             ],
                           ),
@@ -219,7 +225,9 @@ class _ExternoEstado extends EstadoBanco<PagoExternoPantalla> {
                         });
                         if (mounted) setState(() => recibo = r);
                       }),
-                child: const Text('Revisar pago'),
+                icon: const Icon(Icons.payments_outlined, size: 19),
+
+                label: const Text('Revisar pago'),
               ),
             ],
           ),

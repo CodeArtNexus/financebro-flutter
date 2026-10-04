@@ -1,3 +1,5 @@
+import '../../core/diseno_bro.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -81,7 +83,7 @@ class _DivisasEstado extends ConsumerState<DivisasPantalla> {
                   icono: Icons.hourglass_top,
                 ),
                 error: (e, _) => PanelError(e, () => ref.invalidate(provider)),
-                data: (tasa) => Card(
+                data: (tasa) => TarjetaCristalBro(
                   child: Padding(
                     padding: const EdgeInsets.all(24),
                     child: Column(
@@ -122,9 +124,11 @@ class _DivisasEstado extends ConsumerState<DivisasPantalla> {
                 ),
               ),
           const SizedBox(height: 16),
-          OutlinedButton(
+          OutlinedButton.icon(
             onPressed: () => ref.invalidate(provider),
-            child: const Text('Actualizar tasa'),
+            icon: const Icon(Icons.check_circle_outline, size: 19),
+
+            label: const Text('Actualizar tasa'),
           ),
         ],
       ),

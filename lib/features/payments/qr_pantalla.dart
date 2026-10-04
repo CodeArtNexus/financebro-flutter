@@ -127,7 +127,7 @@ class _QrEstado extends EstadoBanco<QrPantalla> {
     final sinConexion = !ref.read(redBancoProvider).conectado;
     final confirmado = await showDialog<bool>(
       context: context,
-      builder: (c) => AlertDialog(
+      builder: (c) => AlertaBro(
         title: Text(
           sinConexion
               ? 'Autoriza el envío pendiente'
@@ -137,13 +137,17 @@ class _QrEstado extends EstadoBanco<QrPantalla> {
           'Enviar USD ${(centavos / 100).toStringAsFixed(2)} a ${receptor!['titular']}\nCuenta ${receptor!['numero']}${sinConexion ? '\nSe validará al reconectar y caduca en 24 horas. El dinero aún no se descontará.' : ''}',
         ),
         actions: [
-          TextButton(
+          TextButton.icon(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Volver'),
+            icon: const Icon(Icons.close_rounded, size: 19),
+
+            label: const Text('Volver'),
           ),
-          FilledButton(
+          FilledButton.icon(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Confirmar'),
+            icon: const Icon(Icons.check_rounded, size: 19),
+
+            label: const Text('Confirmar'),
           ),
         ],
       ),
@@ -327,7 +331,7 @@ class _QrEstado extends EstadoBanco<QrPantalla> {
         title: const Text('Tengo un código o número'),
         children: [
           campo(codigo, 'QR o número de cuenta', key: const Key('codigo-qr')),
-          TextButton(
+          TextButton.icon(
             onPressed: ocupado
                 ? null
                 : () {
@@ -342,7 +346,9 @@ class _QrEstado extends EstadoBanco<QrPantalla> {
                       leer(v);
                     }
                   },
-            child: const Text('Revisar cuenta'),
+            icon: const Icon(Icons.login_rounded, size: 19),
+
+            label: const Text('Revisar cuenta'),
           ),
         ],
       ),
@@ -378,10 +384,12 @@ class _QrEstado extends EstadoBanco<QrPantalla> {
                 cambiar: ocupado ? null : (v) => setState(() => cuenta = v),
               ),
               const SizedBox(height: 20),
-              FilledButton(
+              FilledButton.icon(
                 key: const Key('confirmar-pago'),
                 onPressed: ocupado || cuenta == null ? null : transferir,
-                child: Text(
+                icon: const Icon(Icons.send_rounded, size: 19),
+
+                label: Text(
                   ref.watch(conexionBancoProvider).value ==
                           EstadoConexion.conectado
                       ? 'Revisar transferencia'

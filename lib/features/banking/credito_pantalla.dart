@@ -53,19 +53,23 @@ class _CreditoDetalleEstado extends EstadoBanco<CreditoDetallePantalla> {
     final centavos = montoCentavos(importe.text, minimo: 1, maximo: 5000000);
     final confirma = await showDialog<bool>(
       context: context,
-      builder: (c) => AlertDialog(
+      builder: (c) => AlertaBro(
         title: const Text('Revisar pago de tarjeta'),
         content: Text(
           'Abonarás ${dinero(centavos)} desde tu cuenta. Tu pago quedará en ambos históricos y recuperará cupo disponible.',
         ),
         actions: [
-          OutlinedButton(
+          OutlinedButton.icon(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Volver'),
+            icon: const Icon(Icons.close_rounded, size: 19),
+
+            label: const Text('Volver'),
           ),
-          FilledButton(
+          FilledButton.icon(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Confirmar pago'),
+            icon: const Icon(Icons.payments_outlined, size: 19),
+
+            label: const Text('Confirmar pago'),
           ),
         ],
       ),
@@ -95,9 +99,11 @@ class _CreditoDetalleEstado extends EstadoBanco<CreditoDetallePantalla> {
     if (tarjeta == null) {
       return pagina('Tu tarjeta de crédito', [
         const CristalBro(child: Text('Estamos buscando tu tarjeta.')),
-        OutlinedButton(
+        OutlinedButton.icon(
           onPressed: () => context.push('/tarjetas/credito'),
-          child: const Text('Ver mi solicitud'),
+          icon: const Icon(Icons.arrow_forward_rounded, size: 19),
+
+          label: const Text('Ver mi solicitud'),
         ),
       ]);
     }
@@ -197,7 +203,7 @@ class _CreditoDetalleEstado extends EstadoBanco<CreditoDetallePantalla> {
                   'Acepto el corte y estas condiciones de pago.',
                 ),
               ),
-              FilledButton(
+              FilledButton.icon(
                 onPressed: ocupado || !acepta
                     ? null
                     : () => trabajar(() async {
@@ -206,7 +212,9 @@ class _CreditoDetalleEstado extends EstadoBanco<CreditoDetallePantalla> {
                           'aceptaCondiciones': true,
                         });
                       }),
-                child: const Text('Activar mi tarjeta'),
+                icon: const Icon(Icons.credit_card_outlined, size: 19),
+
+                label: const Text('Activar mi tarjeta'),
               ),
             ],
           ),
@@ -270,27 +278,33 @@ class _CreditoDetalleEstado extends EstadoBanco<CreditoDetallePantalla> {
                     spacing: 8,
                     children: [
                       if (minimo > 0)
-                        OutlinedButton(
+                        OutlinedButton.icon(
                           onPressed: () => setState(
                             () => importe.text = (minimo / 100).toStringAsFixed(
                               2,
                             ),
                           ),
-                          child: const Text('Pagar mínimo'),
+                          icon: const Icon(Icons.payments_outlined, size: 19),
+
+                          label: const Text('Pagar mínimo'),
                         ),
                       if (total > 0)
-                        OutlinedButton(
+                        OutlinedButton.icon(
                           onPressed: () => setState(
                             () =>
                                 importe.text = (total / 100).toStringAsFixed(2),
                           ),
-                          child: const Text('Pagar total'),
+                          icon: const Icon(Icons.payments_outlined, size: 19),
+
+                          label: const Text('Pagar total'),
                         ),
                     ],
                   ),
-                  FilledButton(
+                  FilledButton.icon(
                     onPressed: ocupado || cuenta == null ? null : pagar,
-                    child: const Text('Revisar abono'),
+                    icon: const Icon(Icons.search_rounded, size: 19),
+
+                    label: const Text('Revisar abono'),
                   ),
                 ],
               ),
@@ -308,13 +322,17 @@ class _CreditoDetalleEstado extends EstadoBanco<CreditoDetallePantalla> {
         icon: const Icon(Icons.history_rounded),
         label: const Text('Compras y pagos de esta tarjeta'),
       ),
-      OutlinedButton(
+      OutlinedButton.icon(
         onPressed: () => context.push('/tarjetas/fisica/bro_credito'),
-        child: const Text('Solicitar tarjeta física'),
+        icon: const Icon(Icons.credit_card_outlined, size: 19),
+
+        label: const Text('Solicitar tarjeta física'),
       ),
-      OutlinedButton(
+      OutlinedButton.icon(
         onPressed: () => context.push('/tarjetas'),
-        child: const Text('Personalizar mi diseño'),
+        icon: const Icon(Icons.palette_outlined, size: 19),
+
+        label: const Text('Personalizar mi diseño'),
       ),
     ]);
   }

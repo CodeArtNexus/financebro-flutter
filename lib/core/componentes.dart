@@ -1,3 +1,5 @@
+import 'diseno_bro.dart';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -22,7 +24,7 @@ class PanelEstado extends StatelessWidget {
   final VoidCallback? reintentar;
   final IconData icono;
   @override
-  Widget build(BuildContext context) => Card(
+  Widget build(BuildContext context) => TarjetaCristalBro(
     child: Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -35,9 +37,11 @@ class PanelEstado extends StatelessWidget {
           if (reintentar != null)
             Padding(
               padding: const EdgeInsets.only(top: 16),
-              child: OutlinedButton(
+              child: OutlinedButton.icon(
                 onPressed: reintentar,
-                child: const Text('Reintentar'),
+                icon: const Icon(Icons.refresh_rounded, size: 19),
+
+                label: const Text('Reintentar'),
               ),
             ),
         ],

@@ -157,7 +157,7 @@ class ReciboBro extends StatelessWidget {
           Text(
             dinero((recibo['centavos'] as num).toInt()),
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 34, fontWeight: FontWeight.w600),
+            style: TextStyle(fontSize: 34, fontWeight: FontWeight.w600),
           ),
           Text(
             recibo['titular'] as String? ?? 'FinanceBro',
@@ -167,22 +167,26 @@ class ReciboBro extends StatelessWidget {
           const Divider(),
           SelectableText(
             'Referencia: ${recibo['referencia']}',
-            style: const TextStyle(fontSize: 10),
+            style: TextStyle(fontSize: 10),
           ),
           if (recibo['periodo'] != null)
             Text('Planilla: ${recibo['periodo']} · ${recibo['contrato']}'),
           const SizedBox(height: 16),
           const Text('Guardado en tu histórico.', textAlign: TextAlign.center),
           const SizedBox(height: 20),
-          FilledButton(
+          FilledButton.icon(
             onPressed: () => context.push('/cuentas/${recibo['cuenta']}'),
-            child: const Text('Ver movimientos'),
+            icon: const Icon(Icons.history_rounded, size: 19),
+
+            label: const Text('Ver movimientos'),
           ),
           ?extra,
           if (otra != null)
-            TextButton(
+            TextButton.icon(
               onPressed: otra,
-              child: const Text('Hacer otra operación'),
+              icon: const Icon(Icons.arrow_forward_rounded, size: 19),
+
+              label: const Text('Hacer otra operación'),
             ),
         ],
       ),
@@ -231,12 +235,12 @@ class _DineroViajandoEstado extends State<DineroViajandoBro>
             builder: (context, c) => Stack(
               alignment: Alignment.center,
               children: [
-                const Positioned(
+                Positioned(
                   left: 0,
                   child: Icon(
                     Icons.account_balance_wallet_outlined,
                     size: 44,
-                    color: Color(0xFF686B79),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const Positioned(

@@ -30,7 +30,7 @@ class _LaboratorioEstado extends ConsumerState<LaboratorioPantalla> {
             for (final escenario in EscenarioRed.values)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: OutlinedButton(
+                child: OutlinedButton.icon(
                   onPressed: cambiando
                       ? null
                       : () async {
@@ -51,7 +51,9 @@ class _LaboratorioEstado extends ConsumerState<LaboratorioPantalla> {
                             if (mounted) setState(() => cambiando = false);
                           }
                         },
-                  child: Text(
+                  icon: const Icon(Icons.arrow_forward_rounded, size: 19),
+
+                  label: Text(
                     '${control.escenario == escenario ? "✓ " : ""}${switch (escenario) {
                       EscenarioRed.normal => "Conexión normal / recuperar",
                       EscenarioRed.sinConexion => "Sin conexión",

@@ -51,11 +51,7 @@ class TarjetaVisualBro extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(26),
             border: Border.all(color: Colors.white.withValues(alpha: .9)),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [color, color.withValues(alpha: .72)],
-            ),
+            color: color.withValues(alpha: .9),
             boxShadow: [
               BoxShadow(
                 color: color.withValues(alpha: .2),
@@ -303,6 +299,7 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
                   t['tipo'] == 'propia' ? 'Transferir con QR' : 'Pagar tarjeta',
                 ),
               ),
+              const SizedBox(height: 10),
               OutlinedButton.icon(
                 onPressed: () {
                   Navigator.pop(c);
@@ -311,7 +308,8 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
                 icon: const Icon(Icons.palette_outlined),
                 label: const Text('Personalizar diseño'),
               ),
-              if (t['tipo'] == 'propia')
+              if (t['tipo'] == 'propia') ...[
+                const SizedBox(height: 10),
                 OutlinedButton.icon(
                   onPressed: () {
                     Navigator.pop(c);
@@ -320,6 +318,8 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
                   icon: const Icon(Icons.local_shipping_outlined),
                   label: const Text('Solicitar copia física'),
                 ),
+              ],
+              const SizedBox(height: 10),
               OutlinedButton.icon(
                 onPressed: () {
                   Navigator.pop(c);
@@ -469,9 +469,11 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
                 ),
               ],
               const SizedBox(height: 16),
-              FilledButton(
+              FilledButton.icon(
                 onPressed: ocupado ? null : guardar,
-                child: const Text('Guardar tarjeta'),
+                icon: const Icon(Icons.check_circle_outline, size: 19),
+
+                label: const Text('Guardar tarjeta'),
               ),
             ],
           ),
@@ -494,89 +496,111 @@ class _TarjetasEstado extends EstadoBanco<TarjetasPantalla> {
               for (final t in tarjetas)
                 Padding(
                   padding: const EdgeInsets.only(top: 20),
-                  child: Column(
-                    children: [
-                      TarjetaVisualBro(
-                        t,
-                        onTap: () => abrirTarjeta(t),
-                        titular:
-                            ref.watch(sesionProvider).value?.nombre ?? 'Bro',
-                      ),
-                      if (t['clase'] == 'credito')
-                        Padding(
-                          padding: const EdgeInsets.only(top: 10),
-                          child: Text(
-                            'Cupo disponible ${dinero(((t['cupoCentavos'] as num) - (t['deudaCentavos'] as num)).toInt())}',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
+                  child: CristalBro(
+                    padding: const EdgeInsets.all(14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        TarjetaVisualBro(
+                          t,
+                          onTap: () => abrirTarjeta(t),
+                          titular:
+                              ref.watch(sesionProvider).value?.nombre ?? 'Bro',
                         ),
-                      if (t['tipo'] == 'externa')
-                        const Padding(
-                          padding: EdgeInsets.only(top: 10),
-                          child: Text(
-                            'Tarjeta de otro banco · consulta aquí tus pagos',
-                            style: TextStyle(fontSize: 11),
+                        if (t['clase'] == 'credito')
+                          Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: Text(
+                              'Cupo disponible ${dinero(((t['cupoCentavos'] as num) - (t['deudaCentavos'] as num)).toInt())}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
+                        if (t['tipo'] == 'externa')
+                          const Padding(
+                            padding: EdgeInsets.only(top: 10),
+                            child: Text(
+                              'Tarjeta de otro banco · consulta aquí tus pagos',
+                              style: TextStyle(fontSize: 11),
+                            ),
+                          ),
+                        const SizedBox(height: 14),
+                        Wrap(
+                          alignment: WrapAlignment.start,
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            if (t['clase'] == 'credito')
+                              FilledButton.icon(
+                                onPressed: () => context.push(
+                                  '/tarjetas/credito/detalle?pagar=true',
+                                ),
+                                icon: const Icon(Icons.payments_outlined),
+                                label: const Text('Pagar mi tarjeta'),
+                              ),
+                            OutlinedButton.icon(
+                              onPressed: () => personalizar(t),
+                              icon: const Icon(
+                                Icons.palette_outlined,
+                                size: 19,
+                              ),
+
+                              label: const Text('Personalizar'),
+                            ),
+                            if (t['tipo'] == 'externa')
+                              OutlinedButton.icon(
+                                onPressed: () => context.push(
+                                  '/pagar-externo?tipo=tarjeta&id=${t['id']}',
+                                ),
+                                icon: const Icon(
+                                  Icons.payments_outlined,
+                                  size: 19,
+                                ),
+
+                                label: const Text('Pagar tarjeta'),
+                              ),
+                            OutlinedButton.icon(
+                              onPressed: () => context.push(
+                                t['tipo'] == 'propia'
+                                    ? t['clase'] == 'credito'
+                                          ? '/historial?tipo=tarjeta&id=${t['id']}'
+                                          : '/cuentas/${t['cuenta']}'
+                                    : '/historial?tipo=tarjeta&id=${t['id']}',
+                              ),
+                              icon: const Icon(Icons.history_rounded, size: 19),
+
+                              label: const Text('Movimientos'),
+                            ),
+                            if (t['tipo'] == 'propia')
+                              OutlinedButton.icon(
+                                onPressed: () =>
+                                    context.push('/tarjetas/fisica/${t['id']}'),
+                                icon: const Icon(Icons.close_rounded, size: 19),
+
+                                label: Text(
+                                  ref
+                                              .watch(solicitudesBroProvider)
+                                              .value
+                                              ?.any(
+                                                (s) =>
+                                                    s['id'] ==
+                                                        'fisica_${t['id']}' &&
+                                                    ![
+                                                      'cancelada',
+                                                      'rechazada',
+                                                      'entregada',
+                                                    ].contains(s['estado']),
+                                              ) ==
+                                          true
+                                      ? 'Seguir mi envío'
+                                      : 'Pedir tarjeta física',
+                                ),
+                              ),
+                          ],
                         ),
-                      Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 8,
-                        children: [
-                          if (t['clase'] == 'credito')
-                            FilledButton.icon(
-                              onPressed: () => context.push(
-                                '/tarjetas/credito/detalle?pagar=true',
-                              ),
-                              icon: const Icon(Icons.payments_outlined),
-                              label: const Text('Pagar mi tarjeta'),
-                            ),
-                          OutlinedButton(
-                            onPressed: () => personalizar(t),
-                            child: const Text('Personalizar'),
-                          ),
-                          if (t['tipo'] == 'externa')
-                            OutlinedButton(
-                              onPressed: () => context.push(
-                                '/pagar-externo?tipo=tarjeta&id=${t['id']}',
-                              ),
-                              child: const Text('Pagar tarjeta'),
-                            ),
-                          OutlinedButton(
-                            onPressed: () => context.push(
-                              t['tipo'] == 'propia'
-                                  ? t['clase'] == 'credito'
-                                        ? '/historial?tipo=tarjeta&id=${t['id']}'
-                                        : '/cuentas/${t['cuenta']}'
-                                  : '/historial?tipo=tarjeta&id=${t['id']}',
-                            ),
-                            child: const Text('Movimientos'),
-                          ),
-                          if (t['tipo'] == 'propia')
-                            OutlinedButton(
-                              onPressed: () =>
-                                  context.push('/tarjetas/fisica/${t['id']}'),
-                              child: Text(
-                                ref
-                                            .watch(solicitudesBroProvider)
-                                            .value
-                                            ?.any(
-                                              (s) =>
-                                                  s['id'] ==
-                                                      'fisica_${t['id']}' &&
-                                                  ![
-                                                    'cancelada',
-                                                    'rechazada',
-                                                    'entregada',
-                                                  ].contains(s['estado']),
-                                            ) ==
-                                        true
-                                    ? 'Seguir mi envío'
-                                    : 'Pedir tarjeta física',
-                              ),
-                            ),
-                        ],
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
             ],

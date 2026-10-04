@@ -81,9 +81,11 @@ class _CreditoEstado extends EstadoBanco<CreditoSolicitudPantalla> {
                   'Cupo aprobado: ${dinero((solicitud['cupoCentavos'] as num).toInt())}',
                 ),
                 const SizedBox(height: 12),
-                FilledButton(
+                FilledButton.icon(
                   onPressed: () => context.push('/tarjetas/credito/detalle'),
-                  child: const Text('Ver tarjeta y elegir mi corte'),
+                  icon: const Icon(Icons.credit_card_outlined, size: 19),
+
+                  label: const Text('Ver tarjeta y elegir mi corte'),
                 ),
               ],
               if (solicitud['nota'] != null) Text(solicitud['nota'] as String),
@@ -110,7 +112,7 @@ class _CreditoEstado extends EstadoBanco<CreditoSolicitudPantalla> {
             'Autorizo que un asesor revise mis datos e ingresos para evaluar esta solicitud. Solicitarla no garantiza su aprobación.',
           ),
         ),
-        FilledButton(
+        FilledButton.icon(
           onPressed: ocupado || !acepta
               ? null
               : () => trabajar(() async {
@@ -123,7 +125,9 @@ class _CreditoEstado extends EstadoBanco<CreditoSolicitudPantalla> {
                     'aceptaEvaluacion': true,
                   });
                 }),
-          child: const Text('Enviar solicitud'),
+          icon: const Icon(Icons.send_rounded, size: 19),
+
+          label: const Text('Enviar solicitud'),
         ),
       ],
     ]);
@@ -260,7 +264,7 @@ class _FisicaEstado extends EstadoBanco<FisicaSolicitudPantalla> {
             'Confirmo el domicilio y autorizo usar estos datos para preparar mi tarjeta y gestionar su entrega.',
           ),
         ),
-        FilledButton(
+        FilledButton.icon(
           onPressed: ocupado || !acepta || cargando
               ? null
               : () => trabajar(() async {
@@ -274,7 +278,9 @@ class _FisicaEstado extends EstadoBanco<FisicaSolicitudPantalla> {
                     'aceptaEnvio': true,
                   });
                 }),
-          child: const Text('Solicitar mi tarjeta física'),
+          icon: const Icon(Icons.credit_card_outlined, size: 19),
+
+          label: const Text('Solicitar mi tarjeta física'),
         ),
       ],
     ]);

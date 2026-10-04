@@ -106,7 +106,7 @@ class MetasPantalla extends ConsumerWidget {
                                   Expanded(
                                     child: Text(
                                       meta.nombre,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 18,
                                       ),
@@ -132,7 +132,7 @@ class MetasPantalla extends ConsumerWidget {
                               const SizedBox(height: 14),
                               Text(
                                 'Objetivo ${dinero(meta.objetivo)}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 21,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -172,14 +172,12 @@ class MetasPantalla extends ConsumerWidget {
                                         const SizedBox(height: 12),
                                         Text(
                                           '${cuenta.nombre} · ${mostrar ? dinero(cuenta.saldoCentavos) : '••••••'}',
-                                          style: const TextStyle(fontSize: 12),
+                                          style: TextStyle(fontSize: 12),
                                         ),
                                         if (mostrar)
                                           Text(
                                             '${(meta.progreso(cuenta.saldoCentavos) * 100).round()}% del objetivo · ${meta.mesesPendientes(cuenta.saldoCentavos)} meses estimados',
-                                            style: const TextStyle(
-                                              fontSize: 11,
-                                            ),
+                                            style: TextStyle(fontSize: 11),
                                           ),
                                       ],
                                     );
@@ -189,14 +187,16 @@ class MetasPantalla extends ConsumerWidget {
                               const SizedBox(height: 12),
                               Text(
                                 '${dinero(meta.aporteMensual)} al mes · ${DateFormat('dd/MM/yyyy').format(meta.fecha)}',
-                                style: const TextStyle(fontSize: 12),
+                                style: TextStyle(fontSize: 12),
                               ),
                               const SizedBox(height: 10),
-                              const Text(
+                              Text(
                                 'Proyección con el saldo de tu cuenta. Los fondos no están reservados y no hay débitos automáticos.',
                                 style: TextStyle(
                                   fontSize: 10,
-                                  color: Color(0xFF686C7D),
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
                                 ),
                               ),
                             ],
@@ -283,17 +283,21 @@ class _EditorEstado extends ConsumerState<_EditorMeta> {
   Future<void> _eliminar() async {
     final confirmado = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (_) => AlertaBro(
         title: const Text('¿Eliminar este plan?'),
         content: const Text('El saldo de tu cuenta se conserva.'),
         actions: [
-          TextButton(
+          TextButton.icon(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Conservar'),
+            icon: const Icon(Icons.arrow_forward_rounded, size: 19),
+
+            label: const Text('Conservar'),
           ),
-          FilledButton(
+          FilledButton.icon(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Eliminar plan'),
+            icon: const Icon(Icons.delete_outline, size: 19),
+
+            label: const Text('Eliminar plan'),
           ),
         ],
       ),
@@ -316,7 +320,7 @@ class _EditorEstado extends ConsumerState<_EditorMeta> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
+  Widget build(BuildContext context) => AlertaBro(
     title: Text(widget.meta == null ? 'Tu próxima meta' : 'Editar mi plan'),
     content: SingleChildScrollView(
       child: Form(
@@ -417,18 +421,24 @@ class _EditorEstado extends ConsumerState<_EditorMeta> {
     ),
     actions: [
       if (widget.meta != null)
-        TextButton(
+        TextButton.icon(
           onPressed: _guardando ? null : _eliminar,
-          child: const Text('Eliminar'),
+          icon: const Icon(Icons.delete_outline, size: 19),
+
+          label: const Text('Eliminar'),
         ),
-      TextButton(
+      TextButton.icon(
         onPressed: _guardando ? null : () => Navigator.pop(context),
-        child: const Text('Cancelar'),
+        icon: const Icon(Icons.close_rounded, size: 19),
+
+        label: const Text('Cancelar'),
       ),
-      FilledButton(
+      FilledButton.icon(
         key: const Key('guardar-meta'),
         onPressed: _guardando ? null : _guardar,
-        child: Text(_guardando ? 'Guardando…' : 'Guardar plan'),
+        icon: const Icon(Icons.check_circle_outline, size: 19),
+
+        label: Text(_guardando ? 'Guardando…' : 'Guardar plan'),
       ),
     ],
   );

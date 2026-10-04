@@ -4,16 +4,14 @@ import { getStorage } from "firebase-admin/storage";
 import { getMessaging } from "firebase-admin/messaging";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
-import { onSchedule } from "firebase-functions/v2/scheduler";
 import { setGlobalOptions } from "firebase-functions/v2";
-import { procesarCheques } from "./chequera.js";
 import { Banco, FalloBanco } from "./banca.js";
 
 initializeApp();
 setGlobalOptions({
   region: "us-central1",
   minInstances: 0,
-  maxInstances: 2,
+  maxInstances: 1,
   memory: "256MiB",
   timeoutSeconds: 60,
 });
@@ -21,6 +19,11 @@ const db = getFirestore();
 const banco = new Banco(db, { bucket: getStorage().bucket() });
 export const banca = onCall({ cors: true }, async (request) => {
   try {
+    if (request.data?.operacion === "procesarAutopagos") {
+      if (!request.auth) throw new FalloBanco("unauthenticated", "Ingresa para continuar.");
+      if (request.auth.token.financebroAdmin !== true) throw new FalloBanco("permission-denied", "Esta acción requiere acceso administrativo.");
+      throw new FalloBanco("failed-precondition", "Cada pago mensual requiere confirmación del titular. No hay débitos programados activos.");
+    }
     return await banco.ejecutar(
       request.auth,
       request.data?.operacion,
@@ -39,26 +42,7 @@ export const banca = onCall({ cors: true }, async (request) => {
     );
   }
 });
-export const pagosMensuales = onSchedule(
-  {
-    schedule: "every day 09:00",
-    timeZone: "America/Guayaquil",
-    maxInstances: 1,
-    timeoutSeconds: 300,
-  },
-  async () => banco.procesarAutopagos(),
-);
-
-export const cortesTarjetas = onSchedule(
-  {
-    schedule: "every day 09:05",
-    timeZone: "America/Guayaquil",
-    maxInstances: 1,
-    timeoutSeconds: 300,
-  },
-  async () => banco.procesarCortesTarjetas(),
-);
-
+// La evaluación no despliega cobros ni pagos programados.
 export const enviarAviso = onDocumentCreated(
   { document: "enviosPush/{evento}", retry: true },
   async (event) => {
@@ -68,7 +52,8 @@ export const enviarAviso = onDocumentCreated(
       !envio ||
       envio.estado === "enviado" ||
       envio.estado === "sin_dispositivo" ||
-      envio.estado === "demostracion"
+      envio.estado === "demostracion" ||
+      envio.estado === "fallido"
     )
       return;
     if (process.env.FUNCTIONS_EMULATOR === "true") {
@@ -78,6 +63,12 @@ export const enviarAviso = onDocumentCreated(
       });
       return;
     }
+    const intentos = (envio.intentos ?? 0) + 1;
+    if (intentos > 3) {
+      await ref.update({estado: "fallido", procesado: FieldValue.serverTimestamp()});
+      return;
+    }
+    await ref.update({intentos});
     const dispositivos = await db
       .collection(`usuarios/${envio.uid}/dispositivos`)
       .limit(100)
@@ -137,27 +128,5 @@ export const enviarAviso = onDocumentCreated(
       tokensPendientes: FieldValue.delete(),
       procesado: FieldValue.serverTimestamp(),
     });
-  },
-);
-
-export const cobrosCheques = onSchedule(
-  {
-    schedule: "every 15 minutes",
-    timeZone: "America/Guayaquil",
-    maxInstances: 1,
-    timeoutSeconds: 300,
-  },
-  async () => {
-    let cursor;
-    for (let pagina = 0; pagina < 20; pagina++) {
-      const r = await procesarCheques(
-        banco,
-        null,
-        { cursor },
-        { programado: true },
-      );
-      if (!r.hayMas) break;
-      cursor = r.cursor;
-    }
   },
 );

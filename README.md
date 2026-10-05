@@ -99,6 +99,15 @@ Las pruebas móviles también cubren respuesta perdida, recuperación tras 24 ho
 
 La revisión de los tres perfiles publicados encontró cinco cuentas sin diferencias entre saldo e histórico, y deudas de crédito consistentes con consumos y abonos. El [resultado fechado](https://financebro-sb-20261003.web.app/revision/integridad.json) es una fotografía de esos perfiles; las operaciones posteriores pueden cambiar los valores. Estas comprobaciones son parte de la evaluación del prototipo y no constituyen una certificación bancaria.
 
+La revisión ampliada encontró nueve movimientos antiguos sin su copia global. Se reconstruyeron desde los originales, conservando fecha, importe y referencia y sin modificar fondos. La [conciliación global fechada](https://financebro-sb-20261003.web.app/revision/integridad-global.json) comprueba los seis perfiles y nueve cuentas conservadas.
+
+Para mantenimiento, `tooling/reconciliar-historicos.mjs` presenta primero un plan de lectura. Requiere la sesión propietaria de Firebase CLI y el proyecto explícito; el acceso de asesor no permite escribir registros directamente. `--aplicar` vuelve a leer cuentas, originales y destinos dentro de una transacción; aborta si aparece un cambio concurrente, un descuadre o una copia distinta. Solo crea copias ausentes y conserva la procedencia. Las pruebas comprueban también que repetirlo no duplica registros.
+
+```sh
+node --test tooling/reconciliar-historicos.test.mjs
+node tooling/reconciliar-historicos.mjs --proyecto financebro-sb-20261003
+```
+
 ## Publicación
 
 `./scripts/preparar-publicacion.sh` valida y compila el panel remoto. `./scripts/publicar-banca.sh --proyecto <proyecto>` presenta los componentes; `--ejecutar` despliega servidor, reglas, índices y clientes cuando Blaze y Storage estén habilitados. Se deben esperar los índices y comprobar dos identidades antes de distribuir la compilación móvil.

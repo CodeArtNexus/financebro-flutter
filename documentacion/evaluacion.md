@@ -1,6 +1,6 @@
 # Recorrido funcional y escenarios degradados
 
-La evaluación puede realizarse con el [APK Android](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.6.3-audiovisual), Flutter y el [panel publicado](https://financebro-sb-20261003.web.app/). Los accesos de cliente, contraparte y asesor se entregan por separado. Todos los importes, identidades y documentos utilizados deben ser ficticios.
+La evaluación puede realizarse con el [APK Android](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.7.0-calidad), Flutter y el [panel publicado](https://financebro-sb-20261003.web.app/). Los accesos de cliente, contraparte y asesor se entregan por separado. Todos los importes, identidades y documentos utilizados deben ser ficticios.
 
 ## Preparación
 

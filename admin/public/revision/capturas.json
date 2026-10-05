@@ -2308,5 +2308,49 @@
     "ancho": 1206,
     "alto": 2622,
     "escenario": "Escenario normal restablecido y tasa consultada de nuevo"
+  },
+  {
+    "id": "android-calidad-light-historico-200",
+    "plataforma": "Android",
+    "tema": "Claro",
+    "categoria": "Accesibilidad",
+    "titulo": "Histórico con texto al 200 %",
+    "imagen": "imagenes/android-calidad-light-historico-200.webp",
+    "ancho": 720,
+    "alto": 1600,
+    "escenario": "1.7.0 · Emulator Suite · alto contraste y texto al 200 %"
+  },
+  {
+    "id": "android-calidad-light-contacto-200",
+    "plataforma": "Android",
+    "tema": "Claro",
+    "categoria": "Accesibilidad",
+    "titulo": "Conversación con texto al 200 %",
+    "imagen": "imagenes/android-calidad-light-contacto-200.webp",
+    "ancho": 720,
+    "alto": 1600,
+    "escenario": "1.7.0 · Emulator Suite · alto contraste y texto al 200 %"
+  },
+  {
+    "id": "android-calidad-dark-historico-200",
+    "plataforma": "Android",
+    "tema": "Oscuro",
+    "categoria": "Accesibilidad",
+    "titulo": "Histórico con texto al 200 %",
+    "imagen": "imagenes/android-calidad-dark-historico-200.webp",
+    "ancho": 720,
+    "alto": 1600,
+    "escenario": "1.7.0 · Emulator Suite · alto contraste y texto al 200 %"
+  },
+  {
+    "id": "android-calidad-dark-contacto-200",
+    "plataforma": "Android",
+    "tema": "Oscuro",
+    "categoria": "Accesibilidad",
+    "titulo": "Conversación con texto al 200 %",
+    "imagen": "imagenes/android-calidad-dark-contacto-200.webp",
+    "ancho": 720,
+    "alto": 1600,
+    "escenario": "1.7.0 · Emulator Suite · alto contraste y texto al 200 %"
   }
 ]

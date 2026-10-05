@@ -48,7 +48,7 @@ Un despliegue de Hosting no despliega por sí mismo reglas, índices ni Function
 
 ## Monitoreo propuesto para producción
 
-Hoy existen categorías técnicas en Flutter, duración de consultas de divisas, captura básica de errores, registros de Functions y estados persistidos de avisos. No se exporta telemetría móvil a Crashlytics o a un sistema de analítica, ni se documenta una política de alertas ya activa.
+Hoy existen categorías técnicas en Flutter, duración de consultas de divisas e históricos, registros estructurados de operaciones en Functions y estados persistidos de avisos. No se exporta telemetría móvil a Crashlytics o a un sistema de analítica, ni se documenta una política de alertas ya activa.
 
 La ampliación propuesta combina fallos técnicos con resultado del recorrido. Los objetivos siguientes son umbrales iniciales de diseño, no mediciones ni acuerdos de disponibilidad de esta entrega:
 
@@ -62,7 +62,23 @@ La ampliación propuesta combina fallos técnicos con resultado del recorrido. L
 | Divisas | Tiempo, error por código HTTP, uso y edad de caché | Detectar caída del proveedor manteniendo independientes las operaciones de cuentas |
 | Consumo | Lecturas, escrituras, almacenamiento, invocaciones y tráfico | Revisar cuotas y alertas de presupuesto; un presupuesto no impone un tope de gasto |
 
-Los rechazos por fondos insuficientes o datos inválidos son resultados de negocio, separados de los errores técnicos. Se registrarían referencias opacas, versión y categoría para correlacionar incidentes, sin nombres, cédulas, contraseñas, tokens, documentos, saldos ni texto de transferencias. El acceso y la retención de telemetría deben definirse antes de su activación. Los [registros de Functions](https://firebase.google.com/docs/functions/writing-and-viewing-logs) permiten consultar errores del servidor; su existencia no acredita un tablero ni alertas configuradas.
+Los eventos `operacion_finalizada` registran operación permitida, versión del esquema, resultado, duración en ms y, cuando existe, una correlación de 20 caracteres derivada de SHA-256 de la referencia. Los errores se clasifican como negocio, acceso o técnicos. No incluyen nombres, cédulas, contraseñas, tokens, documentos, saldos ni texto de transferencias. Un fallo del registrador no altera el resultado bancario. El acceso y la retención de telemetría deben definirse antes de su activación. Los [registros de Functions](https://firebase.google.com/docs/functions/writing-and-viewing-logs) permiten consultar errores del servidor; su existencia no acredita un tablero ni alertas configuradas.
+
+## Consultar el diagnóstico implementado
+
+En Logs Explorer, seleccionar el proyecto publicado y buscar los eventos de `banca`:
+
+```text
+resource.type="cloud_run_revision"
+resource.labels.service_name="banca"
+jsonPayload.message="operacion_finalizada"
+```
+
+Añadir `jsonPayload.categoria="tecnico"` para separar indisponibilidad de rechazos de negocio. Para una referencia concreta, calcular localmente sus primeros 20 caracteres de SHA-256 y filtrar por `jsonPayload.correlacion`. No publicar la referencia ni el contenido de la operación en tickets abiertos. El diagnóstico usa el esquema versión `1`; los logs de plataforma son independientes del contenido de estos eventos.
+
+En Firestore, la bandeja `enviosPush` conserva reserva de 90 s, generación del intento, tokens pendientes y estado final. Los tests comprueban ejecuciones concurrentes, recuperación de reserva y rotación. Un estado enviado acredita aceptación del transporte, no lectura por la persona. La ausencia de dispositivo requiere revisar permisos y registro, sin repetir el dinero.
+
+Estos eventos permiten investigar una operación; no hay un tablero ni una política de alertas nuevos configurados. [Calidad](calidad.md) describe las verificaciones y sus límites.
 
 ## Procedimiento ante incidentes
 

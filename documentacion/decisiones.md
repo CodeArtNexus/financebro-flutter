@@ -8,9 +8,9 @@ Estas decisiones describen la solución construida y contrastan sus alternativas
 
 **Alternativas.** Dos aplicaciones nativas; una aplicación Flutter con carpetas por capa global; módulos por funcionalidad dentro de Flutter.
 
-**Elección.** Flutter, requerido por la prueba, con módulos de autenticación, cuentas, experiencia, divisas y banca. Los productos comparten componentes visuales y composición de dependencias.
+**Elección.** Flutter, requerido por la prueba, con módulos de autenticación, cuentas, experiencia, divisas y banca; históricos/contactos tienen contratos de lectura y adaptadores separados. Los productos comparten componentes visuales y composición de dependencias.
 
-**Compromisos.** Se comparte código y consistencia, pero permisos, firma, push y navegación necesitan comprobación por plataforma. Hay consultas directas a Firestore y casos de uso todavía concentrados que limitan la independencia de algunos módulos.
+**Compromisos.** Se comparte código y consistencia, pero permisos, firma, push y navegación necesitan comprobación por plataforma. Algunas pantallas de productos conservan consultas directas a Firestore; el servidor separa casos por dominio dentro de una infraestructura compartida.
 
 **Impacto futuro.** Extraer interfaces entre dominios antes de convertir cada carpeta en un paquete. Cada equipo debería poder ejecutar sus pruebas sin cargar todos los productos.
 
@@ -60,7 +60,7 @@ Estas decisiones describen la solución construida y contrastan sus alternativas
 
 **Compromisos.** Requiere manejar archivo dañado, cambios de sesión y estados inciertos. Sin internet solo se prepara una transferencia a un destinatario ya verificado. Una autorización no intentada puede cancelarse; una ya intentada requiere comprobar el resultado antes de presentarla como cancelable. El plazo de 24 horas no invalida un comprobante que ya existe.
 
-**Impacto futuro.** Ampliar pruebas de reinicio y migraciones de formato. Añadir soporte operativo por referencia; no usar el saldo en caché para autorizar definitivamente una transferencia.
+**Impacto futuro.** El E2E Android recrea la composición, identidad y cola conservando FlutterSecureStorage nativo; verifica comprobante único y ambos extremos. Un cierre del proceso por el sistema y las migraciones de formato necesitan ensayos adicionales. Añadir soporte operativo por referencia; no usar el saldo en caché para autorizar definitivamente una transferencia.
 
 ## D06 · Contenido remoto con esquema limitado
 
@@ -80,7 +80,7 @@ Estas decisiones describen la solución construida y contrastan sus alternativas
 
 **Alternativas.** Enviar push dentro de la operación antes de confirmar; registrar solo una notificación local; persistir el evento y entregarlo después.
 
-**Elección.** Evento persistente y Functions de envío con reintentos acotados. Android utiliza FCM; iOS conserva avisos nativos al recibir cambios con la app conectada hasta configurar APNs.
+**Elección.** Evento persistente, reserva transaccional de entrega y Functions de envío con reintentos acotados por dispositivo. Android utiliza FCM; iOS conserva avisos nativos al recibir cambios con la app conectada hasta configurar APNs.
 
 **Compromisos.** La operación financiera puede completarse y la push no llegar. El histórico de avisos conserva el hecho; un reintento del transporte puede producir duplicación visible si hay fallo tras la entrega. APNs es una habilitación pendiente, no una capacidad que se simula como remota.
 
@@ -104,8 +104,32 @@ Estas decisiones describen la solución construida y contrastan sus alternativas
 
 **Alternativas.** Rama de entrega prolongada; validación exclusivamente manual; trunk con pruebas automáticas y recorridos nativos separados.
 
-**Elección.** Integración frecuente en `main`, commits por etapas, lockfiles y cuatro tareas de CI. Los emuladores aíslan reglas y operaciones; los dispositivos cubren navegación, SDK y presentación.
+**Elección.** Integración frecuente en `main`, commits por etapas, lockfiles y cinco tareas de CI, incluida una ejecución Android con Emulator Suite. Los emuladores aíslan reglas y operaciones; los dispositivos cubren navegación, SDK y presentación.
 
-**Compromisos.** CI sin dispositivo no ejecuta los E2E móviles ni acredita una push real. Estos necesitan un recorrido adicional y credenciales privadas cuando se verifica el servidor publicado. Un historial lineal no sustituye explicar y revisar los cambios.
+**Compromisos.** CI ejecuta alta interrumpida y recuperación de transferencia en Android, con datos y servicios locales. No acredita una push remota real; esa integración se comprueba en un recorrido adicional contra el servidor publicado, con accesos privados. Un historial lineal no sustituye explicar y revisar los cambios.
 
-**Impacto futuro.** Añadir ejecución móvil automatizada cuando su costo y mantenimiento se justifiquen, con revisiones pequeñas y contratos de regresión por dominio.
+**Impacto futuro.** Ampliar el recorrido automatizado a otros dispositivos y dominios según el riesgo, conservando revisiones pequeñas y tiempos de ejecución razonables.
+
+## D10 · Extracción gradual y compatibilidad
+
+**Problema.** El crecimiento de productos concentraba operaciones en una clase y consultas de históricos en pantallas.
+
+**Alternativas.** Dividir inmediatamente infraestructura; migrar todos los módulos a paquetes; extraer casos y contratos dentro del despliegue compartido.
+
+**Elección.** Fachada bancaria compatible, casos separados por dominio y repositorios tipados de históricos/contactos. CI comprueba métodos del catálogo y evita consultas de almacenamiento en esas dos pantallas.
+
+**Compromisos.** Mejora mantenimiento sin romper transacciones entre fondos y registros. Sigue existiendo una base compartida y quedan otras pantallas por migrar.
+
+**Impacto futuro.** Introducir interfaces en los puntos de lectura cruzada antes de asignar infraestructuras distintas. Conservar pruebas de compatibilidad del cliente anterior.
+
+## D11 · Cristal compartido y accesibilidad verificable
+
+**Problema.** El desenfoque por fila aumenta trabajo gráfico; controles pequeños y texto ampliado pueden dificultar comprobar importes.
+
+**Alternativas.** Retirar el estilo de cristal; mantener cada filtro independiente; compartir el fondo entre filas que no se superponen y ofrecer superficies opacas cuando se solicita alto contraste.
+
+**Elección.** BackdropGroup para filas de históricos y conversación. Alto contraste elimina el desenfoque. Los importes pasan a una columna en pantallas estrechas o con letra ampliada; copiar referencias usa un botón con etiqueta y tamaño táctil.
+
+**Compromisos.** Los elementos superpuestos no comparten la misma clave. El emulador permite comparar una intervención, pero no acredita fluidez en dispositivos físicos. Las pruebas automáticas de semántica complementan, sin sustituir, una revisión completa con lectores nativos.
+
+**Impacto futuro.** Repetir perfiles en equipos físicos de distinta capacidad y extender las comprobaciones a todos los productos. El informe de [calidad](calidad.md) identifica entorno, muestra y límites de las medidas.

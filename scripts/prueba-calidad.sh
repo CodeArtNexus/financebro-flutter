@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+set -euo pipefail
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$script_dir/env.sh"
+cd "$script_dir/.."
+export FIREBASE_AUTH_EMULATOR_HOST="${FIREBASE_AUTH_EMULATOR_HOST:-127.0.0.1:9099}"
+export FIRESTORE_EMULATOR_HOST="${FIRESTORE_EMULATOR_HOST:-127.0.0.1:8080}"
+export FIREBASE_STORAGE_EMULATOR_HOST="${FIREBASE_STORAGE_EMULATOR_HOST:-127.0.0.1:9199}"
+mkdir -p evidencia-local/calidad
+export FINANCEBRO_EVIDENCIAS="${FINANCEBRO_EVIDENCIAS:-evidencia-local/calidad}"
+node functions/preparar-calidad.js
+flutter drive --profile --no-dds \
+  --driver=test_driver/integration_test.dart \
+  --target=integration_test/perfil_historial_test.dart \
+  -d "${FINANCEBRO_DISPOSITIVO:-emulator-5554}" \
+  --dart-define=USE_EMULATORS=true \
+  --dart-define="EMULATOR_HOST=${FINANCEBRO_HOST:-10.0.2.2}" \
+  --dart-define="AUTH_PORT=${FIREBASE_AUTH_EMULATOR_HOST##*:}" \
+  --dart-define="FIRESTORE_PORT=${FIRESTORE_EMULATOR_HOST##*:}" \
+  --dart-define="FUNCTIONS_PORT=${FUNCTIONS_PORT:-5001}" \
+  --dart-define="STORAGE_PORT=${FIREBASE_STORAGE_EMULATOR_HOST##*:}" \
+  2>&1 | tee evidencia-local/calidad/perfil.log

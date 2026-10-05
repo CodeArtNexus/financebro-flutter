@@ -44,4 +44,4 @@ npm --prefix admin run test:integracion
 
 La prueba de integración requiere las dependencias de `functions/`, Auth y Firestore emulados. Comprueba paginación y un ajuste recibido en vivo, por cuenta y en la actividad global.
 
-La versión 1.6.2 está publicada junto con Functions, Storage, reglas e índices. `scripts/preparar-publicacion.sh` compila la versión remota; `publicar-banca.sh` presenta primero los componentes. El despliegue actual contiene dos funciones con cero instancias mínimas y una máxima por función, sin tareas programadas. Blaze permite cargos por uso; no existe una garantía de costo cero. Credenciales, firmas locales y la guía personal no forman parte del repositorio.
+La versión 1.7.0 está publicada junto con Functions, Storage, reglas e índices. `scripts/preparar-publicacion.sh` compila la versión remota; `publicar-banca.sh` presenta primero los componentes. El despliegue actual contiene dos funciones con cero instancias mínimas y una máxima por función, sin tareas programadas. Blaze permite cargos por uso; no existe una garantía de costo cero. Credenciales, firmas locales y la guía personal no forman parte del repositorio.

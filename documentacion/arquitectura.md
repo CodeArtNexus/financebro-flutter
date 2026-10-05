@@ -47,7 +47,9 @@ Las reglas niegan escrituras directas de saldos, movimientos, cupos, aprobacione
 | `features/experience`, `savings` | Preferencias, contenido por segmento y metas | [Contrato remoto](../lib/features/experience/experiencia.dart) |
 | `features/exchange`, `notifications` | Adaptadores de divisas y avisos | [HTTP](../lib/features/exchange/http_divisas.dart), [avisos](../lib/features/notifications/firebase_notificaciones.dart) |
 
-La organización por funcionalidad evita una carpeta global de pantallas sin límites. Los repositorios abstraen consultas que conviene sustituir en pruebas. Riverpod compone los adaptadores y representa carga, datos y error. No todos los módulos tienen la misma separación: algunas pantallas bancarias consultan Firestore y `banca.js` concentra varias operaciones. Esa deuda está identificada; el proyecto no se presenta como un conjunto de microservicios con despliegues independientes.
+Históricos y conversaciones usan contratos tipados de [lectura](../lib/features/banking/historial.dart). Las pantallas dependen de esos contratos; [la composición](../lib/app/proveedores_historial.dart) conecta el [adaptador Firebase](../lib/features/banking/firebase_historial.dart). Los tests sustituyen el repositorio sin iniciar Firebase. El cursor conserva consulta, identificador y precisión de segundos/nanosegundos para no mezclar productos ni saltar registros de igual fecha. La primera página utiliza el stream: presenta caché identificada y recibe el servidor sin repetir una lectura inicial.
+
+La migración se limita a históricos y detalle de contacto. Algunas pantallas de productos todavía consultan Firestore directamente. Mantener esta deuda visible permite continuar la extracción por caso de uso. [La comprobación de límites](../tooling/comprobar-limites.mjs) en CI protege la separación ya realizada.
 
 ## Transferencia y recuperación
 
@@ -100,20 +102,32 @@ flowchart TD
 
 Las proyecciones por cuenta y global facilitan consultas de la app y del panel; requieren comprobar que sus copias sigan correspondiendo al original. La conciliación compara fondos e históricos. La herramienta de reconstrucción solo crea copias globales ausentes desde originales verificados, conserva procedencia y aborta ante cambios concurrentes; no corrige un saldo por inferencia.
 
-## Evolución por dominios
+## Dominios del servidor
 
-La siguiente separación propuesta permite asignar responsabilidades a equipos sin cambiar de inmediato toda la infraestructura:
+`banca.js` es una fachada de compatibilidad. El catálogo de [operaciones](../functions/src/contratos.js) dirige las llamadas a casos de uso separados; [BancoBase](../functions/src/base-banco.js) reúne acceso a datos, identidad, cuentas y escritura de históricos. Las validaciones compartidas están en [compartido.js](../functions/src/compartido.js).
 
-| Dominio | Contrato y propietario de los datos | Extracción prevista |
-| --- | --- | --- |
-| Identidad y onboarding | Perfil, consentimiento y apertura idempotente | Servicio de alta con compensación si Auth existe y el alta bancaria falla |
-| Cuentas y transferencias | Fondos, recibos y movimientos | Mantener un único propietario de las escrituras monetarias |
-| Tarjetas y crédito | Solicitud, cupo, deuda y ciclo de corte | Separar reglas y casos de uso; abonos mediante contrato con cuentas |
-| Chequera | Agrupaciones, eventos y estados | Orquestar cobros a través de cuentas, sin duplicar la lógica de fondos |
-| Experiencia y servicios | Esquema remoto, catálogo y preferencias | Publicar contenido validado y compatible con clientes anteriores |
-| Avisos | Evento y estado de entrega | Consumidor independiente que conserva la referencia del hecho bancario |
+| Módulo | Responsabilidad |
+| --- | --- |
+| [Onboarding](../functions/src/dominios/onboarding.js) | Identidad de cliente, consentimiento y apertura idempotente |
+| [Transferencias](../functions/src/dominios/transferencias.js) | Destinatarios, fondos, contactos, ajustes y pagos externos |
+| [Tarjetas](../functions/src/dominios/tarjetas.js) | Débito, crédito, cupos, consumos, abonos y corte |
+| [Expedientes](../functions/src/dominios/expedientes.js) | Corriente, documentos, aprobación y solicitudes físicas |
+| [Servicios](../functions/src/dominios/servicios.js) | Catálogo, planillas, pagos y configuración mensual |
+| [Experiencia](../functions/src/dominios/experiencia.js) | Metas, perfil y preferencias |
+| [Chequera](../functions/src/chequera.js) | Agrupaciones, estados, eventos y cobro expreso |
+| [Avisos](../functions/src/avisos.js) | Reserva de entrega, tokens pendientes y reintentos |
 
-Antes de separar despliegues: versionar contratos, introducir pruebas de compatibilidad, sustituir consultas cruzadas por interfaces y extraer casos de uso de la clase bancaria. Si los dominios llegan a usar bases distintas, la transacción actual no se conserva automáticamente: habría que diseñar eventos, compensaciones y conciliación. Esa complejidad es una razón para mantener hoy las escrituras relacionadas en el mismo servidor.
+Esta separación permite revisar casos y ejecutar sus comprobaciones sin concentrar su implementación en la fachada. Conserva un mismo servidor, base y propietario de las escrituras monetarias: los dominios no tienen despliegues independientes. Los tests de integración verifican los resultados y permisos a través de la fachada pública.
+
+Antes de dividir infraestructura: versionar contratos de cliente, sustituir lecturas cruzadas por interfaces y diseñar compatibilidad. Si los dominios usan bases distintas, la transacción actual no se conserva automáticamente: se requieren eventos, compensaciones y conciliación. Mantener juntas las escrituras relacionadas evita introducir esa complejidad en esta entrega.
+
+## Entrega de avisos y diagnóstico
+
+La bandeja de avisos reserva cada evento dentro de una transacción por 90 segundos. Las ejecuciones concurrentes no envían al mismo tiempo; una reserva abandonada permite recuperación posterior. Se intentan de nuevo solo los dispositivos pendientes, hasta tres intentos de transporte. Los tokens inválidos se retiran únicamente si no han cambiado desde la lectura, protegiendo la rotación.
+
+Un fallo después de que FCM acepte el mensaje todavía puede repetir una entrega. La referencia del evento y la etiqueta del aviso ayudan a agruparlo en Android; el comprobante financiero sigue siendo único. Las pruebas cubren transporte parcial, concurrencia y rotación con Firestore real emulado.
+
+[Observación de operaciones](../functions/src/observacion.js) registra versión del esquema, operación permitida, duración, resultado, categoría de error y correlación derivada de la referencia. Excluye formularios, saldos, tokens y contenidos privados. Un fallo del registrador no altera una operación confirmada. [Operación](operacion.md) describe consulta e investigación de estos eventos.
 
 ## Personalización sin reinstalar
 

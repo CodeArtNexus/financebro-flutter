@@ -10,13 +10,13 @@ Esta matriz relaciona los requisitos de la prueba con la implementación, la doc
 | Personalización dinámica | Perfil, metas, esquema de contenido, catálogo y temporadas | Cambios en vivo, contenido validado y respaldo compatible |
 | Servicio externo | HTTP de Frankfurter | Consulta real, validación de respuesta, fecha y caché |
 | Push | Bandeja persistente y FCM | Android remoto en primer y segundo plano; APNs iOS pendiente |
-| Monitoreo en producción | [Operación](operacion.md) | Señales, métricas y procedimiento propuestos; no se presentan como habilitados |
+| Monitoreo en producción | [Operación](operacion.md) | Diagnóstico de servidor implementado; señales, alertas y continuidad propuestas, con límites explícitos |
 | Comportamiento degradado | [Evaluación](evaluacion.md), red, divisas y cola segura | Carga, reintentos, caché, caída parcial y recuperación; no confirmar dinero localmente |
-| Unitarias, widgets y E2E | `test/`, `integration_test/`, pruebas de servidor, reglas y panel | CI y recorridos móviles identificados por separado |
+| Unitarias, widgets y E2E | `test/`, `integration_test/`, pruebas de servidor, reglas y panel | 147 casos y E2E Android en CI; recorridos conectados y perfiles de rendimiento identificados por separado |
 | Uso e impacto de IA | [Uso de IA](uso-ia.md) | Productividad, calidad, documentación y pruebas; impacto cualitativo y resultados verificados |
 | Arquitectura y decisiones | [Arquitectura](arquitectura.md), [decisiones](decisiones.md) | Problemas, alternativas, selección, compromisos e impacto futuro; diagramas de componentes, flujo y datos |
 | Despliegue y operación | [Operación](operacion.md) | Ambientes, componentes, publicación, reversión, riesgos, respaldos y escalamiento |
-| README reproducible y colaboración | [README](../README.md), [colaboración](../CONTRIBUTING.md) | Dependencias fijadas, ejecución, pruebas y cambios pequeños en main |
+| README reproducible y colaboración | [README](../README.md), [colaboración](../CONTRIBUTING.md) | Dependencias fijadas, ejecución, copia limpia verificada y cambios pequeños en main |
 | Historial y Trunk Based Development | Historial de `main` y etapas | Integración frecuente e historial lineal; etiquetas de entregas |
 | Demostración funcional | APK, app, panel y [recorrido](evaluacion.md) | Accesos separados, galería y [videos publicados con capítulos](audiovisual.md) |
 | No basarse únicamente en respuestas estáticas | Auth, Firestore, Storage, Functions y divisas externas | Operaciones compartidas y procesamiento dinámico con fondos sintéticos |

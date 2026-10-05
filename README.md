@@ -4,7 +4,7 @@ Aplicación financiera en Flutter para Android e iOS, acompañada de un panel we
 
 FinanceBro es un prototipo para evaluación técnica. Los fondos, cuentas, tarjetas, documentos y proveedores utilizados en el recorrido son sintéticos: no custodia dinero ni ejecuta pagos bancarios reales. Deben emplearse exclusivamente identidades y documentos ficticios.
 
-## Versión actual · 1.6.3
+## Versión actual · 1.7.0
 
 El [panel de administración](https://financebro-sb-20261003.web.app) y la aplicación móvil comparten Firebase Authentication, Firestore, Storage y Functions. La compilación normal utiliza este servidor; no requiere mantener encendido un servidor en el equipo del evaluador. Los accesos de evaluación se proporcionan por separado, sin publicar credenciales en este repositorio. Hay perfiles con productos e históricos cargados, una contraparte para transferencias y cheques, y solicitudes pendientes para el asesor.
 
@@ -16,9 +16,9 @@ La identidad visual usa la marca `fb.`, naranja, superficies de cristal, iconos 
 
 La presentación comercial dura 1 min 44 s y el recorrido conectado, 5 min 10 s. Incluyen textos, música original y animaciones, con capítulos para revisar apertura, transferencia, productos, conectividad y una push Android recibida y abierta. La [producción y el alcance de la evidencia](documentacion/audiovisual.md) distinguen automatización de captura e integraciones disponibles.
 
-La galería pública reúne 210 capturas nativas de Android e iOS en temas claro y oscuro, junto con las vistas del panel publicado. Permite filtrar por función, plataforma y apariencia, ampliar cada imagen y recorrer estados de registro, contrato, productos, transferencias, comprobantes, pagos, crédito, contactos, chequera, personalización y conectividad. Las solicitudes pendientes y la elección del corte muestran etapas diferentes del mismo producto. El recorrido de conectividad incorpora carga con latencia, caída parcial, cuentas disponibles, error sin caché, desconexión y recuperación, en ambos sistemas y apariencias. Los datos son ficticios; las capturas reflejan el momento de la revisión.
+La galería pública reúne 214 capturas nativas de Android e iOS en temas claro y oscuro, junto con las vistas del panel publicado. Permite filtrar por función, plataforma y apariencia, ampliar cada imagen y recorrer estados de registro, contrato, productos, transferencias, comprobantes, pagos, crédito, contactos, chequera, personalización y conectividad. Las solicitudes pendientes y la elección del corte muestran etapas diferentes del mismo producto. El recorrido de conectividad incorpora carga con latencia, caída parcial, cuentas disponibles, error sin caché, desconexión y recuperación, en ambos sistemas y apariencias. Los datos son ficticios; las capturas reflejan el momento de la revisión. Las cuatro capturas nuevas comprueban históricos y contactos con texto al 200 % y alto contraste en Android.
 
-Las operaciones se ejecutan desde la aplicación y el panel con los accesos entregados por separado. La galería permite revisar la interfaz sin iniciar sesión y no contiene contraseñas ni documentación personal. [Descargar la versión Android](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.6.3-audiovisual).
+Las operaciones se ejecutan desde la aplicación y el panel con los accesos entregados por separado. La galería permite revisar la interfaz sin iniciar sesión y no contiene contraseñas ni documentación personal. [Descargar la versión Android](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.7.0-calidad).
 
 ## Documentación para la evaluación
 
@@ -30,6 +30,7 @@ Las operaciones se ejecutan desde la aplicación y el panel con los accesos entr
 | [Recorrido y conectividad](documentacion/evaluacion.md) | Pasos reproducibles, latencia, caída parcial, caché, reintentos y recuperación |
 | [Uso de IA](documentacion/uso-ia.md) | Aplicación de IA a implementación, investigación, documentación y pruebas; resultados verificados |
 | [Correspondencia con la prueba](documentacion/requisitos.md) | Localización de cada requisito y límites actuales |
+| [Calidad y mediciones](documentacion/calidad.md) | Recuperación nativa, pruebas, accesibilidad, medidas y sus límites |
 | [Colaborar](CONTRIBUTING.md) | Trunk Based Development, cambios pequeños, revisión y verificaciones |
 
 La documentación describe la implementación, sus decisiones y la evidencia disponible. Distingue las capacidades conectadas de las medidas previstas para producción. La demostración remota de push se realiza en Android; APNs para iOS permanece pendiente; la presentación y el recorrido funcional ya están publicados.
@@ -113,7 +114,7 @@ La [preparación audiovisual](documentacion/audiovisual.md) descarga y comprueba
 
 ## Comprobaciones de integridad
 
-La versión 1.6.3 completa la documentación de evaluación y añade dos pruebas de contraste del aviso de conexión en temas claro y oscuro. Las 123 verificaciones automáticas se acompañan de recorridos nativos separados; el aviso ahora utiliza los colores de cada tema para conservar legibilidad.
+La versión 1.7.0 separa casos del servidor por dominio y contratos de lectura de históricos/contactos. Completa 147 verificaciones automáticas, un E2E Android de recuperación en CI y una medición nativa en modo perfil. Mejora contraste, objetivos táctiles, texto ampliado y coste del cristal. [Resultados y límites de la revisión](documentacion/calidad.md).
 
 La versión 1.6.2 añade escenarios que compiten por el mismo saldo con transferencias, ajustes y cobros de cheques. Confirman conservación de fondos, ausencia de sobregiros, correspondencia entre movimiento específico y global, comprobante único y bandeja de avisos. Un fallo al crear cualquiera de los registros revierte la transferencia completa. La cuenta receptora debe coincidir con el directorio; importes, saldos, deuda, cupo y totales de cheques se comprueban antes de mover fondos.
 
@@ -159,6 +160,9 @@ TMPDIR=/tmp/financebro-reglas tooling/node_modules/.bin/firebase emulators:exec 
   --only firestore,storage --project demo-financebro-reglas \
   'npm --prefix tooling test'
 
+./scripts/prueba-recuperacion.sh
+./scripts/prueba-calidad.sh
+
 ./scripts/prueba-banca.sh
 flutter test integration_test/registro_test.dart -d emulator-5554 --dart-define=USE_EMULATORS=true
 flutter test integration_test/tarjeta_credito_funcional_test.dart -d emulator-5554 --dart-define=USE_EMULATORS=true
@@ -168,7 +172,7 @@ flutter test integration_test/producto_test.dart -d emulator-5554 --dart-define=
 
 Detener los emuladores que ocupen los puertos antes de ejecutar `emulators:exec`. Los recorridos móviles necesitan un dispositivo iniciado y los cuatro emuladores. Verifican alta y reintento, contrato, transferencias, servicios, crédito y cupos, abonos, históricos, metas, preferencias, latencia y conectividad. `nextgen_test.dart` comprueba cheques, imágenes privadas, almacenamiento seguro y reconexión; `functions/preparar-nextgen.js` prepara sus perfiles ficticios únicamente en emuladores de loopback.
 
-CI comprueba formato, análisis, pruebas Flutter, reglas, servidor y panel sin credenciales remotas. Las pruebas incluyen conservación de fondos, concurrencia, privacidad, aprobación corporativa, solicitudes físicas, cupos y cortes, pagos de tarjetas y paginación durante actualizaciones en vivo.
+CI comprueba formato, análisis, pruebas Flutter, reglas, servidor, panel y recuperación Android con Emulator Suite, sin credenciales remotas. Las pruebas incluyen conservación de fondos, concurrencia, privacidad, aprobación corporativa, solicitudes físicas, cupos y cortes, pagos de tarjetas y paginación durante actualizaciones en vivo.
 
 ## Alcance de las integraciones
 

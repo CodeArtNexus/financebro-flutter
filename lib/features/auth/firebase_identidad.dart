@@ -23,8 +23,10 @@ class FirebaseIdentidad implements RepositorioIdentidad {
     this.functions,
     this.autenticarDispositivo, {
     this.tieneConexion,
+    this.completarApertura,
   });
   final Future<bool> Function()? tieneConexion;
+  final Future<Map<String, dynamic>> Function(DatosRegistro)? completarApertura;
   Future<void> exigirConexion() async {
     if (tieneConexion != null && !await tieneConexion!()) {
       throw const FalloApp(
@@ -192,11 +194,9 @@ class FirebaseIdentidad implements RepositorioIdentidad {
             .timeout(const Duration(seconds: 15));
       }
       registrarEvento('registro_acceso_validado', servicio: 'identidad');
-      final resultado = await llamarBanca(
-        functions,
-        'registrarCliente',
-        registro.apertura,
-      );
+      final resultado = completarApertura != null
+          ? await completarApertura!(registro)
+          : await llamarBanca(functions, 'registrarCliente', registro.apertura);
       final nombre = resultado['nombre'] as String;
       _nombreSesion = nombre;
       registrarEvento('registro_apertura_completada', servicio: 'banca');

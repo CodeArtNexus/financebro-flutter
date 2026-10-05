@@ -94,3 +94,55 @@ jobs:
         run: npm --prefix functions test
       - name: Probar operaciones con los emuladores
         run: tooling/node_modules/.bin/firebase emulators:exec --only auth,firestore,functions,storage --project demo-financebro 'npm --prefix functions run test:integracion && npm --prefix admin run test:integracion'
+
+  recuperacion:
+    name: E2E Android · recuperación y fondos
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      JAVA_TOOL_OPTIONS: -Xmx768m
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
+        with:
+          flutter-version: '3.47.5'
+          channel: stable
+          cache: true
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22.20.0'
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Preparar dependencias y memoria del entorno aislado
+        run: |
+          npm ci --prefix functions
+          npm ci --prefix tooling
+          flutter pub get --enforce-lockfile
+          sed -i 's/^org.gradle.jvmargs=.*/org.gradle.jvmargs=-Xmx2G -XX:MaxMetaspaceSize=512m -XX:ReservedCodeCacheSize=256m/' android/gradle.properties
+      - name: Habilitar aceleración del emulador del runner
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: ReactiveCircus/android-emulator-runner@4c44018e59b437e86cdfc41da381398f93ed8808
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          ram-size: 2048M
+          heap-size: 256M
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none
+          script: tooling/node_modules/.bin/firebase emulators:exec --only auth,firestore,functions,storage --project demo-financebro './scripts/prueba-recuperacion.sh'
+      - name: Conservar el resultado sin credenciales
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: recuperacion-android
+          path: evidencia-local/recuperacion-e2e.log
+          if-no-files-found: warn
+          retention-days: 7

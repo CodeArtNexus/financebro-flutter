@@ -118,6 +118,10 @@ const receptoraCuenta = (
 await mkdir(".secrets", { recursive: true });
 await writeFile(
   ".secrets/banca-local.json",
-  JSON.stringify({ NUMERO_DESTINO: receptoraCuenta.numeroCuenta }),
+  JSON.stringify({
+    NUMERO_DESTINO: receptoraCuenta.numeroCuenta,
+    UID_DESTINO: receptora.uid,
+    SALDO_DESTINO: receptoraCuenta.saldoCentavos,
+  }),
   { mode: 0o600 },
 );

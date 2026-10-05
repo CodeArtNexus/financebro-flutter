@@ -1,3 +1,4 @@
+import { OPERACIONES } from "./contratos.js";
 import * as chequera from "./chequera.js";
 import { randomBytes, createHash } from "node:crypto";
 import { Timestamp } from "firebase-admin/firestore";
@@ -412,7 +413,7 @@ export class Banco {
           nombre: t.data().nombre,
           color: t.data().color,
           ultimos4: t.data().ultimos4,
-          ...(t.data().fondoRuta ? {fondoRuta:t.data().fondoRuta} : {}),
+          ...(t.data().fondoRuta ? { fondoRuta: t.data().fondoRuta } : {}),
         },
         aceptado: fecha,
         actualizado: fecha,
@@ -553,7 +554,12 @@ export class Banco {
     entero(t.cupoCentavos, "el cupo registrado", 1, 5000000);
     entero(t.deudaCentavos, "la deuda registrada", 0, t.cupoCentavos);
     entero(t.totalPagarCentavos, "el total facturado", 0, t.deudaCentavos);
-    entero(t.minimoPagarCentavos, "el mínimo registrado", 0, t.totalPagarCentavos);
+    entero(
+      t.minimoPagarCentavos,
+      "el mínimo registrado",
+      0,
+      t.totalPagarCentavos,
+    );
     return t;
   }
   async elegirCorteTarjeta(auth, d) {
@@ -975,7 +981,19 @@ export class Banco {
           );
         return anterior.data().recibo;
       }
-      if(d.colaCreada!==undefined){const creada=new Date(d.colaCreada);if(typeof d.colaCreada!=="string"||!Number.isFinite(creada.getTime())||this.reloj().getTime()-creada.getTime()>86400000||creada.getTime()>this.reloj().getTime()+300000)falla("failed-precondition","La autorización pendiente venció. Revisa y crea una nueva transferencia.");}
+      if (d.colaCreada !== undefined) {
+        const creada = new Date(d.colaCreada);
+        if (
+          typeof d.colaCreada !== "string" ||
+          !Number.isFinite(creada.getTime()) ||
+          this.reloj().getTime() - creada.getTime() > 86400000 ||
+          creada.getTime() > this.reloj().getTime() + 300000
+        )
+          falla(
+            "failed-precondition",
+            "La autorización pendiente venció. Revisa y crea una nueva transferencia.",
+          );
+      }
       const entrada = await tx.get(this.db.doc(`directorioCuentas/${numero}`));
       if (!entrada.exists)
         falla("not-found", "No encontramos la cuenta de destino.");
@@ -989,7 +1007,10 @@ export class Banco {
           entrada: true,
         });
       if (destino.numeroCuenta !== numero)
-        falla("failed-precondition", "No pudimos verificar el destino. Revisa la cuenta antes de continuar.");
+        falla(
+          "failed-precondition",
+          "No pudimos verificar el destino. Revisa la cuenta antes de continuar.",
+        );
       const perfil = await tx.get(this.usuario(uid));
       if (origen.saldoCentavos < importe)
         falla(
@@ -1020,6 +1041,7 @@ export class Banco {
       });
       this.registrarMovimiento(tx, uid, cuenta, id, {
         descripcion: `Transferencia a ${receptor.titular}`,
+        referenciaOperacion: id,
         centavos: -importe,
         categoria: "Transferencias",
         tipo: "transferencia",
@@ -1030,6 +1052,7 @@ export class Banco {
       });
       this.registrarMovimiento(tx, receptor.uid, receptor.cuenta, idCredito, {
         descripcion: `Transferencia de ${perfil.data()?.nombre ?? "FinanceBro"}`,
+        referenciaOperacion: id,
         centavos: importe,
         categoria: "Transferencias",
         tipo: "transferencia",
@@ -1123,12 +1146,32 @@ export class Banco {
       falla("invalid-argument", "Selecciona un color disponible.");
     const ref = this.privado(uid, "tarjetas", id);
     if (d.tipo === "propia") {
-      if(d.fondoRuta != null) {
-        const ruta=texto(d.fondoRuta,"el fondo de tarjeta",10,240);
-        if(!new RegExp(`^tarjetas/${uid}/${id}/fondos/[a-zA-Z0-9_-]{8,80}\\.(png|jpg)$`).test(ruta)) falla("permission-denied","El fondo debe pertenecer a esta tarjeta.");
-        if(!this.bucket) falla("unavailable","No pudimos guardar el fondo. Vuelve a intentarlo.");
-        const [m]=await this.bucket.file(ruta).getMetadata();
-        if(!['image/png','image/jpeg'].includes(m.contentType) || Number(m.size)<=0 || Number(m.size)>2*1024*1024) falla("invalid-argument","El fondo debe ser PNG o JPG de hasta 2 MB.");
+      if (d.fondoRuta != null) {
+        const ruta = texto(d.fondoRuta, "el fondo de tarjeta", 10, 240);
+        if (
+          !new RegExp(
+            `^tarjetas/${uid}/${id}/fondos/[a-zA-Z0-9_-]{8,80}\\.(png|jpg)$`,
+          ).test(ruta)
+        )
+          falla(
+            "permission-denied",
+            "El fondo debe pertenecer a esta tarjeta.",
+          );
+        if (!this.bucket)
+          falla(
+            "unavailable",
+            "No pudimos guardar el fondo. Vuelve a intentarlo.",
+          );
+        const [m] = await this.bucket.file(ruta).getMetadata();
+        if (
+          !["image/png", "image/jpeg"].includes(m.contentType) ||
+          Number(m.size) <= 0 ||
+          Number(m.size) > 2 * 1024 * 1024
+        )
+          falla(
+            "invalid-argument",
+            "El fondo debe ser PNG o JPG de hasta 2 MB.",
+          );
       }
       if (!d.id)
         falla(
@@ -1153,7 +1196,9 @@ export class Banco {
           nombre,
           color,
           personalizada: true,
-          ...(Object.hasOwn(d,'fondoRuta') ? {fondoRuta: d.fondoRuta ?? null} : {}),
+          ...(Object.hasOwn(d, "fondoRuta")
+            ? { fondoRuta: d.fondoRuta ?? null }
+            : {}),
           actualizado: fecha,
         };
         tx.update(ref, cambios);
@@ -1489,18 +1534,39 @@ export class Banco {
       };
     });
   }
-  async guardarDecoracion(auth,d) {
-    const actor=this.actor(auth,true);
-    if(typeof d.activa!=='boolean' || !['habitual','navidad','aniversario'].includes(d.tema)) falla('invalid-argument','Revisa el tema y su disponibilidad.');
+  async guardarDecoracion(auth, d) {
+    const actor = this.actor(auth, true);
+    if (
+      typeof d.activa !== "boolean" ||
+      !["habitual", "navidad", "aniversario"].includes(d.tema)
+    )
+      falla("invalid-argument", "Revisa el tema y su disponibilidad.");
     function fecha(v) {
-      if(typeof v!=='string' || !/^\d{4}-\d{2}-\d{2}$/.test(v) || !Number.isFinite(Date.parse(`${v}T05:00:00Z`)) || new Date(`${v}T05:00:00Z`).toISOString().slice(0,10)!==v) falla('invalid-argument','Revisa las fechas de la temporada.');
+      if (
+        typeof v !== "string" ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(v) ||
+        !Number.isFinite(Date.parse(`${v}T05:00:00Z`)) ||
+        new Date(`${v}T05:00:00Z`).toISOString().slice(0, 10) !== v
+      )
+        falla("invalid-argument", "Revisa las fechas de la temporada.");
       return v;
     }
-    const desde=fecha(d.desde),hasta=fecha(d.hasta);
-    if(hasta<desde || Date.parse(hasta)-Date.parse(desde)>90*86400000) falla('invalid-argument','La temporada admite hasta 90 días.');
-    const configuracion={activa:d.activa,tema:d.tema,desde,hasta,titulo:texto(d.titulo,'el saludo de temporada',2,60),mensaje:texto(d.mensaje,'el mensaje de temporada',2,140),actor,actualizado:this.ahora()};
-    await this.db.doc('experiencias/decoracion').set(configuracion);
-    return {guardada:true};
+    const desde = fecha(d.desde),
+      hasta = fecha(d.hasta);
+    if (hasta < desde || Date.parse(hasta) - Date.parse(desde) > 90 * 86400000)
+      falla("invalid-argument", "La temporada admite hasta 90 días.");
+    const configuracion = {
+      activa: d.activa,
+      tema: d.tema,
+      desde,
+      hasta,
+      titulo: texto(d.titulo, "el saludo de temporada", 2, 60),
+      mensaje: texto(d.mensaje, "el mensaje de temporada", 2, 140),
+      actor,
+      actualizado: this.ahora(),
+    };
+    await this.db.doc("experiencias/decoracion").set(configuracion);
+    return { guardada: true };
   }
   async guardarServicio(auth, d) {
     const actor = this.actor(auth, true),
@@ -1783,51 +1849,26 @@ export class Banco {
     }
     return { procesados, hayMas: docs.size === 100 };
   }
-  async emitirCheques(auth,d) { return chequera.emitirCheques(this,auth,d); }
-  async gestionarCheque(auth,d) { return chequera.gestionarCheque(this,auth,d); }
-  async cobrarCheque(auth,d) { return chequera.cobrarCheque(this,auth,d); }
-  async procesarCheques(auth,d) { return chequera.procesarCheques(this,auth,d); }
-  async solicitarAsesor(auth,d) { return chequera.solicitarAsesor(this,auth,d); }
-  async responderAsesoria(auth,d) { return chequera.responderAsesoria(this,auth,d); }
+  async emitirCheques(auth, d) {
+    return chequera.emitirCheques(this, auth, d);
+  }
+  async gestionarCheque(auth, d) {
+    return chequera.gestionarCheque(this, auth, d);
+  }
+  async cobrarCheque(auth, d) {
+    return chequera.cobrarCheque(this, auth, d);
+  }
+  async procesarCheques(auth, d) {
+    return chequera.procesarCheques(this, auth, d);
+  }
+  async solicitarAsesor(auth, d) {
+    return chequera.solicitarAsesor(this, auth, d);
+  }
+  async responderAsesoria(auth, d) {
+    return chequera.responderAsesoria(this, auth, d);
+  }
   async ejecutar(auth, operacion, datos = {}) {
-    const metodos = {
-      emitirCheques: "emitirCheques",
-      gestionarCheque: "gestionarCheque",
-      cobrarCheque: "cobrarCheque",
-      procesarCheques: "procesarCheques",
-      solicitarAsesor: "solicitarAsesor",
-      responderAsesoria: "responderAsesoria",
-
-      registrarCliente: "registrarCliente",
-      solicitarCredito: "solicitarCredito",
-      solicitarTarjetaCredito: "solicitarCredito",
-      elegirCorteTarjeta: "elegirCorteTarjeta",
-      consultarTarjetaCredito: "consultarTarjetaCredito",
-      registrarConsumoTarjeta: "registrarConsumoTarjeta",
-      pagarTarjetaCredito: "pagarTarjetaCredito",
-      procesarCortesTarjetas: "procesarCortesTarjetas",
-      solicitarFisica: "solicitarFisica",
-      revisarTarjeta: "revisarTarjeta",
-      abrirAhorros: "abrirAhorros",
-      destinatario: "destinatario",
-      transferir: "transferir",
-      guardarContacto: "guardarContacto",
-      guardarTarjeta: "guardarTarjeta",
-      pagarExterno: "pagarExterno",
-      guardarSolicitud: "guardarSolicitud",
-      registrarDocumento: "registrarDocumento",
-      enviarSolicitud: "enviarSolicitud",
-      consultarFactura: "consultarFactura",
-      pagarServicio: "pagarServicio",
-      configurarAutopago: "configurarAutopago",
-      pausarAutopago: "pausarAutopago",
-      ajustar: "ajustar",
-      migrarCuentas: "migrarCuentas",
-      revisarSolicitud: "revisarSolicitud",
-      guardarServicio: "guardarServicio",
-      guardarDecoracion: "guardarDecoracion",
-      procesarAutopagos: "procesarAutopagos",
-    };
+    const metodos = OPERACIONES;
     if (
       !Object.hasOwn(metodos, operacion) ||
       typeof datos !== "object" ||

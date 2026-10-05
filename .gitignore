@@ -67,3 +67,5 @@ node_modules/
 /android/.kotlin/
 
 /firebase.integridad.local.json
+
+/firebase.calidad.local.json

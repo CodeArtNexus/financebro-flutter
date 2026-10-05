@@ -32,6 +32,13 @@ async function abrirAviso() {
       ? resolve() : reject(new Error('UI Automator no confirmó la apertura del aviso.')));
   });
 }
+await esperar('evidencia=dispositivo_iniciado');
+// El runner puede reinstalar el APK de pruebas; conceder el permiso a esa instalación.
+await new Promise((resolve,reject)=>{
+  const permiso=spawn('adb',['-s',process.env.FINANCEBRO_DEVICE_ID ?? 'emulator-5554','shell','pm','grant','ec.financebro.financebro','android.permission.POST_NOTIFICATIONS'],{stdio:'inherit'});
+  permiso.on('error',reject);
+  permiso.on('exit',codigo=>codigo===0?resolve():reject(new Error('No se concedió el permiso nativo de avisos.')));
+});
 await esperar('evidencia=esperando_push_primer_plano');
 if (process.env.FINANCEBRO_GRABAR === 'true') {
   const grabacion = spawn('adb',[

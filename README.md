@@ -10,13 +10,15 @@ El [panel de administración](https://financebro-sb-20261003.web.app) y la aplic
 
 La identidad visual usa la marca `fb.`, naranja, superficies de cristal, iconos y espacios consistentes. Tarjetas y acciones están dentro del mismo bloque. Los temas claro, oscuro y automático se eligen en el perfil y se conservan en el dispositivo; el panel dispone de su propio selector. El logo tiene una entrada animada y las transiciones respetan la preferencia de reducir movimiento. Las pestañas sustituyen su contenido sin superponer la vista anterior; las pantallas de detalle conservan la navegación nativa y el gesto de volver en iOS.
 
-## Revisión visual para evaluadores
+## Presentación y revisión funcional
 
-[**Abrir pantallas e interacciones de FinanceBro**](https://financebro-sb-20261003.web.app/revision/)
+[**Ver presentación y recorrido funcional**](https://financebro-sb-20261003.web.app/presentacion/) · [**Abrir pantallas e interacciones de FinanceBro**](https://financebro-sb-20261003.web.app/revision/)
+
+La presentación comercial dura 1 min 44 s y el recorrido conectado, 5 min 10 s. Incluyen textos, música original y animaciones, con capítulos para revisar apertura, transferencia, productos, conectividad y una push Android recibida y abierta. La [producción y el alcance de la evidencia](documentacion/audiovisual.md) distinguen automatización de captura e integraciones disponibles.
 
 La galería pública reúne 210 capturas nativas de Android e iOS en temas claro y oscuro, junto con las vistas del panel publicado. Permite filtrar por función, plataforma y apariencia, ampliar cada imagen y recorrer estados de registro, contrato, productos, transferencias, comprobantes, pagos, crédito, contactos, chequera, personalización y conectividad. Las solicitudes pendientes y la elección del corte muestran etapas diferentes del mismo producto. El recorrido de conectividad incorpora carga con latencia, caída parcial, cuentas disponibles, error sin caché, desconexión y recuperación, en ambos sistemas y apariencias. Los datos son ficticios; las capturas reflejan el momento de la revisión.
 
-Las operaciones se ejecutan desde la aplicación y el panel con los accesos entregados por separado. La galería permite revisar la interfaz sin iniciar sesión y no contiene contraseñas ni documentación personal. [Descargar la versión Android](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.6.3-entrega).
+Las operaciones se ejecutan desde la aplicación y el panel con los accesos entregados por separado. La galería permite revisar la interfaz sin iniciar sesión y no contiene contraseñas ni documentación personal. [Descargar la versión Android](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.6.3-audiovisual).
 
 ## Documentación para la evaluación
 
@@ -30,7 +32,7 @@ Las operaciones se ejecutan desde la aplicación y el panel con los accesos entr
 | [Correspondencia con la prueba](documentacion/requisitos.md) | Localización de cada requisito y límites actuales |
 | [Colaborar](CONTRIBUTING.md) | Trunk Based Development, cambios pequeños, revisión y verificaciones |
 
-La documentación describe la implementación, sus decisiones y la evidencia disponible. Distingue las capacidades conectadas de las medidas previstas para producción. La demostración remota de push se realiza en Android; APNs para iOS y el video de presentación permanecen pendientes.
+La documentación describe la implementación, sus decisiones y la evidencia disponible. Distingue las capacidades conectadas de las medidas previstas para producción. La demostración remota de push se realiza en Android; APNs para iOS permanece pendiente; la presentación y el recorrido funcional ya están publicados.
 
 ## Recorrido funcional
 
@@ -170,4 +172,4 @@ CI comprueba formato, análisis, pruebas Flutter, reglas, servidor y panel sin c
 
 Android utiliza FCM para push remotas cuando el usuario concede permiso y el dispositivo registra su token. En iOS, mientras no exista la membresía y configuración APNs, los avisos nativos se generan al recibir cambios de Firestore con la aplicación conectada; **no se garantiza entrega con la app cerrada**. La activación remota en iOS requiere configurar esas capacidades y `IOS_PUSH_ENABLED=true`. [Configuración de FCM](https://firebase.google.com/docs/cloud-messaging/flutter/client).
 
-Apple Wallet, Google Wallet, NFC, emisión bancaria, logística física y proveedores reales requieren integraciones adicionales. Esta versión registra diseños, solicitudes y decisiones, conserva los históricos y verifica la lógica con datos sintéticos. El video funcional se incorporará como fase final de presentación. Las etiquetas permiten revisar las etapas de desarrollo; `main` contiene el README vigente. Las credenciales y guías personales permanecen fuera de Git.
+Apple Wallet, Google Wallet, NFC, emisión bancaria, logística física y proveedores reales requieren integraciones adicionales. Esta versión registra diseños, solicitudes y decisiones, conserva los históricos y verifica la lógica con datos sintéticos. Los videos de presentación y recorrido funcional están disponibles en la página pública. Las etiquetas permiten revisar las etapas de desarrollo; `main` contiene el README vigente. Las credenciales y guías personales permanecen fuera de Git.

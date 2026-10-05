@@ -1,6 +1,6 @@
 # Recorrido funcional y escenarios degradados
 
-La evaluación puede realizarse con el [APK Android](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.6.3-entrega), Flutter y el [panel publicado](https://financebro-sb-20261003.web.app/). Los accesos de cliente, contraparte y asesor se entregan por separado. Todos los importes, identidades y documentos utilizados deben ser ficticios.
+La evaluación puede realizarse con el [APK Android](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.6.3-audiovisual), Flutter y el [panel publicado](https://financebro-sb-20261003.web.app/). Los accesos de cliente, contraparte y asesor se entregan por separado. Todos los importes, identidades y documentos utilizados deben ser ficticios.
 
 ## Preparación
 
@@ -78,6 +78,6 @@ flutter drive -d emulator-5554 \
 
 En simulador iOS sustituir identificador y plataforma por los correspondientes. Las capturas muestran una consulta externa real y fallos inducidos expresamente; no son pantallas ilustradas. El archivo `verificacion.txt` confirma que terminó el recorrido.
 
-La galería reúne 210 capturas: 96 Android, 96 iOS y 18 del panel. El recorrido de conectividad conserva 14 estados por sistema y renueva también el aviso sin conexión en el resumen. La [galería pública](https://financebro-sb-20261003.web.app/revision/) complementa estos pasos con filtros y estados ampliables. Las imágenes reflejan el estado del recorrido en la fecha de captura; los perfiles pueden cambiar al utilizarse. El video de presentación permanece pendiente.
+La galería reúne 210 capturas: 96 Android, 96 iOS y 18 del panel. El recorrido de conectividad conserva 14 estados por sistema y renueva también el aviso sin conexión en el resumen. La [galería pública](https://financebro-sb-20261003.web.app/revision/) complementa estos pasos con filtros y estados ampliables. Las imágenes reflejan el estado del recorrido en la fecha de captura; los perfiles pueden cambiar al utilizarse. La [presentación y el recorrido funcional](https://financebro-sb-20261003.web.app/presentacion/) añaden video conectado y capítulos; la [evidencia audiovisual](audiovisual.md) explica cómo se grabó y qué se verificó.
 
 Las pruebas completas se apoyan en el [enfoque de integración de Flutter](https://docs.flutter.dev/cookbook/testing/integration/introduction); su ejecución no reemplaza comprobar los permisos y avisos nativos.

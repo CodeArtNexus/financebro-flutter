@@ -18,7 +18,7 @@ Esta matriz relaciona los requisitos de la prueba con la implementación, la doc
 | Despliegue y operación | [Operación](operacion.md) | Ambientes, componentes, publicación, reversión, riesgos, respaldos y escalamiento |
 | README reproducible y colaboración | [README](../README.md), [colaboración](../CONTRIBUTING.md) | Dependencias fijadas, ejecución, pruebas y cambios pequeños en main |
 | Historial y Trunk Based Development | Historial de `main` y etapas | Integración frecuente e historial lineal; etiquetas de entregas |
-| Demostración funcional | APK, app, panel y [recorrido](evaluacion.md) | Accesos separados y galería pública; video final pendiente |
+| Demostración funcional | APK, app, panel y [recorrido](evaluacion.md) | Accesos separados, galería y [videos publicados con capítulos](audiovisual.md) |
 | No basarse únicamente en respuestas estáticas | Auth, Firestore, Storage, Functions y divisas externas | Operaciones compartidas y procesamiento dinámico con fondos sintéticos |
 
 ## Personalización, automatización y alcance adicional

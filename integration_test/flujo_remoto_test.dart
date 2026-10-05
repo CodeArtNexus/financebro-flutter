@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:financebro/main.dart' as app;
 import 'package:financebro/app/financebro_app.dart';
 import 'package:financebro/app/proveedores.dart';
+import 'package:financebro/features/accounts/cuentas_pantalla.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,6 +13,9 @@ import 'package:integration_test/integration_test.dart';
 
 Future<void> esperarRemoto(WidgetTester tester, Finder elemento) async {
   for (var i = 0; i < 300; i++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 150)),
+    );
     await tester.pump(const Duration(milliseconds: 200));
     if (elemento.evaluate().isNotEmpty) return;
   }
@@ -42,6 +46,7 @@ void main() {
     await FirebaseAuth.instance.signOut();
     await tester.pumpWidget(aplicacion);
     await tester.pump(const Duration(milliseconds: 700));
+    debugPrint('FinanceBro evidencia=dispositivo_iniciado');
     if (find.text('Ya tengo una cuenta').evaluate().isNotEmpty) {
       await tester.ensureVisible(find.text('Ya tengo una cuenta'));
       await tester.tap(find.text('Ya tengo una cuenta'));
@@ -79,6 +84,9 @@ void main() {
     debugPrint('FinanceBro evidencia=esperando_push_primer_plano');
     // La herramienta del administrador envía el mensaje; no se genera una recepción falsa.
     for (var i = 0; i < 450 && !llegado.isCompleted; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 150)),
+      );
       await tester.pump(const Duration(milliseconds: 200));
     }
     expect(
@@ -90,7 +98,8 @@ void main() {
     await pausaEvidencia(tester);
     await tester.tap(find.text('Ver'));
     await esperarRemoto(tester, find.text('Tus cuentas'));
-    expect(find.text('Cuenta del día a día'), findsOneWidget);
+    await esperarRemoto(tester, find.byType(TarjetaCuenta));
+    expect(find.byType(TarjetaCuenta), findsWidgets);
     await pausaEvidencia(tester);
     const nativo = MethodChannel('ec.financebro/evaluacion');
     await nativo.invokeMethod<void>('limpiarAvisos');

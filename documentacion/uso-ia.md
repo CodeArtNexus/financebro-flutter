@@ -14,6 +14,8 @@ La definición del producto estableció la marca FinanceBro, naranja y blanco, s
 | Pruebas | Diseño y generación asistida de casos, datos ficticios, recorridos y capturas | Cobertura de límites, reintentos, concurrencia y estados degradados. Resultados respaldados por pruebas ejecutadas y evidencia nativa. |
 | Investigación del dominio | Exploración de flujos de cuentas, tarjetas, pagos y cheques | Reglas y estados explícitos para el prototipo. Los flujos bancarios reales requieren validación especializada e integración con proveedores autorizados. |
 
+La preparación audiovisual también utilizó asistencia para organizar el guion, automatizar capturas de interfaz, construir composiciones editables en After Effects y sintetizar una música original. Los cortes se revisaron contra las operaciones y las notificaciones recibidas en el dispositivo.
+
 ## Revisión de resultados
 
 Las iteraciones se contrastaron mediante recorridos de interfaz y resultados automáticos. Las propuestas se ajustaron ante errores de dispositivo, inconsistencias de navegación o diferencias con los criterios del producto.

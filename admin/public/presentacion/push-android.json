@@ -1,0 +1,15 @@
+{
+  "versionMovil": "1.6.3",
+  "plataforma": "Android",
+  "dispositivo": "Emulador Android 36 con Google Play Services",
+  "transporte": "Firebase Cloud Messaging remoto",
+  "identidades": "Ficticias",
+  "captura": "2026-10-05T03:14:13.529118+00:00",
+  "repeticionPruebaReproducible": "2026-10-05T03:42:46.287058+00:00",
+  "primerPlanoRecibido": true,
+  "segundoPlanoAvisoNativoPublicado": true,
+  "avisoPulsadoConUiAutomator": true,
+  "pantallaDestinoVerificada": "/perfil",
+  "pruebaReproducibleCompletada": true,
+  "alcance": "No verifica APNs iOS ni garantiza entrega a cualquier dispositivo desconectado."
+}

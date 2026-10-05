@@ -1,0 +1,54 @@
+[
+  {
+    "archivo": "FinanceBro-Comercial.mp4",
+    "sha256": "dd61619dd3eca74bee6d9009eb40cc1b135bcc43b90d11682aa5cd1d9eed7183",
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1920,
+        "height": 1080,
+        "r_frame_rate": "30/1",
+        "nb_frames": "3120"
+      },
+      {
+        "codec_name": "aac",
+        "sample_rate": "48000",
+        "channels": 2,
+        "r_frame_rate": "0/0",
+        "nb_frames": "4875"
+      }
+    ],
+    "format": {
+      "duration": "104.000000",
+      "size": "14805145"
+    }
+  },
+  {
+    "archivo": "FinanceBro-Recorrido-funcional.mp4",
+    "sha256": "e853a729f385d484cf4ba03351030c5fe6b5e4caf0322acbd9552e7710341224",
+    "programs": [],
+    "stream_groups": [],
+    "streams": [
+      {
+        "codec_name": "h264",
+        "width": 1920,
+        "height": 1080,
+        "r_frame_rate": "30/1",
+        "nb_frames": "9300"
+      },
+      {
+        "codec_name": "aac",
+        "sample_rate": "48000",
+        "channels": 2,
+        "r_frame_rate": "0/0",
+        "nb_frames": "14532"
+      }
+    ],
+    "format": {
+      "duration": "310.000000",
+      "size": "39359521"
+    }
+  }
+]

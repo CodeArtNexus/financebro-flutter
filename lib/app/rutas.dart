@@ -263,12 +263,14 @@ GoRoute pantalla(
   pageBuilder: (context, state) {
     // Cada ruta pinta su fondo para que el cristal no revele la vista anterior.
     final vista = FondoBro(child: construir(state));
+    // Una cuenta, contacto o consulta distinta necesita su propio estado y suscripción.
+    final clave = ValueKey('${state.pageKey.value}:${state.uri}');
     // Las pestañas sustituyen su contenido; los detalles conservan el gesto nativo.
     if (NavegacionPantalla.destinos.contains(ruta)) {
-      return NoTransitionPage<void>(key: state.pageKey, child: vista);
+      return NoTransitionPage<void>(key: clave, child: vista);
     }
     return Theme.of(context).platform == TargetPlatform.iOS
-        ? CupertinoPage<void>(key: state.pageKey, child: vista)
-        : MaterialPage<void>(key: state.pageKey, child: vista);
+        ? CupertinoPage<void>(key: clave, child: vista)
+        : MaterialPage<void>(key: clave, child: vista);
   },
 );

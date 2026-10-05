@@ -120,3 +120,14 @@ test('Un cheque con importe o saldo corrupto no crea dinero ni genera movimiento
   assert.equal(await saldo(a.uid, 'corriente'), 500);
   assert.equal((await b.cuenta(a.uid, 'corriente').collection('movimientos').get()).size, 0);
 });
+
+test('Una deuda, cupo o total facturado incoherente impide el abono sin tocar la cuenta', async () => {
+  await b.cuenta(a.uid, 'ahorros').update({ saldoCentavos: 500 });
+  const ref = b.privado(a.uid, 'tarjetas', 'bro_credito');
+  const tarjeta = { tipo: 'propia', clase: 'credito', estado: 'activa', cupoCentavos: 10000, deudaCentavos: 1000, totalPagarCentavos: 800, minimoPagarCentavos: 100, proximoCorte: '2026-11-01' };
+  for (const cambio of [{ deudaCentavos: '1000' }, { deudaCentavos: -1 }, { cupoCentavos: 500 }, { totalPagarCentavos: 1100 }, { minimoPagarCentavos: 900 }]) {
+    await ref.set({ ...tarjeta, ...cambio });
+    await assert.rejects(b.pagarTarjetaCredito(a, { cuenta: 'ahorros', centavos: 100, referencia: `${prefijo}_abono` }));
+    assert.equal(await saldo(a.uid), 500); assert.equal(await conteo(a.uid, 'operaciones'), 0);
+  }
+});

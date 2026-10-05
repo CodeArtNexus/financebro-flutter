@@ -6,7 +6,7 @@ import {
   identificador,
   referencia,
   numeroCuenta,
-} from "./banca.js";
+} from "./compartido.js";
 import { fechaEcuador } from "./ciclo-tarjeta.js";
 const fallo = (m, c = "failed-precondition") => {
   throw new FalloBanco(c, m);
@@ -351,9 +351,14 @@ export async function cobrarCheque(b, auth, d, { automatico = false } = {}) {
     // Una inconsistencia no debe convertirse en un débito o un abono parcial.
     b.cuentaDisponible(oSnap);
     b.cuentaDisponible(dSnap);
-    if (oRef.path === dRef.path || o.numeroCuenta !== c.numeroOrigen ||
-        destino.numeroCuenta !== c.numeroDestino || o.tipo !== "corriente" ||
-        destino.tipo !== "corriente" || !g.exists)
+    if (
+      oRef.path === dRef.path ||
+      o.numeroCuenta !== c.numeroOrigen ||
+      destino.numeroCuenta !== c.numeroDestino ||
+      o.tipo !== "corriente" ||
+      destino.tipo !== "corriente" ||
+      !g.exists
+    )
       fallo("No pudimos verificar las cuentas y la agrupación del cheque.");
     const agrupacion = g.data();
     entero(agrupacion.pendienteCentavos, "el total pendiente", c.centavos, MAX);

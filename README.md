@@ -26,11 +26,11 @@ Las operaciones se ejecutan desde la aplicación y el panel con los accesos entr
 | [Decisiones técnicas](documentacion/decisiones.md) | Problemas, alternativas, elecciones, compromisos e impacto futuro |
 | [Despliegue, operación y monitoreo](documentacion/operacion.md) | Ambientes, publicación, recuperación, señales operativas, riesgos y escalamiento |
 | [Recorrido y conectividad](documentacion/evaluacion.md) | Pasos reproducibles, latencia, caída parcial, caché, reintentos y recuperación |
-| [Uso de IA](documentacion/uso-ia.md) | Reducción de carga operativa, implementación asistida y verificación de sus resultados |
+| [Uso de IA](documentacion/uso-ia.md) | Aplicación de IA a implementación, investigación, documentación y pruebas; resultados verificados |
 | [Correspondencia con la prueba](documentacion/requisitos.md) | Localización de cada requisito y límites actuales |
 | [Colaborar](CONTRIBUTING.md) | Trunk Based Development, cambios pequeños, revisión y verificaciones |
 
-Los documentos distinguen la implementación conectada de las medidas previstas para producción. La demostración remota de push se realiza en Android; APNs para iOS y el video de presentación permanecen pendientes.
+La documentación describe la implementación, sus decisiones y la evidencia disponible. Distingue las capacidades conectadas de las medidas previstas para producción. La demostración remota de push se realiza en Android; APNs para iOS y el video de presentación permanecen pendientes.
 
 ## Recorrido funcional
 

@@ -6,7 +6,7 @@ La evaluación puede realizarse con el [APK Android](https://github.com/CodeArtN
 
 Instalar o ejecutar según el [README](../README.md). Configurar un PIN, código o biometría para autorizar transferencias, también en emuladores. Para Android remoto utilizar un dispositivo con Google Play Services y conceder permiso de notificaciones. En iOS la navegación y operaciones están disponibles; las push remotas no se presentan como habilitadas.
 
-Conviene usar dos clientes y un asesor, o alternar sesiones sin perder la referencia de operaciones. Las cuentas de evaluación tienen productos e históricos. Para probar un alta nueva usar otra identidad ficticia; la cuenta de ahorros y el débito se crean una sola vez.
+El recorrido utiliza dos clientes y un asesor. Al alternar sesiones se conserva la referencia de las operaciones. Las cuentas de evaluación tienen productos e históricos. Para probar un alta nueva usar otra identidad ficticia; la cuenta de ahorros y el débito se crean una sola vez.
 
 ## Recorrido conectado
 
@@ -78,6 +78,6 @@ flutter drive -d emulator-5554 \
 
 En simulador iOS sustituir identificador y plataforma por los correspondientes. Las capturas muestran una consulta externa real y fallos inducidos expresamente; no son pantallas ilustradas. El archivo `verificacion.txt` confirma que terminó el recorrido.
 
-La galería reúne 210 capturas: 96 Android, 96 iOS y 18 del panel. El recorrido de conectividad conserva 14 estados por sistema y renueva también el aviso sin conexión en el resumen. La [galería pública](https://financebro-sb-20261003.web.app/revision/) complementa estos pasos con filtros y estados ampliables. Las imágenes son evidencia visual de un momento y los perfiles pueden cambiar al utilizarse. El video de presentación se incorporará posteriormente; no se incluye un enlace vacío ni se afirma que ya esté grabado.
+La galería reúne 210 capturas: 96 Android, 96 iOS y 18 del panel. El recorrido de conectividad conserva 14 estados por sistema y renueva también el aviso sin conexión en el resumen. La [galería pública](https://financebro-sb-20261003.web.app/revision/) complementa estos pasos con filtros y estados ampliables. Las imágenes reflejan el estado del recorrido en la fecha de captura; los perfiles pueden cambiar al utilizarse. El video de presentación permanece pendiente.
 
 Las pruebas completas se apoyan en el [enfoque de integración de Flutter](https://docs.flutter.dev/cookbook/testing/integration/introduction); su ejecución no reemplaza comprobar los permisos y avisos nativos.

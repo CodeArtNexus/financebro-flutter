@@ -1,6 +1,6 @@
 # Correspondencia con la prueba técnica
 
-Esta matriz permite localizar los requisitos en el código, documentos y recorridos. No asigna una puntuación ni atribuye al prototipo capacidades bancarias reales. Las funciones adicionales se describen en el README; la evaluación del mínimo tiene su propia evidencia.
+Esta matriz relaciona los requisitos de la prueba con la implementación, la documentación y la evidencia disponible. Las funciones adicionales y los límites del prototipo se describen en el [README](../README.md).
 
 | Requisito | Implementación o documento | Comprobación y límite |
 | --- | --- | --- |
@@ -13,7 +13,7 @@ Esta matriz permite localizar los requisitos en el código, documentos y recorri
 | Monitoreo en producción | [Operación](operacion.md) | Señales, métricas y procedimiento propuestos; no se presentan como habilitados |
 | Comportamiento degradado | [Evaluación](evaluacion.md), red, divisas y cola segura | Carga, reintentos, caché, caída parcial y recuperación; no confirmar dinero localmente |
 | Unitarias, widgets y E2E | `test/`, `integration_test/`, pruebas de servidor, reglas y panel | CI y recorridos móviles identificados por separado |
-| Uso e impacto de IA | [Uso de IA](uso-ia.md) | Productividad, calidad, documentación y pruebas; sin porcentajes inventados |
+| Uso e impacto de IA | [Uso de IA](uso-ia.md) | Productividad, calidad, documentación y pruebas; impacto cualitativo y resultados verificados |
 | Arquitectura y decisiones | [Arquitectura](arquitectura.md), [decisiones](decisiones.md) | Problemas, alternativas, selección, compromisos e impacto futuro; diagramas de componentes, flujo y datos |
 | Despliegue y operación | [Operación](operacion.md) | Ambientes, componentes, publicación, reversión, riesgos, respaldos y escalamiento |
 | README reproducible y colaboración | [README](../README.md), [colaboración](../CONTRIBUTING.md) | Dependencias fijadas, ejecución, pruebas y cambios pequeños en main |
@@ -21,7 +21,7 @@ Esta matriz permite localizar los requisitos en el código, documentos y recorri
 | Demostración funcional | APK, app, panel y [recorrido](evaluacion.md) | Accesos separados y galería pública; video final pendiente |
 | No basarse únicamente en respuestas estáticas | Auth, Firestore, Storage, Functions y divisas externas | Operaciones compartidas y procesamiento dinámico con fondos sintéticos |
 
-## Bonus y alcance consciente
+## Personalización, automatización y alcance adicional
 
 Las preferencias, metas, tarjetas personalizables, campañas y contenido por segmento aportan personalización avanzada. CI, scripts de publicación, capturas reproducibles y conciliación automatizan desarrollo y verificación. El catálogo remoto y las temporadas incorporan experiencias dentro del esquema admitido sin reinstalar.
 

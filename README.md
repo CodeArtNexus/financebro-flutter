@@ -114,7 +114,7 @@ La [preparación audiovisual](documentacion/audiovisual.md) descarga y comprueba
 
 ## Comprobaciones de integridad
 
-La versión 1.7.0 separa casos del servidor por dominio y contratos de lectura de históricos/contactos. Completa 147 verificaciones automáticas, un E2E Android de recuperación en CI y una medición nativa en modo perfil. Mejora contraste, objetivos táctiles, texto ampliado y coste del cristal. [Resultados y límites de la revisión](documentacion/calidad.md).
+La versión 1.7.0 separa casos del servidor por dominio y contratos de lectura de históricos/contactos. Completa 149 verificaciones automáticas, un E2E Android de recuperación en CI y una medición nativa en modo perfil. Mejora contraste, objetivos táctiles, texto ampliado y coste del cristal. [Resultados y límites de la revisión](documentacion/calidad.md).
 
 La versión 1.6.2 añade escenarios que compiten por el mismo saldo con transferencias, ajustes y cobros de cheques. Confirman conservación de fondos, ausencia de sobregiros, correspondencia entre movimiento específico y global, comprobante único y bandeja de avisos. Un fallo al crear cualquiera de los registros revierte la transferencia completa. La cuenta receptora debe coincidir con el directorio; importes, saldos, deuda, cupo y totales de cheques se comprueban antes de mover fondos.
 

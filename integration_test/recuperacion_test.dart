@@ -190,8 +190,10 @@ void main() {
       expect(numero.length, 14);
       c.read(rutasProvider).go('/qr');
       await esperarReal(t, find.text('Tengo un código o número'));
+      await t.ensureVisible(find.text('Tengo un código o número'));
+      await t.pump(const Duration(milliseconds: 350));
       await t.tap(find.text('Tengo un código o número'));
-      await t.pump();
+      await esperarReal(t, find.byKey(const Key('codigo-qr')));
       await t.enterText(
         find.byKey(const Key('codigo-qr')),
         'financebro://transferir?cuenta=$numero&v=1',

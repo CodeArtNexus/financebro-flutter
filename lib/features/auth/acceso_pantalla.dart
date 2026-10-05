@@ -44,21 +44,27 @@ class _AccesoEstado extends ConsumerState<AccesoPantalla> {
   }
 
   Future<void> _enviar() async {
-    if (!_formulario.currentState!.validate()) return;
-    if (ref.read(conexionBancoProvider).value != EstadoConexion.conectado) {
-      context.push("/conexion");
-      return;
-    }
-    if (widget.registro && _paso == 0) {
-      setState(() => _paso = 1);
-      return;
-    }
-    if (widget.registro && !_acepta) return;
+    if (_cargando || !_formulario.currentState!.validate()) return;
+    if (widget.registro && _paso == 1 && !_acepta) return;
     setState(() {
       _cargando = true;
       _error = null;
     });
     try {
+      if (ref.read(conexionBancoProvider).value != EstadoConexion.conectado) {
+        final red = ref.read(redBancoProvider);
+        // Una revisión pendiente no equivale a una desconexión.
+        await red.revisar();
+        if (!mounted) return;
+        if (!red.conectado) {
+          context.push('/conexion');
+          return;
+        }
+      }
+      if (widget.registro && _paso == 0) {
+        setState(() => _paso = 1);
+        return;
+      }
       final repositorio = ref.read(identidadProvider);
       if (widget.registro) {
         await repositorio.registrar(

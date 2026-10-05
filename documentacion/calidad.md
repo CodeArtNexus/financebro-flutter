@@ -6,15 +6,17 @@ Esta revisión comprueba resultados financieros, recuperación, límites de mód
 
 | Grupo | Casos | Resultado comprobado |
 | --- | ---: | --- |
-| Flutter: reglas, estado y widgets | 64 | Validación, cola segura, cambios de identidad, contenido remoto, histórico, contacto y accesibilidad |
+| Flutter: reglas, estado y widgets | 66 | Validación, cola segura, cambios de identidad, contenido remoto, histórico, contacto y accesibilidad |
 | Servidor: unitarias | 14 | Validaciones, entrega parcial de avisos y diagnóstico sin contenido privado |
 | Servidor: integración con Firebase emulado | 38 | Fondos, concurrencia, comprobantes, permisos, productos y reservas de avisos |
 | Firestore y Storage: reglas | 23 | Lecturas privadas y rechazo de escrituras financieras desde clientes |
 | Panel: importes e integración | 3 | Conversión exacta de importes y operaciones de asesor |
 | Conciliación de históricos | 5 | Plan de lectura, copias ausentes, idempotencia y rechazo de conflictos |
-| **Total** | **147** | Las ejecuciones móviles se informan aparte |
+| **Total** | **149** | Las ejecuciones móviles se informan aparte |
 
 [CI](https://github.com/CodeArtNexus/financebro-flutter/actions) ejecuta cinco trabajos: Flutter, reglas, panel, servidor y recuperación Android. El quinto construye y ejecuta una app real en Android con Emulator Suite, sin accesos de nube. Conserva el resultado durante siete días. La comprobación de contratos evita perder operaciones de la fachada o volver a introducir consultas de almacenamiento en las dos pantallas migradas.
+
+El ingreso espera la comprobación de conexión en curso antes de decidir si puede continuar. Dos regresiones de pantalla verifican que no se autentica antes del resultado ni pierde el formulario si se confirma una desconexión.
 
 ## Recuperación nativa
 

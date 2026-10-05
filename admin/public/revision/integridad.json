@@ -1,0 +1,27 @@
+{
+  "fecha": "2026-10-05T00:12:27.153Z",
+  "entorno": "Servidor publicado · perfiles ficticios de evaluación",
+  "perfiles": [
+    {
+      "nombre": "Sebastián Torres",
+      "cuentas": 2,
+      "movimientos": 18,
+      "estado": "sin descuadres"
+    },
+    {
+      "nombre": "Valeria Andrade",
+      "cuentas": 2,
+      "movimientos": 13,
+      "estado": "sin descuadres"
+    },
+    {
+      "nombre": "Mateo Rivera",
+      "cuentas": 1,
+      "movimientos": 1,
+      "estado": "sin descuadres"
+    }
+  ],
+  "cuentas": 5,
+  "transferenciasRevisadas": 10,
+  "diferencias": []
+}

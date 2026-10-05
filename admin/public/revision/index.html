@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Recorrido visual de FinanceBro en Android, iOS y administración. Capturas reales, temas claro y oscuro, estados e interacciones."
+    />
+    <title>FinanceBro · Revisión funcional</title>
+    <link rel="stylesheet" href="revision.css" />
+    <script src="revision.js" defer></script>
+  </head>
+  <body>
+    <header class="barra">
+      <a class="marca" href="#inicio" aria-label="FinanceBro, inicio">fb.</a
+      ><span>FinanceBro <small>Revisión funcional · 1.6.2</small></span>
+      <nav>
+        <a href="https://github.com/CodeArtNexus/financebro-flutter"
+          >Repositorio ↗</a
+        ><a href="/">Panel ↗</a
+        ><button id="apariencia" aria-label="Cambiar apariencia">◐ Tema</button>
+      </nav>
+    </header>
+    <main id="inicio">
+      <section class="presentacion">
+        <div>
+          <span class="etiqueta">ANDROID · iOS · WEB</span>
+          <h1>Una mirada a cada<br />paso de FinanceBro.</h1>
+          <p>
+            Explora las pantallas, sus estados y las interacciones que conectan
+            a clientes y asesores. Capturas de la aplicación ejecutándose con
+            perfiles ficticios y del panel publicado.
+          </p>
+          <div class="acciones">
+            <a class="principal" href="#pantallas">▦ Explorar pantallas</a
+            ><a
+              href="https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.6.2-integridad"
+              >↓ Instalar Android</a
+            >
+          </div>
+          <div class="datos">
+            <span><strong id="total">…</strong> capturas</span
+            ><span><strong>3</strong> plataformas</span
+            ><span><strong>2</strong> apariencias</span>
+          </div>
+        </div>
+        <div class="portada">
+          <img
+            src="imagenes/ios-claro-01-inicio.webp"
+            alt="Inicio de FinanceBro en iOS con cuentas y productos activos"
+          /><span>Tu dinero, a tu manera.</span>
+        </div>
+      </section>
+      <section class="recorridos" aria-labelledby="titulo-recorridos">
+        <h2 id="titulo-recorridos">Recorridos para la evaluación</h2>
+        <p>
+          Elige un recorrido para filtrar sus pantallas. Las imágenes se amplían
+          al pulsarlas; las operaciones se realizan en la app y el panel con los
+          accesos entregados por separado.
+        </p>
+        <div class="rutas">
+          <button data-ruta="Acceso">
+            ① Apertura
+            <small>Identidad → contrato → ahorros y débito</small></button
+          ><button data-ruta="Transferencias">
+            ② Transferencias
+            <small>Cuenta validada → autorización → comprobante</small></button
+          ><button data-ruta="Tarjetas">
+            ③ Tarjetas
+            <small>Solicitud → cupo → corte → pagos y diseño</small></button
+          ><button data-ruta="Chequera">
+            ④ Chequera
+            <small>Agrupación → emisión → estados e histórico</small></button
+          ><button data-ruta="Pagos">
+            ⑤ Servicios
+            <small>Contrato → planilla → confirmación</small></button
+          ><button data-ruta="Administración">
+            ⑥ Administración
+            <small>Fondos → expedientes → avisos y catálogo</small>
+          </button>
+        </div>
+      </section>
+      <section id="pantallas" aria-labelledby="titulo-pantallas">
+        <div class="titulo-filtros">
+          <div>
+            <span class="etiqueta">PANTALLAS E INTERACCIONES</span>
+            <h2 id="titulo-pantallas">El recorrido, en detalle.</h2>
+          </div>
+          <button id="restablecer">↺ Ver todas</button>
+        </div>
+        <div class="filtros">
+          <label
+            >Plataforma<select id="plataforma">
+              <option value="">Todas las plataformas</option>
+              <option>Android</option>
+              <option>iOS</option>
+              <option>Panel web</option>
+            </select></label
+          ><label
+            >Apariencia<select id="tema">
+              <option value="">Claro y oscuro</option>
+              <option>Claro</option>
+              <option>Oscuro</option>
+            </select></label
+          ><label
+            >Función<select id="categoria">
+              <option value="">Todas las funciones</option>
+            </select></label
+          ><label class="busqueda"
+            >Buscar<input
+              id="buscar"
+              type="search"
+              placeholder="QR, contrato, crédito…"
+          /></label>
+        </div>
+        <p id="contador" role="status" aria-live="polite">Cargando capturas…</p>
+        <div id="galeria" class="galeria"></div>
+        <p id="sin-resultados" hidden>
+          No hay capturas con estos filtros. Prueba otra función o plataforma.
+        </p>
+      </section>
+      <section class="verificacion">
+        <div>
+          <span class="etiqueta">INTEGRIDAD Y TRAZABILIDAD</span>
+          <h2>Una confirmación conserva su referencia.</h2>
+          <p>
+            Las transferencias guardan la autorización antes del envío, incluso
+            con internet. Débito, abono, históricos y avisos se registran en una
+            transacción; los reintentos consultan el mismo comprobante. Los
+            clientes y asesores no escriben saldos directamente.
+          </p>
+          <a
+            href="https://github.com/CodeArtNexus/financebro-flutter/blob/main/functions/test/integracion/integridad.test.js"
+            >Ver escenarios de concurrencia y reversión ↗</a
+          >
+        </div>
+        <div class="resultado">
+          <strong>Verificación de los perfiles publicados</strong>
+          <p id="integridad">Consulta de saldos e históricos.</p>
+          <small
+            >La conciliación es una comprobación de los perfiles ficticios en
+            una fecha concreta. Las cuentas de evaluación pueden cambiar cuando
+            se utilizan.</small
+          >
+        </div>
+      </section>
+      <section class="alcance">
+        <h2>Cómo interpretar esta revisión</h2>
+        <p>
+          Android e iOS se capturaron en emulador y simulador. El panel utiliza
+          el mismo servidor publicado; los valores corresponden al momento de
+          cada captura. Las pantallas sin internet usan un escenario controlado,
+          identificado al ampliar la imagen.
+        </p>
+        <p>
+          FinanceBro es un prototipo: fondos, proveedores, documentos y tarjetas
+          son ficticios. La programación mensual es visual y no ejecuta débitos
+          automáticos. Android dispone de push remotas; los avisos de iOS
+          dependen de la conexión de la app mientras no se habilite APNs. Wallet
+          y emisión física requieren integraciones adicionales.
+        </p>
+      </section>
+    </main>
+    <footer>
+      <a class="marca" href="#inicio">fb.</a
+      ><span
+        >FinanceBro · Claridad en cada movimiento.<small
+          >Accesos y documentación personal fuera de esta galería.</small
+        ></span
+      ><a href="https://github.com/CodeArtNexus/financebro-flutter"
+        >Código y verificación ↗</a
+      >
+    </footer>
+    <dialog id="visor" aria-labelledby="titulo-visor">
+      <div class="cabecera-visor">
+        <div>
+          <small id="detalle-visor"></small>
+          <h2 id="titulo-visor"></h2>
+        </div>
+        <button id="cerrar" aria-label="Cerrar captura">✕</button>
+      </div>
+      <div class="imagen-visor"><img id="imagen-ampliada" alt="" /></div>
+      <div class="pie-visor">
+        <button id="anterior" aria-label="Captura anterior">← Anterior</button
+        ><a id="original" href="#" target="_blank" rel="noopener"
+          >Imagen original ↗</a
+        ><span id="posicion"></span
+        ><button id="siguiente" aria-label="Captura siguiente">
+          Siguiente →
+        </button>
+      </div>
+    </dialog>
+  </body>
+</html>

@@ -4,17 +4,25 @@ Aplicación financiera en Flutter para Android e iOS, acompañada de un panel we
 
 FinanceBro es un prototipo para evaluación técnica. Los fondos, cuentas, tarjetas, documentos y proveedores utilizados en el recorrido son sintéticos: no custodia dinero ni ejecuta pagos bancarios reales. Deben emplearse exclusivamente identidades y documentos ficticios.
 
-## Versión actual · 1.6.1
+## Versión actual · 1.6.2
 
 El [panel de administración](https://financebro-sb-20261003.web.app) y la aplicación móvil comparten Firebase Authentication, Firestore, Storage y Functions. La compilación normal utiliza este servidor; no requiere mantener encendido un servidor en el equipo del evaluador. Los accesos de evaluación se proporcionan por separado, sin publicar credenciales en este repositorio. Hay perfiles con productos e históricos cargados, una contraparte para transferencias y cheques, y solicitudes pendientes para el asesor.
 
 La identidad visual usa la marca `fb.`, naranja, superficies de cristal, iconos y espacios consistentes. Tarjetas y acciones están dentro del mismo bloque. Los temas claro, oscuro y automático se eligen en el perfil y se conservan en el dispositivo; el panel dispone de su propio selector. El logo tiene una entrada animada y las transiciones respetan la preferencia de reducir movimiento. Las pestañas sustituyen su contenido sin superponer la vista anterior; las pantallas de detalle conservan la navegación nativa y el gesto de volver en iOS.
 
+## Revisión visual para evaluadores
+
+[**Abrir pantallas e interacciones de FinanceBro**](https://financebro-sb-20261003.web.app/revision/)
+
+La galería pública reúne capturas nativas de Android e iOS en temas claro y oscuro, junto con las vistas del panel publicado. Permite filtrar por función, plataforma y apariencia, ampliar cada imagen y recorrer estados de registro, contrato, productos, transferencias, comprobantes, pagos, crédito, contactos, chequera, personalización y conectividad. Las solicitudes pendientes y la elección del corte muestran etapas diferentes del mismo producto. Los datos son ficticios; las capturas reflejan el momento de la revisión.
+
+Las operaciones se ejecutan desde la aplicación y el panel con los accesos entregados por separado. La galería permite revisar la interfaz sin iniciar sesión y no contiene contraseñas ni documentación personal. [Descargar la versión Android](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.6.2-integridad).
+
 ## Recorrido funcional
 
 - **Registro:** nombres, apellidos, correo, cédula, contraseña, teléfono y domicilio. Se presenta el contrato antes de confirmar y se exige aceptación expresa. El servidor crea perfil, consentimiento versionado, cuenta de ahorros con USD 0 y tarjeta de débito en una transacción. El reintento conserva la misma cuenta, tarjeta y saldo.
 - **Fondos e históricos:** el asesor selecciona una cuenta y registra un ajuste con motivo. Cada operación conserva actor, fecha, importe en centavos y referencia. Las vistas globales y específicas cargan páginas anteriores sin perder movimientos durante las actualizaciones en vivo. Los contactos muestran los envíos y recepciones como una conversación.
-- **QR y transferencias:** cada cuenta tiene un QR. Se valida al destinatario antes de confirmar un importe entre USD 0,10 y USD 100. Débito, crédito, históricos y avisos se registran juntos. Repetir la misma referencia no duplica la operación. El comprobante incluye una animación del dinero.
+- **QR y transferencias:** cada cuenta tiene un QR. Se valida al destinatario antes de confirmar un importe entre USD 0,10 y USD 100. Débito, crédito, históricos y avisos se registran juntos. Repetir la misma referencia no duplica la operación. La app conserva cada autorización en almacenamiento seguro antes de enviarla, también con internet. Salir de la pantalla o perder la respuesta permite consultar el mismo comprobante desde los envíos guardados; una operación ya intentada no se presenta como cancelable ni caducada sin consultar al servidor. El comprobante incluye una animación del dinero.
 - **Tarjetas:** el débito de ahorros se puede personalizar con color o una imagen privada. La solicitud física conserva diseño y domicilio, admite fechas desde tres días después y pasa por revisión cuando utiliza un diseño personalizado. Los estados representan gestión del prototipo, sin emisión bancaria ni mensajería física. La cuenta corriente no genera tarjeta.
 - **Tarjeta de crédito:** solicitud con ingresos, ocupación y consentimiento; el asesor aprueba y asigna un cupo. El titular recibe un aviso y elige un corte entre los días 1 y 28. La vista distingue cupo disponible, deuda, consumos posteriores al corte, total facturado, mínimo y vencimiento. El mínimo es el 5 % del saldo al corte, con piso de USD 10 sin superar la deuda; vence 15 días después, sin intereses en esta versión. Consumos sintéticos y abonos conservan referencia e histórico, y los pagos recuperan cupo. La tarjeta es un producto distinto de un préstamo.
 - **Cuenta corriente:** expediente privado con cinco categorías de documentos y progreso persistente. El asesor puede pedir correcciones o aprobar una cuenta temporal. Validar un depósito sintético de USD 1.000 para pyme o USD 2.000 para gran empresa permite activarla.
@@ -22,7 +30,7 @@ La identidad visual usa la marca `fb.`, naranja, superficies de cristal, iconos 
 - **Servicios y contactos:** contactos internos verificados por número de cuenta; externos con titular y banco. Las tarjetas externas conservan banco y últimos cuatro dígitos y muestran los pagos realizados desde FinanceBro, sin atribuirse información del emisor externo. El catálogo de servicios se administra sin reinstalar. El proveedor sintético devuelve la planilla del período y el usuario confirma el pago. La programación mensual guarda contrato, día, límite y consentimiento como propuesta visual: **no realiza débitos automáticos** en esta entrega.
 - **Acceso y avisos:** saludo recordado sin guardar saldos ni contraseñas en preferencias. Una sesión anterior se puede desbloquear con autenticación nativa; el sistema decide entre biometría y código. Escanear antes de ingresar no autoriza una transferencia. La navegación principal permanece visible y los avisos permiten regresar.
 - **Personalización:** metas de ahorro, saludo según preferencia, temporadas y mensajes controlados por administración, contenido remoto y divisas con estados de carga, caché, error y conectividad.
-- **Sin conexión:** el primer ingreso necesita internet. Una sesión nativa anterior puede desbloquear datos guardados y preparar transferencias a contactos internos ya verificados. La autorización pendiente se conserva en almacenamiento seguro, separada por identidad y proyecto, y caduca en 24 horas. Al reconectar el servidor vuelve a validar destinatario, fondos y límites con la misma referencia. No se confirma ni se descuenta una operación antes de esa validación.
+- **Sin conexión:** el primer ingreso necesita internet. Una sesión nativa anterior puede desbloquear datos guardados y preparar transferencias a contactos internos ya verificados. La autorización pendiente se conserva en almacenamiento seguro, separada por identidad y proyecto, y caduca en 24 horas. Al reconectar el servidor vuelve a validar destinatario, fondos y límites con la misma referencia. No se confirma ni se descuenta una operación antes de esa validación. Si el primer intento ya había llegado al servidor, una consulta posterior a las 24 horas recupera el comprobante existente sin un segundo descuento. Si nunca se confirmó, el servidor rechaza la autorización vencida.
 
 ## Ejecutar con el servidor publicado
 
@@ -33,6 +41,8 @@ flutter pub get --enforce-lockfile
 flutter devices
 flutter run -d <identificador-del-dispositivo>
 ```
+
+Para confirmar una transferencia, FinanceBro solicita el desbloqueo nativo del dispositivo. Configurar un PIN, código o biometría también en los dispositivos virtuales que se utilicen para el recorrido manual.
 
 No añadir `USE_EMULATORS=true` para este recorrido. El usuario registra su identidad ficticia en la app; el asesor aporta fondos sintéticos desde el panel. Se recomienda usar dos identidades para comprobar transferencia, saldo e históricos en ambos extremos. Solicitudes, aprobaciones, ajustes y avisos se comparten entre móvil y panel.
 
@@ -78,6 +88,16 @@ La aplicación se organiza por funcionalidades, con Riverpod para estado y GoRou
 Los clientes no pueden escribir saldos, movimientos, aprobaciones o tarjetas directamente. Identidad y domicilio solo son legibles por su propietario; una solicitud física comparte con el asesor el domicilio consentido. El registro de cédulas y el directorio interno no son públicos. La cédula se comprueba por formato y unicidad; la mayoría de edad es una declaración, sin validación contra servicios oficiales. El contrato requiere revisión jurídica antes de cualquier uso real.
 
 El rol de administración se asigna desde una herramienta de confianza y se comprueba también en el servidor. Cambiar el perfil o el navegador no concede permisos. Las reglas e índices de Firestore y Storage forman parte del repositorio; deben desplegarse junto con Functions. Las imágenes de tarjetas no utilizan enlaces públicos permanentes.
+
+## Comprobaciones de integridad
+
+La versión 1.6.2 añade escenarios que compiten por el mismo saldo con transferencias, ajustes y cobros de cheques. Confirman conservación de fondos, ausencia de sobregiros, correspondencia entre movimiento específico y global, comprobante único y bandeja de avisos. Un fallo al crear cualquiera de los registros revierte la transferencia completa. La cuenta receptora debe coincidir con el directorio; importes, saldos, deuda, cupo y totales de cheques se comprueban antes de mover fondos.
+
+Al cambiar de cuenta, contacto o parámetros de una vista se renueva el estado de la pantalla y su consulta, evitando conservar movimientos del producto anterior. Esta regresión se comprueba en Android e iOS, junto con el regreso nativo y los cambios de pestaña.
+
+Las pruebas móviles también cubren respuesta perdida, recuperación tras 24 horas, cambio de identidad durante el envío, lectura lenta de una sesión anterior, fallo al guardar y fallo al cancelar. Una cola dañada se conserva y bloquea nuevas escrituras. Las reglas impiden que un cliente, incluso con rol de asesor, escriba directamente saldos, movimientos, recibos, cupos o estados de cheques.
+
+La revisión de los tres perfiles publicados encontró cinco cuentas sin diferencias entre saldo e histórico, y deudas de crédito consistentes con consumos y abonos. El [resultado fechado](https://financebro-sb-20261003.web.app/revision/integridad.json) es una fotografía de esos perfiles; las operaciones posteriores pueden cambiar los valores. Estas comprobaciones son parte de la evaluación del prototipo y no constituyen una certificación bancaria.
 
 ## Publicación
 

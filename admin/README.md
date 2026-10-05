@@ -4,6 +4,8 @@ Panel web con acceso de asesor para consultar personas, cuentas y actividad glob
 
 Es parte del prototipo descrito en el [README principal](../README.md): los fondos y proveedores son sintéticos. No concede crédito real ni emite tarjetas bancarias o realiza envíos físicos.
 
+[Galería pública de pantallas e interacciones](https://financebro-sb-20261003.web.app/revision/): revisión sin sesión de Android, iOS y panel, con imágenes ampliables y filtros. Los accesos del entorno publicado se entregan por separado.
+
 ## Acceso y ejecución
 
 Panel publicado: https://financebro-sb-20261003.web.app. Comparte el servidor con la compilación móvil normal. El acceso remoto de asesor se entrega por separado; las claves siguientes son exclusivamente locales. El tema claro u oscuro se puede cambiar desde la cabecera.
@@ -42,4 +44,4 @@ npm --prefix admin run test:integracion
 
 La prueba de integración requiere las dependencias de `functions/`, Auth y Firestore emulados. Comprueba paginación y un ajuste recibido en vivo, por cuenta y en la actividad global.
 
-La versión 1.6.0 está publicada junto con Functions, Storage, reglas e índices. `scripts/preparar-publicacion.sh` compila la versión remota; `publicar-banca.sh` presenta primero los componentes. El despliegue actual contiene dos funciones con cero instancias mínimas y una máxima por función, sin tareas programadas. Blaze permite cargos por uso; no existe una garantía de costo cero. Credenciales, firmas locales y la guía personal no forman parte del repositorio.
+La versión 1.6.2 está publicada junto con Functions, Storage, reglas e índices. `scripts/preparar-publicacion.sh` compila la versión remota; `publicar-banca.sh` presenta primero los componentes. El despliegue actual contiene dos funciones con cero instancias mínimas y una máxima por función, sin tareas programadas. Blaze permite cargos por uso; no existe una garantía de costo cero. Credenciales, firmas locales y la guía personal no forman parte del repositorio.

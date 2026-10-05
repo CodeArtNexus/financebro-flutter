@@ -11,7 +11,7 @@ const destino = resolve(
   process.argv[2] ?? `${raiz}/admin/public/presentacion/videos`,
 );
 const base =
-  "https://github.com/CodeArtNexus/financebro-flutter/releases/download/v1.6.3-audiovisual/";
+  "https://github.com/CodeArtNexus/financebro-flutter/releases/download/v1.7.0-audiovisual/";
 const archivos = JSON.parse(
   await readFile(
     `${raiz}/admin/public/presentacion/exportaciones.json`,
@@ -50,7 +50,7 @@ for (const { archivo, sha256 } of archivos) {
   const temporal = `${final}.descarga-${process.pid}.mp4`;
   try {
     const respuesta = await fetch(`${base}${archivo}`, {
-      signal: AbortSignal.timeout(120_000),
+      signal: AbortSignal.timeout(600_000),
     });
     if (!respuesta.ok || !respuesta.body)
       throw new Error(

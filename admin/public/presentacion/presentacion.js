@@ -1,6 +1,6 @@
 const video = document.querySelector("#recorrido");
 const lista = document.querySelector("#capitulos");
-fetch("capitulos.json")
+fetch("capitulos.json?v=1.7.0")
   .then((r) => {
     if (!r.ok) throw new Error("Capítulos no disponibles");
     return r.json();

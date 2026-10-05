@@ -1,0 +1,14 @@
+{
+  "versionMovil": "1.7.0",
+  "entorno": "Firebase local aislado",
+  "fecha": "2026-10-05T11:30:12.830202Z",
+  "referencia": "4a5aeea55009098f4dd15d1e64c4f9c2",
+  "descuentoCentavos": 10,
+  "abonoCentavos": 10,
+  "operacionesConReferencia": 1,
+  "descuentosConReferencia": 1,
+  "abonosConReferencia": 1,
+  "lecturaCuentaAjenaDenegada": true,
+  "almacenamiento": "FlutterSecureStorage nativo",
+  "reconstruccion": "ProviderScope, identidad y cola; mismo proceso Android"
+}

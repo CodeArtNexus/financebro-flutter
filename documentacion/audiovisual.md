@@ -1,34 +1,44 @@
-# Presentación audiovisual y evidencia conectada
+# Presentación audiovisual y recorrido por etapas
 
-[Ver los videos, descargar y navegar por capítulos](https://financebro-sb-20261003.web.app/presentacion/).
+[Ver ambos videos y navegar por capítulos](https://financebro-sb-20261003.web.app/presentacion/).
 
 | Pieza | Duración | Propósito |
 | --- | --- | --- |
-| Presentación comercial | 1 min 44 s | Marca, productos, históricos y experiencia compartida |
-| Recorrido funcional | 5 min 10 s | Apertura, envío conciliado, productos, conectividad, panel y push Android |
+| Presentación comercial 1.7.0 | 1 min 45 s | Marca, productos y experiencia conectada |
+| Recorrido técnico 1.7.0 | 22 min 30 s | Procesos completos, pasos sincronizados y verificaciones del resultado |
 
-Ambas piezas se montaron y exportaron con Adobe After Effects 2026, en 1920 × 1080 a 30 cuadros por segundo. Se utilizan la marca `fb.`, naranja suave, Poppins, superficies claras y animación de textos, logo y encuadres. La música se compuso por síntesis para esta entrega, sin muestras, loops ni grabaciones de terceros. La tipografía conserva su licencia OFL. No hay locución: la explicación aparece en pantalla y los capítulos permiten revisar cada función.
+Ambas piezas se montaron y exportaron con Adobe After Effects 2026, en 1920 × 1080 a 30 cuadros por segundo. La marca `fb.`, el naranja suave, Poppins y las animaciones de textos y encuadres mantienen la identidad de la aplicación. La música original se compuso mediante síntesis, sin muestras ni grabaciones de terceros; se repite dentro del recorrido largo. La tipografía conserva su licencia OFL. La explicación se presenta mediante rótulos, sin locución.
 
-## Operaciones que se muestran
+## Procesos completos
 
-El registro completa datos, domicilio y consentimiento. El servidor crea una sola cuenta de ahorros en cero y su tarjeta de débito. El envío de USD 0,10 se confirma contra Functions y Firestore: se comprueban un débito de 10 centavos, un abono de 10 centavos y el mismo total entre ambos extremos. El [resultado de conciliación](https://financebro-sb-20261003.web.app/presentacion/transferencia.json) conserva la fecha de la verificación.
+El recorrido técnico conserva las tomas móviles completas, a velocidad normal. Cada capítulo muestra sus formularios, revisiones, confirmaciones y resultados. Un indicador identifica el paso actual de acuerdo con el instante de la grabación. Los capítulos permiten revisar una función sin reproducir toda la pieza.
 
-Las capturas móviles proceden de la app ejecutándose en un emulador Android con Google Play Services. El montaje recorta esperas y conserva las confirmaciones. Se grabó por tramos para separar productos y estados. La autorización del dispositivo se automatiza exclusivamente en el recorrido audiovisual; la compilación distribuida solicita desbloqueo nativo y no incorpora ese reemplazo. El panel se muestra mediante una secuencia de capturas del sitio publicado. Los fondos, identidades, tarjetas, contratos y planillas son ficticios.
+1. **Apertura:** datos, domicilio, lectura del contrato y consentimiento; el servidor crea una única cuenta de ahorros en cero y su tarjeta de débito.
+2. **Ingreso e históricos:** autenticación, cuentas, filtros, cuenta corriente y movimientos globales.
+3. **Transferencia:** acceso a QR, código para recibir, ingreso manual del número receptor, validación del titular, monto y concepto, selección de origen, revisión, confirmación, comprobante y registro en ahorros y contacto. Se muestra el proceso completo, sin sustituir la operación por una captura estática.
+4. **Contactos y tarjetas:** cuenta interna verificada, conversación financiera, configuración de nombre y color y movimientos por tarjeta.
+5. **Crédito y ahorro:** cupo, deuda, abono confirmado, comprobante e histórico; creación de un objetivo y sus aportes de referencia.
+6. **Servicios:** contrato, consulta de planilla, revisión, pago, comprobante y programación mensual con consentimiento.
+7. **Chequera:** beneficiario validado, lote con fechas e importes, emisión, bloqueo con motivo y trazabilidad.
+8. **Preferencias:** prioridad, saludo adaptado, modo oscuro y navegación consistente.
+9. **Conectividad:** consulta real de divisas, latencia y caída parcial inducidas, respaldo identificado, continuidad bancaria, desconexión controlada y recuperación.
+10. **Experiencia remota y administración:** temporada publicada desde una identidad de asesor; ajuste de fondos sintéticos con revisión, confirmación e histórico de cuenta y global.
+11. **Push Android:** registro, recepción en primer plano, aviso del sistema y apertura de la pantalla de destino.
+12. **Recuperación financiera:** respuesta perdida después de confirmar, operación pendiente, reconstrucción de sesión, recuperación del mismo comprobante e históricos de emisor y receptor.
 
-La temporada se publica con `guardarDecoracion` desde una identidad de asesor. La aplicación recibe el cambio por Firestore sin reinstalar y se restaura la configuración previa. Las reglas impiden escribir esa configuración directamente desde el SDK del cliente.
+## Conciliación y recuperación
+
+La [transferencia publicada de USD 0,10](https://financebro-sb-20261003.web.app/presentacion/transferencia.json) se comprueba contra el servidor: débito de 10 centavos, abono de 10 centavos y conservación del total entre ambos extremos.
+
+La [recuperación financiera](https://financebro-sb-20261003.web.app/presentacion/recuperacion.json) utiliza Firebase local aislado. El arnés descarta una respuesta después de que el servidor haya confirmado la transferencia y reconstruye los proveedores de sesión; el almacenamiento seguro nativo conserva la referencia. Se recupera el mismo comprobante, con una única operación y un movimiento en cada extremo. Se comprueba además que el emisor no puede leer la cuenta del receptor. Este escenario es inducido y no representa un fallo ocurrido en el servidor público ni un cierre real del proceso del sistema operativo.
 
 ## Notificación remota Android
 
-La comprobación utiliza FCM real y registra los pasos por separado:
+La [verificación fechada](https://financebro-sb-20261003.web.app/presentacion/push-android.json) utiliza FCM real en Android con Google Play Services. La aplicación registra el token y confirma la recepción del primer mensaje. Un segundo envío se publica como aviso nativo con la app en segundo plano; UI Automator pulsa el aviso y Flutter comprueba el regreso al primer plano y la apertura de `/perfil`.
 
-1. La app registra un token y recibe el primer mensaje en primer plano.
-2. Al pasar a segundo plano, Android publica un segundo aviso nativo.
-3. UI Automator pulsa el aviso del sistema.
-4. Flutter confirma que la aplicación volvió al primer plano y abrió el perfil.
+Aceptar un mensaje en FCM no basta para darlo por recibido: la prueba verifica recepción, publicación y apertura en el dispositivo grabado. No garantiza entrega en cualquier equipo desconectado y no verifica APNs de iOS, cuya habilitación sigue pendiente.
 
-Aceptar un mensaje en FCM no basta para considerar recibida una notificación. La [verificación fechada](https://financebro-sb-20261003.web.app/presentacion/push-android.json) refleja recepción, publicación y apertura observadas. La escena del aviso se conserva hasta la pantalla de destino.
-
-Para reproducirla se necesita Firebase real, una sesión propietaria de Firebase CLI, Google Play Services, un perfil de evaluación con ahorros y un archivo privado con `DEMO_EMAIL`, `DEMO_PASSWORD` y `DEMO_UID`. El script concede el permiso nativo únicamente al APK instalado para la prueba y comprueba identidad, productos y pantalla de destino.
+Para reproducir la comprobación se requiere Firebase real, una sesión propietaria de Firebase CLI, Google Play Services, un perfil de evaluación y un archivo privado con `DEMO_EMAIL`, `DEMO_PASSWORD` y `DEMO_UID`:
 
 ```sh
 FINANCEBRO_DEVICE_ID=<dispositivo-android> \
@@ -36,16 +46,16 @@ FINANCEBRO_PRUEBA_DEFINES=.secrets/prueba-real.json \
 ./scripts/prueba-remota.sh
 ```
 
-El emulador de Firebase no entrega FCM. Las credenciales y registros privados permanecen fuera de Git. La push remota de iOS requiere APNs y continúa pendiente.
+## Captura y alcance
 
-## Conectividad y límites
+Las tomas móviles proceden de la aplicación 1.7.0 ejecutándose en un emulador Android. El recorrido principal usa el servidor publicado; solo la recuperación financiera usa Firebase local. Los fondos, identidades, tarjetas, contratos y planillas son ficticios. La autorización del dispositivo se automatiza exclusivamente en el arnés privado de captura de productos y recuperación; el APK distribuido conserva la autorización nativa. La prueba remota de notificaciones utiliza la implementación nativa.
 
-El recorrido consulta divisas reales y después induce latencia, caída parcial y desconexión de forma controlada. Se muestran carga, respaldo con fecha y aviso de desactualización, continuidad de cuentas, estado de datos guardados y recuperación. Estos escenarios no representan una caída real del proveedor. Las pruebas de cola, respuesta perdida y transacciones complementan la evidencia visual.
+La administración web se presenta mediante una secuencia de capturas del sitio publicado, que conserva el ingreso de importe y motivo, el diálogo, el saldo resultante y sus registros. La temporada visual se publica con `guardarDecoracion` y se restaura al terminar. La configuración no se escribe directamente desde el cliente.
 
-Los pagos mensuales conservan programación y consentimiento, pero no ejecutan cargos automáticos. Los cobros de cheques requieren una acción expresa del asesor. La solicitud física no equivale a emisión bancaria ni entrega logística. Wallet, liquidación bancaria e integraciones con proveedores reales no se atribuyen a esta versión.
+La programación mensual conserva datos y consentimiento, pero no ejecuta cargos automáticos. Los cheques requieren una acción expresa del asesor para cobrar. Wallet, liquidación bancaria, emisión física, logística y proveedores de servicios reales requieren integraciones adicionales.
 
-## Publicación y conservación
+## Publicación reproducible
 
-La página, capítulos, carátulas y verificaciones se versionan. Los MP4 se publican en Hosting y quedan excluidos de Git para conservar un historial manejable. `node tooling/preparar-videos.mjs` descarga los dos MP4 de la entrega y verifica sus huellas SHA-256 contra el manifiesto versionado. Si ya están disponibles, comprueba las copias existentes; si difieren, se detiene sin sustituirlas. `scripts/preparar-publicacion.sh` incluye este paso antes de compilar el panel para evitar una publicación sin videos. No se descargan medios durante la comprobación de compilación en CI.
+Página, capítulos, pasos, carátulas y verificaciones se versionan en Git. Los MP4 se distribuyen en Hosting y en la release `v1.7.0-audiovisual`, fuera del historial de código. `node tooling/preparar-videos.mjs` obtiene ambos archivos y comprueba sus huellas SHA-256 contra `exportaciones.json`; se detiene ante copias locales distintas. `scripts/preparar-publicacion.sh` incluye esa preparación antes de compilar el panel.
 
-El paquete editable conserva el proyecto `.aep`, capturas originales, música, guion y licencias. El proyecto audiovisual se entrega por separado y no contiene archivos de acceso. Los videos fueron grabados con la versión 1.6.3. El APK actual 1.7.0 y la revisión de accesibilidad se identifican por separado en el README; el material audiovisual conserva el alcance de su grabación.
+El paquete editable conserva el proyecto `.aep`, el guion, los materiales, la música original y las licencias. No contiene archivos de acceso. Las piezas anteriores se conservan en su entrega original; la página vigente reproduce los videos de la versión 1.7.0.

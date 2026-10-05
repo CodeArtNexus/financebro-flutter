@@ -1,0 +1,447 @@
+[
+  {
+    "segundos": 8.818,
+    "titulo": "Bienvenida y crear cuenta",
+    "capitulo": "01 · APERTURA"
+  },
+  {
+    "segundos": 19.866,
+    "titulo": "Datos personales y credenciales",
+    "capitulo": "01 · APERTURA"
+  },
+  {
+    "segundos": 57.283,
+    "titulo": "Domicilio e información de contacto",
+    "capitulo": "01 · APERTURA"
+  },
+  {
+    "segundos": 73.466,
+    "titulo": "Leer contrato y aceptar términos",
+    "capitulo": "01 · APERTURA"
+  },
+  {
+    "segundos": 100.582,
+    "titulo": "Crear ahorros y débito",
+    "capitulo": "01 · APERTURA"
+  },
+  {
+    "segundos": 116.525,
+    "titulo": "Cuenta creada · saldo inicial cero",
+    "capitulo": "01 · APERTURA"
+  },
+  {
+    "segundos": 144.817,
+    "titulo": "Correo y contraseña",
+    "capitulo": "02 · AUTENTICACIÓN"
+  },
+  {
+    "segundos": 155.385,
+    "titulo": "Autenticar con Firebase",
+    "capitulo": "02 · AUTENTICACIÓN"
+  },
+  {
+    "segundos": 167.666,
+    "titulo": "Perfil y cuentas disponibles",
+    "capitulo": "02 · AUTENTICACIÓN"
+  },
+  {
+    "segundos": 183.816,
+    "titulo": "Resumen de cuentas y saldos",
+    "capitulo": "03 · CUENTAS E HISTÓRICOS"
+  },
+  {
+    "segundos": 194.765,
+    "titulo": "Movimientos de ahorros",
+    "capitulo": "03 · CUENTAS E HISTÓRICOS"
+  },
+  {
+    "segundos": 206.683,
+    "titulo": "Filtrar ingresos",
+    "capitulo": "03 · CUENTAS E HISTÓRICOS"
+  },
+  {
+    "segundos": 218.632,
+    "titulo": "Filtrar gastos",
+    "capitulo": "03 · CUENTAS E HISTÓRICOS"
+  },
+  {
+    "segundos": 239.383,
+    "titulo": "Movimientos de cuenta corriente",
+    "capitulo": "03 · CUENTAS E HISTÓRICOS"
+  },
+  {
+    "segundos": 252.549,
+    "titulo": "Histórico global",
+    "capitulo": "03 · CUENTAS E HISTÓRICOS"
+  },
+  {
+    "segundos": 268.818,
+    "titulo": "Abrir QR desde la navegación",
+    "capitulo": "04 · TRANSFERENCIA COMPLETA"
+  },
+  {
+    "segundos": 279.683,
+    "titulo": "QR de la cuenta para recibir",
+    "capitulo": "04 · TRANSFERENCIA COMPLETA"
+  },
+  {
+    "segundos": 293.831,
+    "titulo": "Ingresar número de la cuenta receptora",
+    "capitulo": "04 · TRANSFERENCIA COMPLETA"
+  },
+  {
+    "segundos": 310.851,
+    "titulo": "Validar titular en el servidor",
+    "capitulo": "04 · TRANSFERENCIA COMPLETA"
+  },
+  {
+    "segundos": 319.709,
+    "titulo": "Monto, concepto y cuenta de origen",
+    "capitulo": "04 · TRANSFERENCIA COMPLETA"
+  },
+  {
+    "segundos": 348.449,
+    "titulo": "Revisar destinatario e importe",
+    "capitulo": "04 · TRANSFERENCIA COMPLETA"
+  },
+  {
+    "segundos": 364.719,
+    "titulo": "Confirmar y enviar",
+    "capitulo": "04 · TRANSFERENCIA COMPLETA"
+  },
+  {
+    "segundos": 370.15,
+    "titulo": "Comprobante con referencia",
+    "capitulo": "04 · TRANSFERENCIA COMPLETA"
+  },
+  {
+    "segundos": 387.784,
+    "titulo": "Descuento y movimiento en ahorros",
+    "capitulo": "04 · TRANSFERENCIA COMPLETA"
+  },
+  {
+    "segundos": 403.018,
+    "titulo": "El mismo envío en el contacto",
+    "capitulo": "04 · TRANSFERENCIA COMPLETA"
+  },
+  {
+    "segundos": 421.813,
+    "titulo": "Registrar una cuenta FinanceBro",
+    "capitulo": "05 · CONTACTOS"
+  },
+  {
+    "segundos": 451.802,
+    "titulo": "Contacto verificado y guardado",
+    "capitulo": "05 · CONTACTOS"
+  },
+  {
+    "segundos": 457.253,
+    "titulo": "Conversación con envíos y recibidos",
+    "capitulo": "05 · CONTACTOS"
+  },
+  {
+    "segundos": 473.817,
+    "titulo": "Tarjetas y acciones de cada producto",
+    "capitulo": "06 · TARJETAS"
+  },
+  {
+    "segundos": 491.269,
+    "titulo": "Editar nombre y color",
+    "capitulo": "06 · TARJETAS"
+  },
+  {
+    "segundos": 516.166,
+    "titulo": "Guardar nombre y color de la tarjeta",
+    "capitulo": "06 · TARJETAS"
+  },
+  {
+    "segundos": 535.751,
+    "titulo": "Diseño guardado y acciones agrupadas",
+    "capitulo": "06 · TARJETAS"
+  },
+  {
+    "segundos": 549.919,
+    "titulo": "Movimientos de esa tarjeta",
+    "capitulo": "06 · TARJETAS"
+  },
+  {
+    "segundos": 566.812,
+    "titulo": "Cupo, deuda, mínimo y vencimiento",
+    "capitulo": "07 · PAGO DE CRÉDITO"
+  },
+  {
+    "segundos": 580.929,
+    "titulo": "Elegir cuenta e importe del abono",
+    "capitulo": "07 · PAGO DE CRÉDITO"
+  },
+  {
+    "segundos": 609.663,
+    "titulo": "Confirmar pago de tarjeta",
+    "capitulo": "07 · PAGO DE CRÉDITO"
+  },
+  {
+    "segundos": 615.099,
+    "titulo": "Comprobante y cupo actualizado",
+    "capitulo": "07 · PAGO DE CRÉDITO"
+  },
+  {
+    "segundos": 631.429,
+    "titulo": "Abono en el histórico de la tarjeta",
+    "capitulo": "07 · PAGO DE CRÉDITO"
+  },
+  {
+    "segundos": 649.834,
+    "titulo": "Crear un plan de ahorro",
+    "capitulo": "08 · AHORRO CONFIGURABLE"
+  },
+  {
+    "segundos": 670.466,
+    "titulo": "Objetivo, aporte y cuenta de referencia",
+    "capitulo": "08 · AHORRO CONFIGURABLE"
+  },
+  {
+    "segundos": 684.583,
+    "titulo": "Plan guardado y progreso calculado",
+    "capitulo": "08 · AHORRO CONFIGURABLE"
+  },
+  {
+    "segundos": 703.815,
+    "titulo": "Elegir un servicio disponible",
+    "capitulo": "09 · SERVICIOS"
+  },
+  {
+    "segundos": 721.671,
+    "titulo": "Consultar la planilla por contrato",
+    "capitulo": "09 · SERVICIOS"
+  },
+  {
+    "segundos": 746.715,
+    "titulo": "Revisar importe y período",
+    "capitulo": "09 · SERVICIOS"
+  },
+  {
+    "segundos": 760.82,
+    "titulo": "Confirmar el pago",
+    "capitulo": "09 · SERVICIOS"
+  },
+  {
+    "segundos": 766.287,
+    "titulo": "Comprobante conservado",
+    "capitulo": "09 · SERVICIOS"
+  },
+  {
+    "segundos": 786.199,
+    "titulo": "Guardar programación con consentimiento",
+    "capitulo": "09 · SERVICIOS"
+  },
+  {
+    "segundos": 804.855,
+    "titulo": "Programación guardada · cada pago se confirma",
+    "capitulo": "09 · SERVICIOS"
+  },
+  {
+    "segundos": 826.816,
+    "titulo": "Cheques por pagar y por cobrar",
+    "capitulo": "10 · CHEQUERA DIGITAL"
+  },
+  {
+    "segundos": 862.632,
+    "titulo": "Validar cuenta corriente beneficiaria",
+    "capitulo": "10 · CHEQUERA DIGITAL"
+  },
+  {
+    "segundos": 882.15,
+    "titulo": "Definir cantidad, fechas e importes",
+    "capitulo": "10 · CHEQUERA DIGITAL"
+  },
+  {
+    "segundos": 916.165,
+    "titulo": "Emitir y avisar al beneficiario",
+    "capitulo": "10 · CHEQUERA DIGITAL"
+  },
+  {
+    "segundos": 932.879,
+    "titulo": "Agrupación con próximos cobros",
+    "capitulo": "10 · CHEQUERA DIGITAL"
+  },
+  {
+    "segundos": 957.849,
+    "titulo": "Bloquear con motivo y conservar trazabilidad",
+    "capitulo": "10 · CHEQUERA DIGITAL"
+  },
+  {
+    "segundos": 1005.816,
+    "titulo": "Perfil, preferencia y apariencia",
+    "capitulo": "11 · PERSONALIZACIÓN"
+  },
+  {
+    "segundos": 1031.0,
+    "titulo": "Cambiar la prioridad y guardar preferencias",
+    "capitulo": "11 · PERSONALIZACIÓN"
+  },
+  {
+    "segundos": 1048.368,
+    "titulo": "Saludo adaptado a la prioridad",
+    "capitulo": "11 · PERSONALIZACIÓN"
+  },
+  {
+    "segundos": 1068.017,
+    "titulo": "Activar modo oscuro",
+    "capitulo": "11 · PERSONALIZACIÓN"
+  },
+  {
+    "segundos": 1102.718,
+    "titulo": "Navegación y tarjetas con la misma identidad",
+    "capitulo": "11 · PERSONALIZACIÓN"
+  },
+  {
+    "segundos": 1116.816,
+    "titulo": "Consulta externa real a Frankfurter",
+    "capitulo": "12 · CONECTIVIDAD CONTROLADA"
+  },
+  {
+    "segundos": 1127.651,
+    "titulo": "Inducir latencia · observar carga",
+    "capitulo": "12 · CONECTIVIDAD CONTROLADA"
+  },
+  {
+    "segundos": 1140.917,
+    "titulo": "Indisponibilidad parcial · reintentos y caché",
+    "capitulo": "12 · CONECTIVIDAD CONTROLADA"
+  },
+  {
+    "segundos": 1152.851,
+    "titulo": "El servicio bancario sigue disponible",
+    "capitulo": "12 · CONECTIVIDAD CONTROLADA"
+  },
+  {
+    "segundos": 1165.899,
+    "titulo": "Sin conexión · datos guardados identificados",
+    "capitulo": "12 · CONECTIVIDAD CONTROLADA"
+  },
+  {
+    "segundos": 1176.751,
+    "titulo": "Recuperar conexión y actualizar la tasa",
+    "capitulo": "12 · CONECTIVIDAD CONTROLADA"
+  },
+  {
+    "segundos": 1199.849,
+    "titulo": "Experiencia original en el inicio",
+    "capitulo": "13 · EXPERIENCIA REMOTA"
+  },
+  {
+    "segundos": 1208.533,
+    "titulo": "Asesor publica una temporada sin reinstalar",
+    "capitulo": "13 · EXPERIENCIA REMOTA"
+  },
+  {
+    "segundos": 1209.209,
+    "titulo": "Contenido actualizado en vivo",
+    "capitulo": "13 · EXPERIENCIA REMOTA"
+  },
+  {
+    "segundos": 1227,
+    "titulo": "Elegir la cuenta y consultar sus fondos",
+    "capitulo": "14 · ADMINISTRACIÓN WEB"
+  },
+  {
+    "segundos": 1234,
+    "titulo": "Ingresar el importe y el motivo",
+    "capitulo": "14 · ADMINISTRACIÓN WEB"
+  },
+  {
+    "segundos": 1239.84,
+    "titulo": "Revisar ajuste y saldo previsto",
+    "capitulo": "14 · ADMINISTRACIÓN WEB"
+  },
+  {
+    "segundos": 1244.84,
+    "titulo": "Confirmar el ajuste en el servidor",
+    "capitulo": "14 · ADMINISTRACIÓN WEB"
+  },
+  {
+    "segundos": 1249.84,
+    "titulo": "Consultar el nuevo saldo",
+    "capitulo": "14 · ADMINISTRACIÓN WEB"
+  },
+  {
+    "segundos": 1253.84,
+    "titulo": "Conservar el movimiento en la cuenta",
+    "capitulo": "14 · ADMINISTRACIÓN WEB"
+  },
+  {
+    "segundos": 1258.84,
+    "titulo": "Revisar la actividad global",
+    "capitulo": "14 · ADMINISTRACIÓN WEB"
+  },
+  {
+    "segundos": 1271.364,
+    "titulo": "Abrir y activar notificaciones",
+    "capitulo": "15 · PUSH REMOTA ANDROID"
+  },
+  {
+    "segundos": 1272.196,
+    "titulo": "Token registrado · esperar el aviso remoto",
+    "capitulo": "15 · PUSH REMOTA ANDROID"
+  },
+  {
+    "segundos": 1278.619,
+    "titulo": "Aviso recibido en primer plano · abrir cuentas",
+    "capitulo": "15 · PUSH REMOTA ANDROID"
+  },
+  {
+    "segundos": 1284.111,
+    "titulo": "Enviar la app a segundo plano",
+    "capitulo": "15 · PUSH REMOTA ANDROID"
+  },
+  {
+    "segundos": 1290.151,
+    "titulo": "Android publica el aviso · abrirlo desde el sistema",
+    "capitulo": "15 · PUSH REMOTA ANDROID"
+  },
+  {
+    "segundos": 1304.221,
+    "titulo": "Aplicación abierta en el perfil correcto",
+    "capitulo": "15 · PUSH REMOTA ANDROID"
+  },
+  {
+    "segundos": 1307.0,
+    "titulo": "Transferencia con fallo controlado de respuesta",
+    "capitulo": "16 · RECUPERACIÓN FINANCIERA"
+  },
+  {
+    "segundos": 1313.237,
+    "titulo": "Revisar y confirmar el envío",
+    "capitulo": "16 · RECUPERACIÓN FINANCIERA"
+  },
+  {
+    "segundos": 1316.695,
+    "titulo": "El servidor confirmó · el dispositivo perdió la respuesta",
+    "capitulo": "16 · RECUPERACIÓN FINANCIERA"
+  },
+  {
+    "segundos": 1323.415,
+    "titulo": "Autorización conservada en el almacenamiento seguro",
+    "capitulo": "16 · RECUPERACIÓN FINANCIERA"
+  },
+  {
+    "segundos": 1323.417,
+    "titulo": "Cerrar y reconstruir la sesión",
+    "capitulo": "16 · RECUPERACIÓN FINANCIERA"
+  },
+  {
+    "segundos": 1330.614,
+    "titulo": "Reingresar · recuperar el mismo comprobante",
+    "capitulo": "16 · RECUPERACIÓN FINANCIERA"
+  },
+  {
+    "segundos": 1334.236,
+    "titulo": "Un solo descuento en el histórico del emisor",
+    "capitulo": "16 · RECUPERACIÓN FINANCIERA"
+  },
+  {
+    "segundos": 1339.467,
+    "titulo": "Un solo abono en la cuenta del receptor",
+    "capitulo": "16 · RECUPERACIÓN FINANCIERA"
+  }
+]

@@ -1,9 +1,12 @@
 {
+  "versionMovil": "1.7.0",
+  "entorno": "Firebase publicado",
+  "identidades": "Ficticias",
   "importeCentavos": 10,
   "emisor": -10,
   "receptor": 10,
-  "sumaAntes": 191398,
-  "sumaDespues": 191398,
+  "sumaAntes": 191408,
+  "sumaDespues": 191408,
   "verificado": true,
-  "fecha": "2026-10-05T03:18:43.134Z"
+  "fecha": "2026-10-05T10:38:33.338Z"
 }

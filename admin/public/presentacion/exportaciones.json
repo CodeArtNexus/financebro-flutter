@@ -1,7 +1,7 @@
 [
   {
     "archivo": "FinanceBro-Comercial.mp4",
-    "sha256": "dd61619dd3eca74bee6d9009eb40cc1b135bcc43b90d11682aa5cd1d9eed7183",
+    "sha256": "70b3cfb292d9fc2bbd84d572cdf5a2d8e1c9d57b7dc9249c8de120d17ad41c36",
     "programs": [],
     "stream_groups": [],
     "streams": [
@@ -10,24 +10,24 @@
         "width": 1920,
         "height": 1080,
         "r_frame_rate": "30/1",
-        "nb_frames": "3120"
+        "nb_frames": "3150"
       },
       {
         "codec_name": "aac",
         "sample_rate": "48000",
         "channels": 2,
         "r_frame_rate": "0/0",
-        "nb_frames": "4875"
+        "nb_frames": "4923"
       }
     ],
     "format": {
-      "duration": "104.000000",
-      "size": "14805145"
+      "duration": "105.000000",
+      "size": "14790231"
     }
   },
   {
     "archivo": "FinanceBro-Recorrido-funcional.mp4",
-    "sha256": "e853a729f385d484cf4ba03351030c5fe6b5e4caf0322acbd9552e7710341224",
+    "sha256": "1207140ca947e50ede1489907d4f28de95af77dbcc624a701e1d8f7d1a30a331",
     "programs": [],
     "stream_groups": [],
     "streams": [
@@ -36,19 +36,19 @@
         "width": 1920,
         "height": 1080,
         "r_frame_rate": "30/1",
-        "nb_frames": "9300"
+        "nb_frames": "40500"
       },
       {
         "codec_name": "aac",
         "sample_rate": "48000",
         "channels": 2,
         "r_frame_rate": "0/0",
-        "nb_frames": "14532"
+        "nb_frames": "63283"
       }
     ],
     "format": {
-      "duration": "310.000000",
-      "size": "39359521"
+      "duration": "1350.000000",
+      "size": "124288432"
     }
   }
 ]

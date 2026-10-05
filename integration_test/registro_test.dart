@@ -5,6 +5,7 @@ import 'package:financebro/app/financebro_app.dart';
 import 'package:financebro/app/proveedores.dart';
 import 'package:financebro/app/rutas.dart';
 import 'package:financebro/core/configuracion.dart';
+import 'package:financebro/core/red_banco.dart';
 import 'package:financebro/features/auth/registro.dart';
 import 'package:financebro/main.dart' as app;
 import 'package:flutter/material.dart';
@@ -21,6 +22,22 @@ Future<void> llenarRegistro(WidgetTester tester, {String? correo}) async {
   tester.testTextInput.register();
   addTearDown(tester.testTextInput.unregister);
   await esperar(tester, find.byKey(const Key('nombre')));
+  final c = ProviderScope.containerOf(
+    tester.element(find.byType(FinanceBroApp)),
+  );
+  final reloj = Stopwatch()..start();
+  while (c.read(conexionBancoProvider).value != EstadoConexion.conectado &&
+      reloj.elapsed < const Duration(seconds: 60)) {
+    await tester.pump();
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 150)),
+    );
+  }
+  expect(
+    c.read(conexionBancoProvider).value,
+    EstadoConexion.conectado,
+    reason: 'Esperar el servicio antes de avanzar el registro.',
+  );
   final datos = {
     'nombre': 'Lucía',
     'apellidos': 'Pérez',

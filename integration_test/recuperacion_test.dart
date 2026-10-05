@@ -12,6 +12,7 @@ import 'package:financebro/app/proveedores.dart';
 import 'package:financebro/app/rutas.dart';
 import 'package:financebro/core/configuracion.dart';
 import 'package:financebro/core/errores.dart';
+import 'package:financebro/core/red_banco.dart';
 import 'package:financebro/core/funciones_banca.dart';
 import 'package:financebro/features/auth/firebase_identidad.dart';
 import 'package:financebro/features/banking/banca.dart';
@@ -157,6 +158,16 @@ void main() {
       c.read(rutasProvider).go('/ingresar');
       Future<void> ingresar({String correo = 'demo@financebro.test'}) async {
         await esperarReal(t, find.byKey(const Key('correo')));
+        final conexion = Stopwatch()..start();
+        while (c.read(conexionBancoProvider).value !=
+                EstadoConexion.conectado &&
+            conexion.elapsed < const Duration(seconds: 60)) {
+          await t.pump();
+          await t.runAsync(
+            () => Future<void>.delayed(const Duration(milliseconds: 150)),
+          );
+        }
+        expect(c.read(conexionBancoProvider).value, EstadoConexion.conectado);
         t.testTextInput.register();
         await t.enterText(find.byKey(const Key('correo')), correo);
         await t.enterText(

@@ -1,6 +1,6 @@
 # Recorrido funcional y escenarios degradados
 
-La evaluación puede realizarse con el [APK Android](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.6.2-integridad), Flutter y el [panel publicado](https://financebro-sb-20261003.web.app/). Los accesos de cliente, contraparte y asesor se entregan por separado. Todos los importes, identidades y documentos utilizados deben ser ficticios.
+La evaluación puede realizarse con el [APK Android](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.6.3-entrega), Flutter y el [panel publicado](https://financebro-sb-20261003.web.app/). Los accesos de cliente, contraparte y asesor se entregan por separado. Todos los importes, identidades y documentos utilizados deben ser ficticios.
 
 ## Preparación
 
@@ -55,7 +55,7 @@ Las pruebas cubren fallo de almacenamiento, archivo dañado, cambio de identidad
 
 ## Pruebas reproducibles y capturas
 
-[Verificaciones de CI](https://github.com/CodeArtNexus/financebro-flutter/actions) separan Flutter, reglas, panel y servidor. Las 121 pruebas automáticas de la entrega base incluyen 50 Flutter, 35 operaciones bancarias, 5 validaciones, 23 reglas, 3 del panel y 5 de reconstrucción. Los recorridos móviles adicionales necesitan dispositivo; no se suman como si fueran tareas ejecutadas en CI.
+[Verificaciones de CI](https://github.com/CodeArtNexus/financebro-flutter/actions) separan Flutter, reglas, panel y servidor. Las 123 pruebas automáticas de la entrega incluyen 52 Flutter, 35 operaciones bancarias, 5 validaciones, 23 reglas, 3 del panel y 5 de reconstrucción. Los recorridos móviles adicionales necesitan dispositivo; no se suman como si fueran tareas ejecutadas en CI.
 
 ```sh
 ./scripts/check.sh
@@ -78,6 +78,6 @@ flutter drive -d emulator-5554 \
 
 En simulador iOS sustituir identificador y plataforma por los correspondientes. Las capturas muestran una consulta externa real y fallos inducidos expresamente; no son pantallas ilustradas. El archivo `verificacion.txt` confirma que terminó el recorrido.
 
-La [galería pública](https://financebro-sb-20261003.web.app/revision/) complementa estos pasos con filtros y estados ampliables. Las imágenes son evidencia visual de un momento y los perfiles pueden cambiar al utilizarse. El video de presentación se incorporará posteriormente; no se incluye un enlace vacío ni se afirma que ya esté grabado.
+La galería reúne 210 capturas: 96 Android, 96 iOS y 18 del panel. El recorrido de conectividad conserva 14 estados por sistema y renueva también el aviso sin conexión en el resumen. La [galería pública](https://financebro-sb-20261003.web.app/revision/) complementa estos pasos con filtros y estados ampliables. Las imágenes son evidencia visual de un momento y los perfiles pueden cambiar al utilizarse. El video de presentación se incorporará posteriormente; no se incluye un enlace vacío ni se afirma que ya esté grabado.
 
 Las pruebas completas se apoyan en el [enfoque de integración de Flutter](https://docs.flutter.dev/cookbook/testing/integration/introduction); su ejecución no reemplaza comprobar los permisos y avisos nativos.

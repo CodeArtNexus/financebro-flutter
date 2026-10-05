@@ -4,7 +4,7 @@ Aplicación financiera en Flutter para Android e iOS, acompañada de un panel we
 
 FinanceBro es un prototipo para evaluación técnica. Los fondos, cuentas, tarjetas, documentos y proveedores utilizados en el recorrido son sintéticos: no custodia dinero ni ejecuta pagos bancarios reales. Deben emplearse exclusivamente identidades y documentos ficticios.
 
-## Versión actual · 1.6.2
+## Versión actual · 1.6.3
 
 El [panel de administración](https://financebro-sb-20261003.web.app) y la aplicación móvil comparten Firebase Authentication, Firestore, Storage y Functions. La compilación normal utiliza este servidor; no requiere mantener encendido un servidor en el equipo del evaluador. Los accesos de evaluación se proporcionan por separado, sin publicar credenciales en este repositorio. Hay perfiles con productos e históricos cargados, una contraparte para transferencias y cheques, y solicitudes pendientes para el asesor.
 
@@ -14,9 +14,9 @@ La identidad visual usa la marca `fb.`, naranja, superficies de cristal, iconos 
 
 [**Abrir pantallas e interacciones de FinanceBro**](https://financebro-sb-20261003.web.app/revision/)
 
-La galería pública reúne capturas nativas de Android e iOS en temas claro y oscuro, junto con las vistas del panel publicado. Permite filtrar por función, plataforma y apariencia, ampliar cada imagen y recorrer estados de registro, contrato, productos, transferencias, comprobantes, pagos, crédito, contactos, chequera, personalización y conectividad. Las solicitudes pendientes y la elección del corte muestran etapas diferentes del mismo producto. Los datos son ficticios; las capturas reflejan el momento de la revisión.
+La galería pública reúne 210 capturas nativas de Android e iOS en temas claro y oscuro, junto con las vistas del panel publicado. Permite filtrar por función, plataforma y apariencia, ampliar cada imagen y recorrer estados de registro, contrato, productos, transferencias, comprobantes, pagos, crédito, contactos, chequera, personalización y conectividad. Las solicitudes pendientes y la elección del corte muestran etapas diferentes del mismo producto. El recorrido de conectividad incorpora carga con latencia, caída parcial, cuentas disponibles, error sin caché, desconexión y recuperación, en ambos sistemas y apariencias. Los datos son ficticios; las capturas reflejan el momento de la revisión.
 
-Las operaciones se ejecutan desde la aplicación y el panel con los accesos entregados por separado. La galería permite revisar la interfaz sin iniciar sesión y no contiene contraseñas ni documentación personal. [Descargar la versión Android](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.6.2-integridad).
+Las operaciones se ejecutan desde la aplicación y el panel con los accesos entregados por separado. La galería permite revisar la interfaz sin iniciar sesión y no contiene contraseñas ni documentación personal. [Descargar la versión Android](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.6.3-entrega).
 
 ## Documentación para la evaluación
 
@@ -108,6 +108,8 @@ Los clientes no pueden escribir saldos, movimientos, aprobaciones o tarjetas dir
 El rol de administración se asigna desde una herramienta de confianza y se comprueba también en el servidor. Cambiar el perfil o el navegador no concede permisos. Las reglas e índices de Firestore y Storage forman parte del repositorio; deben desplegarse junto con Functions. Las imágenes de tarjetas no utilizan enlaces públicos permanentes.
 
 ## Comprobaciones de integridad
+
+La versión 1.6.3 completa la documentación de evaluación y añade dos pruebas de contraste del aviso de conexión en temas claro y oscuro. Las 123 verificaciones automáticas se acompañan de recorridos nativos separados; el aviso ahora utiliza los colores de cada tema para conservar legibilidad.
 
 La versión 1.6.2 añade escenarios que compiten por el mismo saldo con transferencias, ajustes y cobros de cheques. Confirman conservación de fondos, ausencia de sobregiros, correspondencia entre movimiento específico y global, comprobante único y bandeja de avisos. Un fallo al crear cualquiera de los registros revierte la transferencia completa. La cuenta receptora debe coincidir con el directorio; importes, saldos, deuda, cupo y totales de cheques se comprueban antes de mover fondos.
 

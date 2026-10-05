@@ -543,3 +543,5 @@ body.visor-abierto {
     text-align: center;
   }
 }
+
+.documentos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:24px}.documentos a{display:flex;flex-direction:column;gap:10px;padding:22px;border:1px solid var(--borde);border-radius:22px;background:var(--cristal);color:inherit;text-decoration:none;backdrop-filter:blur(16px);line-height:1.4}.documentos a:hover{border-color:var(--acento)}.documentos small{font-size:.85rem;opacity:.72}.documentos a:focus-visible{outline:3px solid #f69543;outline-offset:4px}@media(max-width:760px){.documentos{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:480px){.documentos{grid-template-columns:1fr}}

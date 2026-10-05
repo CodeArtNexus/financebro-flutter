@@ -14,11 +14,12 @@
   <body>
     <header class="barra">
       <a class="marca" href="#inicio" aria-label="FinanceBro, inicio">fb.</a
-      ><span>FinanceBro <small>Revisión funcional · 1.6.2</small></span>
+      ><span>FinanceBro <small>Revisión funcional · 1.6.3</small></span>
       <nav>
         <a href="https://github.com/CodeArtNexus/financebro-flutter"
           >Repositorio ↗</a
         ><a href="/">Panel ↗</a
+        ><a href="#documentacion">Guía</a
         ><button id="apariencia" aria-label="Cambiar apariencia">◐ Tema</button>
       </nav>
     </header>
@@ -35,9 +36,9 @@
           <div class="acciones">
             <a class="principal" href="#pantallas">▦ Explorar pantallas</a
             ><a
-              href="https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.6.2-integridad"
+              href="https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.6.3-entrega"
               >↓ Instalar Android</a
-            >
+            ><a href="#documentacion">◇ Guía de evaluación</a>
           </div>
           <div class="datos">
             <span><strong id="total">…</strong> capturas</span
@@ -78,7 +79,7 @@
           ><button data-ruta="Administración">
             ⑥ Administración
             <small>Fondos → expedientes → avisos y catálogo</small>
-          </button>
+          </button><button data-ruta="Conectividad">⑦ Conectividad<small>Carga → caché → fallo parcial → recuperación</small></button>
         </div>
       </section>
       <section id="pantallas" aria-labelledby="titulo-pantallas">
@@ -146,13 +147,25 @@
         </div>
         <p><a href="integridad-global.json">Ver conciliación ampliada de los seis perfiles y nueve cuentas ↗</a></p>
       </section>
+      <section id="documentacion" class="documentacion" aria-labelledby="titulo-documentacion">
+        <span class="etiqueta">DECISIONES Y EVIDENCIA</span>
+        <h2 id="titulo-documentacion">De la experiencia a sus decisiones.</h2>
+        <p>Consulta cómo se organiza FinanceBro, cómo conserva una operación y qué límites tiene esta entrega. El recorrido explica cómo repetir cambios remotos, push en Android y escenarios de conexión.</p>
+        <div class="documentos">
+          <a href="https://github.com/CodeArtNexus/financebro-flutter/blob/main/documentacion/arquitectura.md">◇ Arquitectura y diagramas<small>Componentes, flujos y dominios</small></a>
+          <a href="https://github.com/CodeArtNexus/financebro-flutter/blob/main/documentacion/decisiones.md">⌘ Decisiones técnicas<small>Alternativas y compromisos</small></a>
+          <a href="https://github.com/CodeArtNexus/financebro-flutter/blob/main/documentacion/operacion.md">◎ Operación y monitoreo<small>Publicación, diagnóstico y recuperación</small></a>
+          <a href="https://github.com/CodeArtNexus/financebro-flutter/blob/main/documentacion/evaluacion.md">↻ Recorrido reproducible<small>Conectividad, reintentos y caché</small></a>
+          <a href="https://github.com/CodeArtNexus/financebro-flutter/blob/main/documentacion/uso-ia.md">✦ Uso de IA<small>Reducción de carga operativa y verificación</small></a>
+          <a href="https://github.com/CodeArtNexus/financebro-flutter/blob/main/documentacion/requisitos.md">✓ Requisitos y alcance<small>Evidencia de cada mínimo solicitado</small></a>
+        </div>
+      </section>
       <section class="alcance">
         <h2>Cómo interpretar esta revisión</h2>
         <p>
           Android e iOS se capturaron en emulador y simulador. El panel utiliza
           el mismo servidor publicado; los valores corresponden al momento de
-          cada captura. Las pantallas sin internet usan un escenario controlado,
-          identificado al ampliar la imagen.
+          cada captura. Las pantallas de desconexión, latencia y caída de divisas usan escenarios controlados, identificados al ampliar la imagen. La recuperación vuelve a consultar el proveedor externo; las capturas muestran cada estado y el recorrido enlazado permite repetirlo.
         </p>
         <p>
           FinanceBro es un prototipo: fondos, proveedores, documentos y tarjetas

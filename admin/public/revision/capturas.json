@@ -371,7 +371,7 @@
     "imagen": "imagenes/android-claro-34-sin-conexion.webp",
     "ancho": 1080,
     "alto": 2400,
-    "escenario": "Conectividad controlada"
+    "escenario": "Conectividad controlada; aviso legible según apariencia"
   },
   {
     "id": "android-claro-35-mateo-inicio",
@@ -1284,7 +1284,7 @@
     "imagen": "imagenes/ios-claro-34-sin-conexion.webp",
     "ancho": 1206,
     "alto": 2622,
-    "escenario": "Conectividad controlada"
+    "escenario": "Conectividad controlada; aviso legible según apariencia"
   },
   {
     "id": "ios-claro-35-mateo-inicio",
@@ -2022,5 +2022,291 @@
     "ancho": 1280,
     "alto": 1221,
     "escenario": "Servidor publicado"
+  },
+  {
+    "id": "android-claro-51-divisas-latencia",
+    "plataforma": "Android",
+    "tema": "Claro",
+    "categoria": "Conectividad",
+    "titulo": "Carga durante alta latencia",
+    "imagen": "imagenes/android-claro-51-divisas-latencia.webp",
+    "ancho": 1080,
+    "alto": 2400,
+    "escenario": "Demora controlada de 4 s y consulta al proveedor externo"
+  },
+  {
+    "id": "android-claro-52-divisas-caida-cache",
+    "plataforma": "Android",
+    "tema": "Claro",
+    "categoria": "Conectividad",
+    "titulo": "Caída parcial con última tasa guardada",
+    "imagen": "imagenes/android-claro-52-divisas-caida-cache.webp",
+    "ancho": 1080,
+    "alto": 2400,
+    "escenario": "Fallo de divisas inducido y respaldo de una consulta real"
+  },
+  {
+    "id": "android-claro-53-cuentas-servicio-parcial",
+    "plataforma": "Android",
+    "tema": "Claro",
+    "categoria": "Conectividad",
+    "titulo": "Cuentas disponibles durante la caída de divisas",
+    "imagen": "imagenes/android-claro-53-cuentas-servicio-parcial.webp",
+    "ancho": 1080,
+    "alto": 2400,
+    "escenario": "Fallo exclusivo de divisas; cuentas del servidor publicado"
+  },
+  {
+    "id": "android-claro-54-divisas-error-sin-cache",
+    "plataforma": "Android",
+    "tema": "Claro",
+    "categoria": "Conectividad",
+    "titulo": "Error y reintento cuando no hay caché",
+    "imagen": "imagenes/android-claro-54-divisas-error-sin-cache.webp",
+    "ancho": 1080,
+    "alto": 2400,
+    "escenario": "Fallo de divisas inducido y caché retirada solo del dispositivo"
+  },
+  {
+    "id": "android-claro-55-divisas-sin-conexion",
+    "plataforma": "Android",
+    "tema": "Claro",
+    "categoria": "Conectividad",
+    "titulo": "Divisas guardadas sin conexión",
+    "imagen": "imagenes/android-claro-55-divisas-sin-conexion.webp",
+    "ancho": 1080,
+    "alto": 2400,
+    "escenario": "Conectividad controlada; datos guardados con aviso de antigüedad"
+  },
+  {
+    "id": "android-claro-56-divisas-recuperacion",
+    "plataforma": "Android",
+    "tema": "Claro",
+    "categoria": "Conectividad",
+    "titulo": "Recuperación y nueva consulta externa",
+    "imagen": "imagenes/android-claro-56-divisas-recuperacion.webp",
+    "ancho": 1080,
+    "alto": 2400,
+    "escenario": "Escenario normal restablecido y tasa consultada de nuevo"
+  },
+  {
+    "id": "android-oscuro-34-sin-conexion",
+    "plataforma": "Android",
+    "tema": "Oscuro",
+    "categoria": "Conectividad",
+    "titulo": "Cuenta recordada sin conexión",
+    "imagen": "imagenes/android-oscuro-34-sin-conexion.webp",
+    "ancho": 1080,
+    "alto": 2400,
+    "escenario": "Conectividad controlada; aviso legible según apariencia"
+  },
+  {
+    "id": "android-oscuro-51-divisas-latencia",
+    "plataforma": "Android",
+    "tema": "Oscuro",
+    "categoria": "Conectividad",
+    "titulo": "Carga durante alta latencia",
+    "imagen": "imagenes/android-oscuro-51-divisas-latencia.webp",
+    "ancho": 1080,
+    "alto": 2400,
+    "escenario": "Demora controlada de 4 s y consulta al proveedor externo"
+  },
+  {
+    "id": "android-oscuro-52-divisas-caida-cache",
+    "plataforma": "Android",
+    "tema": "Oscuro",
+    "categoria": "Conectividad",
+    "titulo": "Caída parcial con última tasa guardada",
+    "imagen": "imagenes/android-oscuro-52-divisas-caida-cache.webp",
+    "ancho": 1080,
+    "alto": 2400,
+    "escenario": "Fallo de divisas inducido y respaldo de una consulta real"
+  },
+  {
+    "id": "android-oscuro-53-cuentas-servicio-parcial",
+    "plataforma": "Android",
+    "tema": "Oscuro",
+    "categoria": "Conectividad",
+    "titulo": "Cuentas disponibles durante la caída de divisas",
+    "imagen": "imagenes/android-oscuro-53-cuentas-servicio-parcial.webp",
+    "ancho": 1080,
+    "alto": 2400,
+    "escenario": "Fallo exclusivo de divisas; cuentas del servidor publicado"
+  },
+  {
+    "id": "android-oscuro-54-divisas-error-sin-cache",
+    "plataforma": "Android",
+    "tema": "Oscuro",
+    "categoria": "Conectividad",
+    "titulo": "Error y reintento cuando no hay caché",
+    "imagen": "imagenes/android-oscuro-54-divisas-error-sin-cache.webp",
+    "ancho": 1080,
+    "alto": 2400,
+    "escenario": "Fallo de divisas inducido y caché retirada solo del dispositivo"
+  },
+  {
+    "id": "android-oscuro-55-divisas-sin-conexion",
+    "plataforma": "Android",
+    "tema": "Oscuro",
+    "categoria": "Conectividad",
+    "titulo": "Divisas guardadas sin conexión",
+    "imagen": "imagenes/android-oscuro-55-divisas-sin-conexion.webp",
+    "ancho": 1080,
+    "alto": 2400,
+    "escenario": "Conectividad controlada; datos guardados con aviso de antigüedad"
+  },
+  {
+    "id": "android-oscuro-56-divisas-recuperacion",
+    "plataforma": "Android",
+    "tema": "Oscuro",
+    "categoria": "Conectividad",
+    "titulo": "Recuperación y nueva consulta externa",
+    "imagen": "imagenes/android-oscuro-56-divisas-recuperacion.webp",
+    "ancho": 1080,
+    "alto": 2400,
+    "escenario": "Escenario normal restablecido y tasa consultada de nuevo"
+  },
+  {
+    "id": "ios-claro-51-divisas-latencia",
+    "plataforma": "iOS",
+    "tema": "Claro",
+    "categoria": "Conectividad",
+    "titulo": "Carga durante alta latencia",
+    "imagen": "imagenes/ios-claro-51-divisas-latencia.webp",
+    "ancho": 1206,
+    "alto": 2622,
+    "escenario": "Demora controlada de 4 s y consulta al proveedor externo"
+  },
+  {
+    "id": "ios-claro-52-divisas-caida-cache",
+    "plataforma": "iOS",
+    "tema": "Claro",
+    "categoria": "Conectividad",
+    "titulo": "Caída parcial con última tasa guardada",
+    "imagen": "imagenes/ios-claro-52-divisas-caida-cache.webp",
+    "ancho": 1206,
+    "alto": 2622,
+    "escenario": "Fallo de divisas inducido y respaldo de una consulta real"
+  },
+  {
+    "id": "ios-claro-53-cuentas-servicio-parcial",
+    "plataforma": "iOS",
+    "tema": "Claro",
+    "categoria": "Conectividad",
+    "titulo": "Cuentas disponibles durante la caída de divisas",
+    "imagen": "imagenes/ios-claro-53-cuentas-servicio-parcial.webp",
+    "ancho": 1206,
+    "alto": 2622,
+    "escenario": "Fallo exclusivo de divisas; cuentas del servidor publicado"
+  },
+  {
+    "id": "ios-claro-54-divisas-error-sin-cache",
+    "plataforma": "iOS",
+    "tema": "Claro",
+    "categoria": "Conectividad",
+    "titulo": "Error y reintento cuando no hay caché",
+    "imagen": "imagenes/ios-claro-54-divisas-error-sin-cache.webp",
+    "ancho": 1206,
+    "alto": 2622,
+    "escenario": "Fallo de divisas inducido y caché retirada solo del dispositivo"
+  },
+  {
+    "id": "ios-claro-55-divisas-sin-conexion",
+    "plataforma": "iOS",
+    "tema": "Claro",
+    "categoria": "Conectividad",
+    "titulo": "Divisas guardadas sin conexión",
+    "imagen": "imagenes/ios-claro-55-divisas-sin-conexion.webp",
+    "ancho": 1206,
+    "alto": 2622,
+    "escenario": "Conectividad controlada; datos guardados con aviso de antigüedad"
+  },
+  {
+    "id": "ios-claro-56-divisas-recuperacion",
+    "plataforma": "iOS",
+    "tema": "Claro",
+    "categoria": "Conectividad",
+    "titulo": "Recuperación y nueva consulta externa",
+    "imagen": "imagenes/ios-claro-56-divisas-recuperacion.webp",
+    "ancho": 1206,
+    "alto": 2622,
+    "escenario": "Escenario normal restablecido y tasa consultada de nuevo"
+  },
+  {
+    "id": "ios-oscuro-34-sin-conexion",
+    "plataforma": "iOS",
+    "tema": "Oscuro",
+    "categoria": "Conectividad",
+    "titulo": "Cuenta recordada sin conexión",
+    "imagen": "imagenes/ios-oscuro-34-sin-conexion.webp",
+    "ancho": 1206,
+    "alto": 2622,
+    "escenario": "Conectividad controlada; aviso legible según apariencia"
+  },
+  {
+    "id": "ios-oscuro-51-divisas-latencia",
+    "plataforma": "iOS",
+    "tema": "Oscuro",
+    "categoria": "Conectividad",
+    "titulo": "Carga durante alta latencia",
+    "imagen": "imagenes/ios-oscuro-51-divisas-latencia.webp",
+    "ancho": 1206,
+    "alto": 2622,
+    "escenario": "Demora controlada de 4 s y consulta al proveedor externo"
+  },
+  {
+    "id": "ios-oscuro-52-divisas-caida-cache",
+    "plataforma": "iOS",
+    "tema": "Oscuro",
+    "categoria": "Conectividad",
+    "titulo": "Caída parcial con última tasa guardada",
+    "imagen": "imagenes/ios-oscuro-52-divisas-caida-cache.webp",
+    "ancho": 1206,
+    "alto": 2622,
+    "escenario": "Fallo de divisas inducido y respaldo de una consulta real"
+  },
+  {
+    "id": "ios-oscuro-53-cuentas-servicio-parcial",
+    "plataforma": "iOS",
+    "tema": "Oscuro",
+    "categoria": "Conectividad",
+    "titulo": "Cuentas disponibles durante la caída de divisas",
+    "imagen": "imagenes/ios-oscuro-53-cuentas-servicio-parcial.webp",
+    "ancho": 1206,
+    "alto": 2622,
+    "escenario": "Fallo exclusivo de divisas; cuentas del servidor publicado"
+  },
+  {
+    "id": "ios-oscuro-54-divisas-error-sin-cache",
+    "plataforma": "iOS",
+    "tema": "Oscuro",
+    "categoria": "Conectividad",
+    "titulo": "Error y reintento cuando no hay caché",
+    "imagen": "imagenes/ios-oscuro-54-divisas-error-sin-cache.webp",
+    "ancho": 1206,
+    "alto": 2622,
+    "escenario": "Fallo de divisas inducido y caché retirada solo del dispositivo"
+  },
+  {
+    "id": "ios-oscuro-55-divisas-sin-conexion",
+    "plataforma": "iOS",
+    "tema": "Oscuro",
+    "categoria": "Conectividad",
+    "titulo": "Divisas guardadas sin conexión",
+    "imagen": "imagenes/ios-oscuro-55-divisas-sin-conexion.webp",
+    "ancho": 1206,
+    "alto": 2622,
+    "escenario": "Conectividad controlada; datos guardados con aviso de antigüedad"
+  },
+  {
+    "id": "ios-oscuro-56-divisas-recuperacion",
+    "plataforma": "iOS",
+    "tema": "Oscuro",
+    "categoria": "Conectividad",
+    "titulo": "Recuperación y nueva consulta externa",
+    "imagen": "imagenes/ios-oscuro-56-divisas-recuperacion.webp",
+    "ancho": 1206,
+    "alto": 2622,
+    "escenario": "Escenario normal restablecido y tasa consultada de nuevo"
   }
 ]

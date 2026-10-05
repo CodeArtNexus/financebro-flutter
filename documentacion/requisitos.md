@@ -1,29 +1,28 @@
 # Correspondencia con la prueba técnica
 
-Esta matriz relaciona los requisitos de la prueba con la implementación, la documentación y la evidencia disponible. Las funciones adicionales y los límites del prototipo se describen en el [README](../README.md).
+Esta matriz indica dónde está implementado cada requisito y cómo revisarlo. El alcance corresponde a la versión 1.7.0.
 
-| Requisito | Implementación o documento | Comprobación y límite |
+| Requisito | Implementación | Comprobación |
 | --- | --- | --- |
-| Flutter | Cliente en `lib/`, plataformas Android e iOS | Compilación y recorridos nativos; firma de desarrollo en iOS |
-| Onboarding y autenticación | Firebase Auth, registro, contrato, apertura idempotente | Registro nativo y pruebas del servidor; datos ficticios |
-| Cuentas, saldos y movimientos | Functions, Firestore, históricos y comprobantes | Pruebas de integridad, concurrencia, paginación y conciliación |
-| Personalización dinámica | Perfil, metas, esquema de contenido, catálogo y temporadas | Cambios en vivo, contenido validado y respaldo compatible |
-| Servicio externo | HTTP de Frankfurter | Consulta real, validación de respuesta, fecha y caché |
-| Push | Bandeja persistente y FCM | Android remoto en primer y segundo plano; APNs iOS pendiente |
-| Monitoreo en producción | [Operación](operacion.md) | Diagnóstico de servidor implementado; señales, alertas y continuidad propuestas, con límites explícitos |
-| Comportamiento degradado | [Evaluación](evaluacion.md), red, divisas y cola segura | Carga, reintentos, caché, caída parcial y recuperación; no confirmar dinero localmente |
-| Unitarias, widgets y E2E | `test/`, `integration_test/`, pruebas de servidor, reglas y panel | 147 casos y E2E Android en CI; recorridos conectados y perfiles de rendimiento identificados por separado |
-| Uso e impacto de IA | [Uso de IA](uso-ia.md) | Productividad, calidad, documentación y pruebas; impacto cualitativo y resultados verificados |
-| Arquitectura y decisiones | [Arquitectura](arquitectura.md), [decisiones](decisiones.md) | Problemas, alternativas, selección, compromisos e impacto futuro; diagramas de componentes, flujo y datos |
-| Despliegue y operación | [Operación](operacion.md) | Ambientes, componentes, publicación, reversión, riesgos, respaldos y escalamiento |
-| README reproducible y colaboración | [README](../README.md), [colaboración](../CONTRIBUTING.md) | Dependencias fijadas, ejecución, copia limpia verificada y cambios pequeños en main |
-| Historial y Trunk Based Development | Historial de `main` y etapas | Integración frecuente e historial lineal; etiquetas de entregas |
-| Demostración funcional | APK, app, panel y [recorrido](evaluacion.md) | Accesos separados, galería y [videos publicados con capítulos](audiovisual.md) |
-| No basarse únicamente en respuestas estáticas | Auth, Firestore, Storage, Functions y divisas externas | Operaciones compartidas y procesamiento dinámico con fondos sintéticos |
+| Flutter | Cliente Android e iOS en `lib/` | APK Android y capturas nativas de ambas plataformas |
+| Onboarding y autenticación | Firebase Auth, contrato y apertura de ahorros | Registro y reintento sin duplicar cuenta o débito |
+| Cuentas, saldos y movimientos | Functions y Firestore | Transferencia, histórico por cuenta/global y conciliación |
+| Personalización dinámica | Preferencias, metas, contenido por segmento y temporadas | Cambio de saludo y contenido; publicación desde el panel sin reinstalar |
+| Servicio externo | Frankfurter mediante HTTP | EUR, GBP y COP con fuente, fecha y caché |
+| Push | Eventos persistidos y FCM | Recepción y apertura remota en Android; APNs iOS pendiente |
+| Monitoreo y diagnóstico | Logs estructurados y [operación](operacion.md) | Búsqueda de operación y error; alertas y respaldos descritos como trabajo futuro |
+| Conectividad limitada, latencia y caída parcial | Caché, reintentos y cola segura | Escenarios controlados en laboratorio y [recorrido](evaluacion.md) |
+| Unitarias, widgets y E2E crítico | `test/`, `integration_test/` y pruebas del servidor | 149 casos automáticos; recuperación Android en CI y otros recorridos móviles separados |
+| Uso e impacto de IA | [Uso de IA](uso-ia.md) | Tareas asistidas, comprobación de resultados e impacto cualitativo |
+| Arquitectura y decisiones | [Arquitectura](arquitectura.md), [decisiones](decisiones.md) | Diagramas y problema, alternativas, elección, compromisos y evolución por decisión |
+| Despliegue y operación | [Operación](operacion.md) | Ambientes, publicación por componente, recuperación, riesgos y escalamiento |
+| README reproducible | [README](../README.md) | Versiones, instalación, ejecución conectada/local y pruebas |
+| Colaboración y Trunk Based Development | [CONTRIBUTING](../CONTRIBUTING.md), historial de `main` | Integración por etapas, commits y etiquetas |
+| Demostración funcional | APK, panel, galería y [videos](audiovisual.md) | Accesos separados y recorrido por capítulos |
+| Procesamiento dinámico | Auth, Firestore, Storage, Functions y divisas externas | Datos compartidos y operaciones del servidor; no depende solo de respuestas estáticas |
 
-## Personalización, automatización y alcance adicional
+## Funciones adicionales
 
-Las preferencias, metas, tarjetas personalizables, campañas y contenido por segmento aportan personalización avanzada. CI, scripts de publicación, capturas reproducibles y conciliación automatizan desarrollo y verificación. El catálogo remoto y las temporadas incorporan experiencias dentro del esquema admitido sin reinstalar.
+La chequera digital organiza obligaciones y cobros entre cuentas corrientes. El crédito añade solicitud, cupo, corte, consumos y abonos. La personalización de tarjetas, las metas, el catálogo y las temporadas amplían la experiencia. CI, scripts y conciliación automatizan preparación y comprobaciones.
 
-Chequera digital, crédito y solicitudes físicas amplían producto y trazabilidad. Sus límites se explicitan: no son cheques certificados, crédito real ni envíos de mensajería. La programación mensual es visual y los cobros de cheques requieren acción de asesor. APNs, Wallet y proveedores reales no se declaran terminados.
-
+Estas funciones utilizan fondos y documentos ficticios. La programación mensual no cobra automáticamente; el asesor procesa los cheques. No se incluyen liquidación bancaria, Wallet, emisión física ni proveedores comerciales de servicios.

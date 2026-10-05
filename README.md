@@ -1,57 +1,46 @@
 # FinanceBro
 
-Aplicación financiera en Flutter para Android e iOS, acompañada de un panel web de administración. Reúne cuentas, tarjetas, transferencias por QR, pagos, chequera digital y ahorro, con históricos por persona, cuenta, contacto y tarjeta.
+Aplicación financiera en Flutter para Android e iOS, con un panel web de administración. Permite abrir una cuenta de ahorros, consultar saldos, transferir por QR o número de cuenta y revisar movimientos por cuenta, tarjeta y contacto. También incluye crédito, servicios, metas de ahorro y chequera digital.
 
-FinanceBro es un prototipo para evaluación técnica. Los fondos, cuentas, tarjetas, documentos y proveedores utilizados en el recorrido son sintéticos: no custodia dinero ni ejecuta pagos bancarios reales. Deben emplearse exclusivamente identidades y documentos ficticios.
+La versión **1.7.0** utiliza Firebase Authentication, Firestore, Storage y Functions. La app y el panel comparten datos: un ajuste del asesor o una transferencia se refleja en los históricos correspondientes. Los fondos, identidades, tarjetas, documentos y planillas del entorno de evaluación son ficticios. No se realizan pagos a bancos o proveedores reales.
 
-## Versión actual · 1.7.0
+## Revisar la aplicación
 
-El [panel de administración](https://financebro-sb-20261003.web.app) y la aplicación móvil comparten Firebase Authentication, Firestore, Storage y Functions. La compilación normal utiliza este servidor; no requiere mantener encendido un servidor en el equipo del evaluador. Los accesos de evaluación se proporcionan por separado, sin publicar credenciales en este repositorio. Hay perfiles con productos e históricos cargados, una contraparte para transferencias y cheques, y solicitudes pendientes para el asesor.
-
-La identidad visual usa la marca `fb.`, naranja, superficies de cristal, iconos y espacios consistentes. Tarjetas y acciones están dentro del mismo bloque. Los temas claro, oscuro y automático se eligen en el perfil y se conservan en el dispositivo; el panel dispone de su propio selector. El logo tiene una entrada animada y las transiciones respetan la preferencia de reducir movimiento. Las pestañas sustituyen su contenido sin superponer la vista anterior; las pantallas de detalle conservan la navegación nativa y el gesto de volver en iOS.
-
-## Presentación y revisión funcional
-
-[**Ver presentación y recorrido funcional**](https://financebro-sb-20261003.web.app/presentacion/) · [**Abrir pantallas e interacciones de FinanceBro**](https://financebro-sb-20261003.web.app/revision/)
-
-La presentación comercial dura 1 min 45 s y el recorrido conectado, 22 min 30 s. Ambos videos muestran la versión 1.7.0. Incluyen textos, música original y animaciones. El recorrido conserva los procesos completos a velocidad normal, con capítulos y pasos sincronizados: apertura, transferencia con revisión y comprobante, productos, conectividad, administración, push Android recibida y abierta y recuperación financiera sin duplicar el movimiento. La [producción y el alcance de la evidencia](documentacion/audiovisual.md) distinguen automatización de captura e integraciones disponibles.
-
-La galería pública reúne 214 capturas nativas de Android e iOS en temas claro y oscuro, junto con las vistas del panel publicado. Permite filtrar por función, plataforma y apariencia, ampliar cada imagen y recorrer estados de registro, contrato, productos, transferencias, comprobantes, pagos, crédito, contactos, chequera, personalización y conectividad. Las solicitudes pendientes y la elección del corte muestran etapas diferentes del mismo producto. El recorrido de conectividad incorpora carga con latencia, caída parcial, cuentas disponibles, error sin caché, desconexión y recuperación, en ambos sistemas y apariencias. Los datos son ficticios; las capturas reflejan el momento de la revisión. Las cuatro capturas nuevas comprueban históricos y contactos con texto al 200 % y alto contraste en Android.
-
-Las operaciones se ejecutan desde la aplicación y el panel con los accesos entregados por separado. La galería permite revisar la interfaz sin iniciar sesión y no contiene contraseñas ni documentación personal. [Descargar la versión Android](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.7.0-calidad).
-
-## Documentación para la evaluación
-
-| Documento | Qué permite revisar |
+| Recurso | Contenido |
 | --- | --- |
-| [Arquitectura y diagramas](documentacion/arquitectura.md) | Componentes, dependencias, flujo de transferencia y evolución por dominios |
-| [Decisiones técnicas](documentacion/decisiones.md) | Problemas, alternativas, elecciones, compromisos e impacto futuro |
-| [Despliegue, operación y monitoreo](documentacion/operacion.md) | Ambientes, publicación, recuperación, señales operativas, riesgos y escalamiento |
-| [Recorrido y conectividad](documentacion/evaluacion.md) | Pasos reproducibles, latencia, caída parcial, caché, reintentos y recuperación |
-| [Uso de IA](documentacion/uso-ia.md) | Aplicación de IA a implementación, investigación, documentación y pruebas; resultados verificados |
-| [Correspondencia con la prueba](documentacion/requisitos.md) | Localización de cada requisito y límites actuales |
-| [Calidad y mediciones](documentacion/calidad.md) | Recuperación nativa, pruebas, accesibilidad, medidas y sus límites |
-| [Colaborar](CONTRIBUTING.md) | Trunk Based Development, cambios pequeños, revisión y verificaciones |
+| [APK Android 1.7.0](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.7.0-calidad) | Aplicación conectada al servidor publicado |
+| [Panel de administración](https://financebro-sb-20261003.web.app/) | Cuentas, fondos, solicitudes, movimientos y configuración |
+| [Presentación y recorrido técnico](https://financebro-sb-20261003.web.app/presentacion/) | Video comercial de 1:45 y recorrido de 22:30, con procesos completos y capítulos |
+| [Galería de interfaz](https://financebro-sb-20261003.web.app/revision/) | 214 capturas: 100 Android, 96 iOS y 18 del panel |
+| [Pasos de evaluación](documentacion/evaluacion.md) | Recorrido conectado y demostración de errores, caché y recuperación |
 
-La documentación describe la implementación, sus decisiones y la evidencia disponible. Distingue las capacidades conectadas de las medidas previstas para producción. La demostración remota de push se realiza en Android; APNs para iOS permanece pendiente; la presentación y el recorrido funcional ya están publicados.
+Los accesos de cliente, contraparte y asesor se entregan por separado. Los perfiles preparados incluyen productos, fondos e históricos. La compilación normal conecta al servidor publicado y no necesita un servidor local. La distribución iOS utiliza firma de desarrollo; no hay una versión de TestFlight.
 
-## Recorrido funcional
+## Funciones y reglas principales
 
-- **Registro:** nombres, apellidos, correo, cédula, contraseña, teléfono y domicilio. Se presenta el contrato antes de confirmar y se exige aceptación expresa. El servidor crea perfil, consentimiento versionado, cuenta de ahorros con USD 0 y tarjeta de débito en una transacción. El reintento conserva la misma cuenta, tarjeta y saldo.
-- **Fondos e históricos:** el asesor selecciona una cuenta y registra un ajuste con motivo. Cada operación conserva actor, fecha, importe en centavos y referencia. Las vistas globales y específicas cargan páginas anteriores sin perder movimientos durante las actualizaciones en vivo. Los contactos muestran los envíos y recepciones como una conversación.
-- **QR y transferencias:** cada cuenta tiene un QR. Se valida al destinatario antes de confirmar un importe entre USD 0,10 y USD 100. Débito, crédito, históricos y avisos se registran juntos. Repetir la misma referencia no duplica la operación. La app conserva cada autorización en almacenamiento seguro antes de enviarla, también con internet. Salir de la pantalla o perder la respuesta permite consultar el mismo comprobante desde los envíos guardados; una operación ya intentada no se presenta como cancelable ni caducada sin consultar al servidor. El comprobante incluye una animación del dinero.
-- **Tarjetas:** el débito de ahorros se puede personalizar con color o una imagen privada. La solicitud física conserva diseño y domicilio, admite fechas desde tres días después y pasa por revisión cuando utiliza un diseño personalizado. Los estados representan gestión del prototipo, sin emisión bancaria ni mensajería física. La cuenta corriente no genera tarjeta.
-- **Tarjeta de crédito:** solicitud con ingresos, ocupación y consentimiento; el asesor aprueba y asigna un cupo. El titular recibe un aviso y elige un corte entre los días 1 y 28. La vista distingue cupo disponible, deuda, consumos posteriores al corte, total facturado, mínimo y vencimiento. El mínimo es el 5 % del saldo al corte, con piso de USD 10 sin superar la deuda; vence 15 días después, sin intereses en esta versión. Consumos sintéticos y abonos conservan referencia e histórico, y los pagos recuperan cupo. La tarjeta es un producto distinto de un préstamo.
-- **Cuenta corriente:** expediente privado con cinco categorías de documentos y progreso persistente. El asesor puede pedir correcciones o aprobar una cuenta temporal. Validar un depósito sintético de USD 1.000 para pyme o USD 2.000 para gran empresa permite activarla.
-- **Chequera digital:** cuentas corrientes activas emiten hasta 24 cheques mensuales por lote, agrupados por beneficiario y concepto. La cuenta receptora se valida y también debe ser corriente. El emisor consulta sus obligaciones y el beneficiario sus cobros previstos. Bloqueo, reactivación, cancelación y cambios de fecha conservan eventos y avisos a ambas personas. El límite de cambio es cinco días después de la fecha original. Los fondos no se reservan al emitir. En esta entrega, el cobro se procesa expresamente desde administración; si faltan fondos queda pendiente. El proceso automático y sus recordatorios están preparados, pero no se despliegan tareas programadas. Estos registros no constituyen cheques legalmente certificados.
-- **Servicios y contactos:** contactos internos verificados por número de cuenta; externos con titular y banco. Las tarjetas externas conservan banco y últimos cuatro dígitos y muestran los pagos realizados desde FinanceBro, sin atribuirse información del emisor externo. El catálogo de servicios se administra sin reinstalar. El proveedor sintético devuelve la planilla del período y el usuario confirma el pago. La programación mensual guarda contrato, día, límite y consentimiento como propuesta visual: **no realiza débitos automáticos** en esta entrega.
-- **Acceso y avisos:** saludo recordado sin guardar saldos ni contraseñas en preferencias. Una sesión anterior se puede desbloquear con autenticación nativa; el sistema decide entre biometría y código. Escanear antes de ingresar no autoriza una transferencia. La navegación principal permanece visible y los avisos permiten regresar.
-- **Personalización:** metas de ahorro, saludo según preferencia, temporadas y mensajes controlados por administración, contenido remoto y divisas con estados de carga, caché, error y conectividad.
-- **Sin conexión:** el primer ingreso necesita internet. Una sesión nativa anterior puede desbloquear datos guardados y preparar transferencias a contactos internos ya verificados. La autorización pendiente se conserva en almacenamiento seguro, separada por identidad y proyecto, y caduca en 24 horas. Al reconectar el servidor vuelve a validar destinatario, fondos y límites con la misma referencia. No se confirma ni se descuenta una operación antes de esa validación. Si el primer intento ya había llegado al servidor, una consulta posterior a las 24 horas recupera el comprobante existente sin un segundo descuento. Si nunca se confirmó, el servidor rechaza la autorización vencida.
+| Función | Comportamiento |
+| --- | --- |
+| Registro | Solicita nombres, apellidos, correo, cédula, contraseña, teléfono y domicilio. Presenta el contrato y exige aceptación. El servidor crea perfil, consentimiento, ahorros en USD 0 y débito. Reintentar conserva la misma cuenta. |
+| Transferencias | Valida el titular y admite USD 0,10 a USD 100. Guarda la autorización antes del envío. El servidor confirma saldos, movimientos, comprobante y avisos en una transacción. Repetir la referencia recupera el resultado sin descontar otra vez. |
+| Históricos y contactos | Vistas globales y por producto, con páginas anteriores. Cada contacto muestra envíos y recepciones como una conversación. |
+| Tarjetas | Débito con nombre, color o imagen privada. Solicitud física con domicilio y fecha desde tres días después; un diseño personalizado requiere revisión. Las tarjetas externas guardan banco y últimos cuatro dígitos, y muestran los pagos hechos desde FinanceBro. |
+| Crédito | Solicitud, aprobación de cupo y corte del 1 al 28. Muestra deuda, cupo disponible, total facturado, mínimo y vencimiento. El mínimo es 5 % del saldo al corte, con piso de USD 10 sin superar la deuda; vence 15 días después. No calcula intereses. |
+| Cuenta corriente | Expediente con progreso guardado. El asesor solicita correcciones o aprueba una cuenta temporal. Un depósito ficticio de USD 1.000 para pyme o USD 2.000 para gran empresa permite activarla. No genera tarjeta. |
+| Chequera | Emisión por lotes de hasta 24 cheques mensuales a otra cuenta corriente. Agrupaciones, cambios de fecha hasta cinco días después de la original, bloqueo y cancelación con eventos y avisos. Emitir no reserva fondos; el asesor procesa los cobros. |
+| Servicios | Catálogo administrable, consulta de planilla y pago confirmado por el titular. El plan mensual guarda contrato, día, límite y consentimiento; no ejecuta cargos automáticos. |
+| Personalización | Marca `fb.`, naranja, superficies de cristal, temas claro/oscuro/automático, tarjetas, metas y saludo por preferencia. El panel publica temporadas y servicios sin reinstalar la app. |
+| Divisas | Consulta real de EUR, GBP y COP mediante Frankfurter. Muestra fuente, fecha, carga, reintento y última tasa guardada cuando falla el proveedor. |
+| Avisos | FCM remoto en Android, con recepción y apertura verificadas. iOS muestra avisos nativos al recibir cambios con la app conectada; APNs está pendiente. |
 
-## Ejecutar con el servidor publicado
+El primer ingreso requiere internet. Una sesión anterior puede desbloquear datos guardados mediante la seguridad del dispositivo y preparar una transferencia a un contacto interno ya verificado. La operación queda pendiente: el servidor valida fondos, destinatario y plazo al reconectar. Una autorización sin confirmar vence a las 24 horas; un comprobante existente sigue siendo recuperable después de ese plazo.
 
-Requisitos: Flutter 3.47.5 / Dart 3.13.4, Node 22.20.0 o compatible (mínimo 22.12.0 para el panel), npm 11.18.0 y Java 21. Android requiere SDK 36; iOS requiere Xcode y firma de desarrollo para dispositivos físicos. Los lockfiles fijan las dependencias y Poppins incluye su licencia OFL.
+Apple Wallet, Google Wallet, NFC, emisión bancaria, mensajería física, cheques legalmente certificados y proveedores de servicios reales requieren integraciones adicionales.
+
+## Configurar y ejecutar
+
+Versiones utilizadas: Flutter 3.47.5, Dart 3.13.4, Node 22.20.0, npm 11.18.0 y Java 21. El panel requiere Node 22.12.0 o superior. Android utiliza SDK 36; iOS necesita macOS, Xcode y firma para dispositivos físicos. Los archivos de bloqueo fijan las dependencias.
+
+### Servidor publicado
 
 ```sh
 git clone https://github.com/CodeArtNexus/financebro-flutter.git
@@ -61,18 +50,18 @@ flutter devices
 flutter run -d <identificador-del-dispositivo>
 ```
 
-Para confirmar una transferencia, FinanceBro solicita el desbloqueo nativo del dispositivo. Configurar un PIN, código o biometría también en los dispositivos virtuales que se utilicen para el recorrido manual.
+Configurar PIN, código o biometría en el dispositivo para autorizar transferencias. Usar identidades ficticias y los accesos proporcionados. El asesor puede aportar fondos desde el panel. No activar `USE_EMULATORS` para este recorrido.
 
-No añadir `USE_EMULATORS=true` para este recorrido. El usuario registra su identidad ficticia en la app; el asesor aporta fondos sintéticos desde el panel. Se recomienda usar dos identidades para comprobar transferencia, saldo e históricos en ambos extremos. Solicitudes, aprobaciones, ajustes y avisos se comparten entre móvil y panel.
+El panel puede ejecutarse localmente contra el mismo servidor:
 
 ```sh
 npm ci --prefix admin
 npm --prefix admin run dev
 ```
 
-El panel local también conecta al servidor publicado cuando `VITE_USE_EMULATORS` no está activado. Se necesita un acceso con el custom claim `financebroAdmin`; crear un usuario corriente no concede permisos de asesor. [Operaciones del panel](admin/README.md).
+Requiere una sesión con el claim `financebroAdmin`. Registrar un cliente no concede permisos de administración. [Configuración del panel](admin/README.md).
 
-## Desarrollo aislado con Emulator Suite
+### Entorno aislado
 
 ```sh
 npm install --global npm@11.18.0
@@ -94,88 +83,79 @@ flutter run -d emulator-5554 --dart-define=USE_EMULATORS=true
 VITE_USE_EMULATORS=true npm --prefix admin run dev
 ```
 
-Accesos exclusivamente locales: `demo@financebro.test` y `valeria@financebro.test`, clave `FinanceBro-local-2026!`. Panel local: `admin@financebro.test`, clave `FinanceBro-admin-local-2026!`. La preparación conserva fondos e históricos existentes. Estas claves no corresponden al servidor publicado.
+Accesos locales: `demo@financebro.test` y `valeria@financebro.test`, clave `FinanceBro-local-2026!`. Asesor: `admin@financebro.test`, clave `FinanceBro-admin-local-2026!`. Estas claves solo funcionan en los emuladores. La preparación conserva los fondos e históricos existentes.
 
-En simulador iOS añadir `--dart-define=EMULATOR_HOST=127.0.0.1`. Los puertos se pueden cambiar con `AUTH_PORT`, `FIRESTORE_PORT`, `FUNCTIONS_PORT` y `STORAGE_PORT`; el panel utiliza los equivalentes con prefijo `VITE_`. El entorno emulado debe permanecer en ejecución. El script conserva Auth, Firestore y Storage al cerrar con Ctrl+C.
+En simulador iOS añadir `--dart-define=EMULATOR_HOST=127.0.0.1`. Los puertos predeterminados son Auth 9099, Firestore 8080, Functions 5001 y Storage 9199. Admiten las variables `AUTH_PORT`, `FIRESTORE_PORT`, `FUNCTIONS_PORT` y `STORAGE_PORT`; el panel usa los equivalentes `VITE_`. El servidor local conserva los datos al cerrarlo con Ctrl+C.
 
-Para emuladores desde un iPhone físico, `scripts/preparar-iphone-local.py` y `scripts/proxy-funciones-https.mjs` preparan un puente HTTPS privado de siete días. Se limita a `USE_EMULATORS=true`, el proyecto `demo-financebro`, direcciones privadas y tokens sintéticos. El acceso al servidor publicado mantiene los SDK de Firebase y no utiliza ese puente.
+Para un iPhone físico conectado a emuladores, `scripts/preparar-iphone-local.py` y `scripts/proxy-funciones-https.mjs` preparan un puente HTTPS privado. Solo admite `USE_EMULATORS=true`, el proyecto `demo-financebro`, direcciones privadas y tokens de emulador. La conexión publicada usa los SDK de Firebase.
 
-## Arquitectura y protección de datos
+## Arquitectura y seguridad
 
-[Diagramas, límites de dominio y evolución](documentacion/arquitectura.md) · [Justificación de las decisiones](documentacion/decisiones.md).
+El cliente está organizado por funcionalidades. Riverpod administra dependencias y estado; GoRouter define rutas y redirecciones. Históricos y contactos utilizan repositorios tipados que se pueden sustituir en pruebas. Functions separa los casos de uso por dominio y comparte el acceso transaccional a Firestore.
 
-La aplicación se organiza por funcionalidades, con Riverpod para estado y GoRouter para navegación. Authentication identifica al usuario; Firestore conserva perfiles y registros; Storage protege los expedientes e imágenes. Functions ejecuta las operaciones en transacciones, comprueba identidad y rol y mantiene una bandeja de avisos. Los importes son centavos enteros y los reintentos conservan su referencia.
+Las operaciones monetarias se ejecutan en el servidor. Las reglas impiden que los clientes escriban saldos, movimientos, comprobantes, cupos o aprobaciones, incluso con una sesión de asesor. Functions comprueba identidad, rol, estado de cuenta, importes en centavos y referencia. La cédula se valida por formato y unicidad, sin consulta a un registro oficial. Los datos de identidad son privados; documentos e imágenes se descargan con sesión, sin enlaces públicos permanentes.
 
-Los clientes no pueden escribir saldos, movimientos, aprobaciones o tarjetas directamente. Identidad y domicilio solo son legibles por su propietario; una solicitud física comparte con el asesor el domicilio consentido. El registro de cédulas y el directorio interno no son públicos. La cédula se comprueba por formato y unicidad; la mayoría de edad es una declaración, sin validación contra servicios oficiales. El contrato requiere revisión jurídica antes de cualquier uso real.
+La app conserva las transferencias autorizadas en almacenamiento seguro antes de enviarlas. Una respuesta perdida se recupera con la misma referencia. El saludo guardado contiene nombre e identificador; no guarda contraseña ni saldo en preferencias. [Arquitectura](documentacion/arquitectura.md) y [decisiones](documentacion/decisiones.md).
 
-El rol de administración se asigna desde una herramienta de confianza y se comprueba también en el servidor. Cambiar el perfil o el navegador no concede permisos. Las reglas e índices de Firestore y Storage forman parte del repositorio; deben desplegarse junto con Functions. Las imágenes de tarjetas no utilizan enlaces públicos permanentes.
-
-La [preparación audiovisual](documentacion/audiovisual.md) descarga y comprueba los videos de la entrega antes de publicar Hosting; los medios se distribuyen como archivos de release y no como binarios del historial.
-
-## Comprobaciones de integridad
-
-La versión 1.7.0 separa casos del servidor por dominio y contratos de lectura de históricos/contactos. Completa 149 verificaciones automáticas, un E2E Android de recuperación en CI y una medición nativa en modo perfil. Mejora contraste, objetivos táctiles, texto ampliado y coste del cristal. [Resultados y límites de la revisión](documentacion/calidad.md).
-
-La versión 1.6.2 añade escenarios que compiten por el mismo saldo con transferencias, ajustes y cobros de cheques. Confirman conservación de fondos, ausencia de sobregiros, correspondencia entre movimiento específico y global, comprobante único y bandeja de avisos. Un fallo al crear cualquiera de los registros revierte la transferencia completa. La cuenta receptora debe coincidir con el directorio; importes, saldos, deuda, cupo y totales de cheques se comprueban antes de mover fondos.
-
-Al cambiar de cuenta, contacto o parámetros de una vista se renueva el estado de la pantalla y su consulta, evitando conservar movimientos del producto anterior. Esta regresión se comprueba en Android e iOS, junto con el regreso nativo y los cambios de pestaña.
-
-Las pruebas móviles también cubren respuesta perdida, recuperación tras 24 horas, cambio de identidad durante el envío, lectura lenta de una sesión anterior, fallo al guardar y fallo al cancelar. Una cola dañada se conserva y bloquea nuevas escrituras. Las reglas impiden que un cliente, incluso con rol de asesor, escriba directamente saldos, movimientos, recibos, cupos o estados de cheques.
-
-La revisión de los tres perfiles publicados encontró cinco cuentas sin diferencias entre saldo e histórico, y deudas de crédito consistentes con consumos y abonos. El [resultado fechado](https://financebro-sb-20261003.web.app/revision/integridad.json) es una fotografía de esos perfiles; las operaciones posteriores pueden cambiar los valores. Estas comprobaciones son parte de la evaluación del prototipo y no constituyen una certificación bancaria.
-
-La revisión ampliada encontró nueve movimientos antiguos sin su copia global. Se reconstruyeron desde los originales, conservando fecha, importe y referencia y sin modificar fondos. La [conciliación global fechada](https://financebro-sb-20261003.web.app/revision/integridad-global.json) comprueba los seis perfiles y nueve cuentas conservadas.
-
-Para mantenimiento, `tooling/reconciliar-historicos.mjs` presenta primero un plan de lectura. Requiere la sesión propietaria de Firebase CLI y el proyecto explícito; el acceso de asesor no permite escribir registros directamente. `--aplicar` vuelve a leer cuentas, originales y destinos dentro de una transacción; aborta si aparece un cambio concurrente, un descuadre o una copia distinta. Solo crea copias ausentes y conserva la procedencia. Las pruebas comprueban también que repetirlo no duplica registros.
-
-```sh
-node --test tooling/reconciliar-historicos.test.mjs
-node tooling/reconciliar-historicos.mjs --proyecto financebro-sb-20261003
-```
-
-## Publicación
-
-[Procedimiento, recuperación, monitoreo y escalamiento](documentacion/operacion.md).
-
-`./scripts/preparar-publicacion.sh` valida y compila el panel remoto. `./scripts/publicar-banca.sh --proyecto <proyecto>` presenta los componentes; `--ejecutar` despliega servidor, reglas, índices y clientes cuando Blaze y Storage estén habilitados. Se deben esperar los índices y comprobar dos identidades antes de distribuir la compilación móvil.
-
-El punto de entrada publicado exporta solo `banca` y `enviarAviso`, con cero instancias mínimas y una instancia máxima por función. El envío de avisos limita los reintentos. Las tareas futuras de pagos, cortes y cheques están separadas en `functions/src/programacion.js` y no se importan en el despliegue actual. La consulta de crédito puede actualizar un corte vencido y el asesor puede procesar cheques expresamente.
-
-Blaze permite cargos por uso de Functions, Firestore, Storage, Hosting y otros recursos. Desactivar pagos programados no elimina todos los posibles cargos; deben revisarse cuotas, almacenamiento y alertas de presupuesto. [Precios de Firebase](https://firebase.google.com/pricing).
-
-## Verificación
+## Ejecutar verificaciones
 
 ```sh
 ./scripts/check.sh
 npm --prefix functions test
 npm --prefix admin test
 npm --prefix admin run build
+node --test tooling/reconciliar-historicos.test.mjs
+node tooling/comprobar-limites.mjs
+```
 
+Con los puertos de emuladores libres:
+
+```sh
 tooling/node_modules/.bin/firebase emulators:exec \
   --only auth,firestore,functions,storage --project demo-financebro \
   'npm --prefix functions run test:integracion && npm --prefix admin run test:integracion'
 
-mkdir -p /tmp/financebro-reglas
-TMPDIR=/tmp/financebro-reglas tooling/node_modules/.bin/firebase emulators:exec \
+tooling/node_modules/.bin/firebase emulators:exec \
   --only firestore,storage --project demo-financebro-reglas \
   'npm --prefix tooling test'
-
-./scripts/prueba-recuperacion.sh
-./scripts/prueba-calidad.sh
-
-./scripts/prueba-banca.sh
-flutter test integration_test/registro_test.dart -d emulator-5554 --dart-define=USE_EMULATORS=true
-flutter test integration_test/tarjeta_credito_funcional_test.dart -d emulator-5554 --dart-define=USE_EMULATORS=true
-flutter test integration_test/producto_test.dart -d emulator-5554 --dart-define=USE_EMULATORS=true
-./scripts/prueba-integral.sh
 ```
 
-Detener los emuladores que ocupen los puertos antes de ejecutar `emulators:exec`. Los recorridos móviles necesitan un dispositivo iniciado y los cuatro emuladores. Verifican alta y reintento, contrato, transferencias, servicios, crédito y cupos, abonos, históricos, metas, preferencias, latencia y conectividad. `nextgen_test.dart` comprueba cheques, imágenes privadas, almacenamiento seguro y reconexión; `functions/preparar-nextgen.js` prepara sus perfiles ficticios únicamente en emuladores de loopback.
+Con Android iniciado, los siguientes comandos preparan sus datos y ejecutan recuperación y rendimiento en emuladores:
 
-CI comprueba formato, análisis, pruebas Flutter, reglas, servidor, panel y recuperación Android con Emulator Suite, sin credenciales remotas. Las pruebas incluyen conservación de fondos, concurrencia, privacidad, aprobación corporativa, solicitudes físicas, cupos y cortes, pagos de tarjetas y paginación durante actualizaciones en vivo.
+```sh
+tooling/node_modules/.bin/firebase emulators:exec \
+  --only auth,firestore,functions,storage --project demo-financebro \
+  './scripts/prueba-recuperacion.sh'
 
-## Alcance de las integraciones
+tooling/node_modules/.bin/firebase emulators:exec \
+  --only auth,firestore,functions,storage --project demo-financebro \
+  './scripts/prueba-calidad.sh'
+```
 
-Android utiliza FCM para push remotas cuando el usuario concede permiso y el dispositivo registra su token. En iOS, mientras no exista la membresía y configuración APNs, los avisos nativos se generan al recibir cambios de Firestore con la aplicación conectada; **no se garantiza entrega con la app cerrada**. La activación remota en iOS requiere configurar esas capacidades y `IOS_PUSH_ENABLED=true`. [Configuración de FCM](https://firebase.google.com/docs/cloud-messaging/flutter/client).
+`./scripts/prueba-integral.sh` y `./scripts/prueba-banca.sh` requieren un dispositivo y los cuatro emuladores en ejecución. `integration_test/` incluye recorridos de registro, productos, crédito, conectividad y chequera. CI ejecuta cinco trabajos, incluido recuperación Android, sin credenciales del proyecto publicado.
 
-Apple Wallet, Google Wallet, NFC, emisión bancaria, logística física y proveedores reales requieren integraciones adicionales. Esta versión registra diseños, solicitudes y decisiones, conserva los históricos y verifica la lógica con datos sintéticos. Los videos de presentación y recorrido funcional están disponibles en la página pública. Las etiquetas permiten revisar las etapas de desarrollo; `main` contiene el README vigente. Las credenciales y guías personales permanecen fuera de Git.
+El desglose actual suma **149 pruebas automáticas**; las ejecuciones móviles se registran por separado. [Resultados, accesibilidad y rendimiento](documentacion/calidad.md).
+
+## Publicar y mantener
+
+`./scripts/preparar-publicacion.sh` verifica y compila el panel. `./scripts/publicar-banca.sh --proyecto <proyecto>` muestra el plan; añadir `--ejecutar` despliega los componentes. Para cambios exclusivamente del sitio, publicar solo Hosting. [Procedimiento completo](documentacion/operacion.md).
+
+El proyecto publicado exporta `banca` y `enviarAviso`, con cero instancias mínimas y una máxima por función. Las tareas de `functions/src/programacion.js` no se despliegan. Blaze factura por consumo; esta configuración reduce actividad, pero no garantiza costo cero.
+
+`tooling/reconciliar-historicos.mjs --proyecto <proyecto>` revisa copias globales ausentes sin modificar datos. La opción `--aplicar` vuelve a comprobar los registros dentro de una transacción y crea solo las copias compatibles. No reconstruye saldos. Requiere la sesión propietaria de Firebase CLI.
+
+## Documentación
+
+| Documento | Contenido |
+| --- | --- |
+| [Arquitectura](documentacion/arquitectura.md) | Componentes, datos y flujo de transferencia |
+| [Decisiones](documentacion/decisiones.md) | Problema, alternativas, elección, costo y evolución |
+| [Operación](documentacion/operacion.md) | Despliegue, diagnóstico, recuperación, escalamiento y costos |
+| [Evaluación](documentacion/evaluacion.md) | Acciones y resultados que se pueden reproducir |
+| [Calidad](documentacion/calidad.md) | Pruebas, accesibilidad, rendimiento y límites |
+| [Requisitos](documentacion/requisitos.md) | Correspondencia con el documento de la prueba |
+| [Uso de IA](documentacion/uso-ia.md) | Asistencia en desarrollo y forma de verificar sus resultados |
+| [Videos](documentacion/audiovisual.md) | Procesos grabados, capítulos y verificaciones |
+| [Colaboración](CONTRIBUTING.md) | Trunk Based Development y revisión de cambios |
+
+Las credenciales, firmas y guías personales se conservan fuera de Git.

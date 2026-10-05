@@ -1,72 +1,58 @@
-# Despliegue, operación y monitoreo
+# Despliegue y operación
 
-La versión conectada comparte Firebase entre móvil y panel. Este documento describe el despliegue actual y la estrategia que se aplicaría al ampliar la operación. Las métricas, alertas y respaldos propuestos no se presentan como habilitados en el proyecto de evaluación.
+La app y el panel utilizan un mismo proyecto Firebase. Este documento describe cómo publicar una versión, investigar fallos y ampliar la operación. El diagnóstico del servidor está implementado; las alertas, respaldos y objetivos de producción indicados más abajo son propuestas.
 
-## Estado actual y ambientes
+## Ambientes
 
-| Ambiente | Uso | Protección y límites |
+| Ambiente | Uso | Datos y acceso |
 | --- | --- | --- |
-| Emulator Suite `demo-financebro` | Desarrollo y pruebas de reglas, operaciones y E2E | Loopback, datos ficticios, dependencias fijadas; ninguna credencial de servidor publicada |
-| Proyecto publicado `financebro-sb-20261003` | Evaluación móvil y panel compartidos | Auth, reglas, Storage privado y Functions; fondos ficticios y acceso de asesor separado |
-| Producción bancaria futura | No existe en esta entrega | Requiere proyecto independiente, contratos reales, evaluación legal, contable y de seguridad |
+| `demo-financebro` en Emulator Suite | Desarrollo, reglas, integración y E2E | Datos ficticios, servicios locales y sin credenciales remotas |
+| `financebro-sb-20261003` publicado | Evaluación conectada de móvil y panel | Firebase real, fondos ficticios y rol de asesor separado |
+| Producción financiera | No está creada | Requiere integraciones reales y controles legales, contables y operativos |
 
-No se usa el proyecto publicado como banco real ni como entorno para probar escrituras destructivas. CI ejecuta emuladores con identidad local y no dispone de acceso al proyecto publicado.
+CI ejecuta los emuladores y no tiene acceso al proyecto publicado. Las pruebas que preparan datos deben ejecutarse en el ambiente local.
 
-## Publicar y comprobar una versión
+## Publicar
 
-1. Partir de un commit revisado, con lockfiles y comprobaciones de CI correctas. Ejecutar el E2E afectado cuando cambien permisos, navegación, operaciones o comportamiento del dispositivo.
-2. Revisar reglas, índices, contratos y compatibilidad con el cliente anterior. Una nueva lectura dependiente de un índice se habilita después de que el índice esté listo.
-3. Preparar panel y servidor desde la raíz:
+1. Seleccionar un commit revisado con CI correcto. Comprobar el recorrido nativo afectado cuando cambien permisos u operaciones.
+2. Revisar reglas, índices y compatibilidad de contratos con clientes ya instalados.
+3. Preparar el panel y consultar el plan:
 
 ```sh
 ./scripts/preparar-publicacion.sh
 ./scripts/publicar-banca.sh --proyecto financebro-sb-20261003
 ```
 
-4. Tras revisar el plan y el consumo autorizado, ejecutar el despliegue:
+4. Confirmar los componentes y el consumo permitido, y ejecutar:
 
 ```sh
 ./scripts/publicar-banca.sh --proyecto financebro-sb-20261003 --ejecutar
 ```
 
-5. Esperar los índices y comprobar con dos identidades: acceso, transferencia pequeña, saldo e históricos en ambos extremos, comprobante único, aviso y cambio de catálogo desde asesor. No repetir una operación incierta con una referencia nueva.
-6. Compilar el cliente normal sin definiciones privadas ni `USE_EMULATORS`, comprobar permisos y distribuir una versión identificable. Android dispone de APK; la distribución iOS de esta evaluación utiliza firma de desarrollo. TestFlight no está preparado.
+5. Esperar a que los índices estén listos. Revisar acceso, transferencia pequeña, saldo e históricos de ambas personas, comprobante, aviso y cambio de catálogo.
+6. Compilar el cliente sin defines privados ni `USE_EMULATORS`. Android se distribuye como APK; iOS utiliza firma de desarrollo. No hay TestFlight configurado.
 
-El despliegue actual exporta `banca` y `enviarAviso`, en `us-central1`, con `minInstances: 0`, `maxInstances: 1`, 256 MiB y 60 segundos por función. `programacion.js` no se importa en el punto de entrada. No hay pagos periódicos, cortes o cobros diarios desplegados. La consulta puede actualizar un corte vencido y el asesor puede procesar un cheque expresamente.
+Functions exporta `banca` y `enviarAviso` en `us-central1`: cero instancias mínimas, una máxima, 256 MiB y 60 s por función. `programacion.js` no se importa. No hay cobros o cortes diarios desplegados. Una consulta puede actualizar un corte vencido; el asesor procesa cheques de forma expresa.
 
-Un despliegue de Hosting no despliega por sí mismo reglas, índices ni Functions. Para cambios únicamente de galería, compilar el panel y publicar solo Hosting evita sustituir innecesariamente el servidor.
+Hosting no despliega Functions, reglas o índices. Si cambia solo la galería o la presentación, compilar el panel y publicar únicamente Hosting.
 
-## Recuperar una publicación
+## Recuperar una versión
 
-| Componente | Procedimiento | Precaución |
+| Componente | Acción | Límite |
 | --- | --- | --- |
-| Hosting | Volver a una versión anterior desde las versiones de Hosting | La reversión del sitio no revierte saldos ni servidor; [versiones y canales](https://firebase.google.com/docs/hosting/manage-hosting-resources) |
-| Functions | Preparar el código de un commit compatible en un checkout aislado, verificar y volver a desplegar las funciones afectadas | No existe una reversión conjunta automática de toda la plataforma |
-| Reglas | Revisar y desplegar el archivo versionado compatible | Volver a una regla anterior puede reabrir permisos; evitarlo sin evaluar su alcance |
-| Cliente móvil | Suspender distribución y corregir o entregar versión compatible | Clientes ya instalados pueden coexistir; conservar contratos compatibles |
-| Datos | Conciliar y reparar con procedimiento trazable; restaurar primero en ambiente aislado | Volver al código anterior no deshace movimientos. No reemplazar un saldo por un cálculo local ni repetir un cobro |
+| Hosting | Seleccionar una versión anterior | No revierte datos ni servidor |
+| Functions | Preparar un commit compatible en otro checkout, verificar y desplegar | No existe una reversión conjunta de toda la plataforma |
+| Reglas | Desplegar la versión compatible revisada | Una regla anterior puede reabrir permisos |
+| Cliente | Detener distribución y entregar corrección compatible | Las versiones instaladas pueden coexistir |
+| Datos | Conciliar y reparar con registro de procedencia | Volver al código anterior no deshace un movimiento |
 
-## Monitoreo propuesto para producción
+No repetir una operación incierta con otra referencia. Si existe comprobante, recuperar ese resultado. [Versiones de Hosting](https://firebase.google.com/docs/hosting/manage-hosting-resources).
 
-Hoy existen categorías técnicas en Flutter, duración de consultas de divisas e históricos, registros estructurados de operaciones en Functions y estados persistidos de avisos. No se exporta telemetría móvil a Crashlytics o a un sistema de analítica, ni se documenta una política de alertas ya activa.
+## Diagnóstico implementado
 
-La ampliación propuesta combina fallos técnicos con resultado del recorrido. Los objetivos siguientes son umbrales iniciales de diseño, no mediciones ni acuerdos de disponibilidad de esta entrega:
+`observacion.js` registra eventos `operacion_finalizada` con operación, duración en ms, resultado y categoría de error: negocio, acceso o técnico. La correlación utiliza los primeros 20 caracteres del SHA-256 de la referencia. Excluye nombres, cédulas, claves, tokens, documentos, saldos y conceptos. Un fallo del log no cambia la operación.
 
-| Señal | Medición prevista | Aviso y diagnóstico |
-| --- | --- | --- |
-| Fallos fatales y errores no controlados | Crashlytics o equivalente, por versión, sistema y pantalla | Investigar regresiones nuevas y aumento de sesiones afectadas |
-| Operaciones bancarias | Duración p50/p95, fallos técnicos y contención por tipo de operación | Aviso si errores técnicos superan 1 % durante 10 minutos con al menos 20 intentos, o p95 supera 3 s durante 10 minutos |
-| Integridad | Conciliación de saldos, movimientos, comprobantes y proyecciones | Cualquier diferencia requiere investigación; detener operaciones afectadas si se verifica riesgo |
-| Avisos | Cantidad fallida, sin dispositivo, reintentos y antigüedad de pendientes | Revisar eventos pendientes más de 5 minutos; distinguir dispositivo sin permiso de fallo del transporte |
-| Registro y transferencias | Inicio, finalización y abandono, sin contenido de formularios | Comparar versiones y latencia; caídas de conversión no se interpretan automáticamente como fallos |
-| Divisas | Tiempo, error por código HTTP, uso y edad de caché | Detectar caída del proveedor manteniendo independientes las operaciones de cuentas |
-| Consumo | Lecturas, escrituras, almacenamiento, invocaciones y tráfico | Revisar cuotas y alertas de presupuesto; un presupuesto no impone un tope de gasto |
-
-Los eventos `operacion_finalizada` registran operación permitida, versión del esquema, resultado, duración en ms y, cuando existe, una correlación de 20 caracteres derivada de SHA-256 de la referencia. Los errores se clasifican como negocio, acceso o técnicos. No incluyen nombres, cédulas, contraseñas, tokens, documentos, saldos ni texto de transferencias. Un fallo del registrador no altera el resultado bancario. El acceso y la retención de telemetría deben definirse antes de su activación. Los [registros de Functions](https://firebase.google.com/docs/functions/writing-and-viewing-logs) permiten consultar errores del servidor; su existencia no acredita un tablero ni alertas configuradas.
-
-## Consultar el diagnóstico implementado
-
-En Logs Explorer, seleccionar el proyecto publicado y buscar los eventos de `banca`:
+En Logs Explorer, seleccionar el proyecto y filtrar:
 
 ```text
 resource.type="cloud_run_revision"
@@ -74,32 +60,50 @@ resource.labels.service_name="banca"
 jsonPayload.message="operacion_finalizada"
 ```
 
-Añadir `jsonPayload.categoria="tecnico"` para separar indisponibilidad de rechazos de negocio. Para una referencia concreta, calcular localmente sus primeros 20 caracteres de SHA-256 y filtrar por `jsonPayload.correlacion`. No publicar la referencia ni el contenido de la operación en tickets abiertos. El diagnóstico usa el esquema versión `1`; los logs de plataforma son independientes del contenido de estos eventos.
+Agregar `jsonPayload.categoria="tecnico"` para errores técnicos o `jsonPayload.correlacion` para investigar una referencia. Calcular el hash localmente; no copiar referencias o datos privados en tickets públicos. [Logs de Functions](https://firebase.google.com/docs/functions/writing-and-viewing-logs).
 
-En Firestore, la bandeja `enviosPush` conserva reserva de 90 s, generación del intento, tokens pendientes y estado final. Los tests comprueban ejecuciones concurrentes, recuperación de reserva y rotación. Un estado enviado acredita aceptación del transporte, no lectura por la persona. La ausencia de dispositivo requiere revisar permisos y registro, sin repetir el dinero.
+`enviosPush` conserva estado, dispositivos pendientes, intentos y reserva de 90 s. Revisar permiso y registro del token si no hay dispositivo. Un estado enviado confirma aceptación de FCM, no lectura del usuario. El aviso puede fallar sin afectar el movimiento.
 
-Estos eventos permiten investigar una operación; no hay un tablero ni una política de alertas nuevos configurados. [Calidad](calidad.md) describe las verificaciones y sus límites.
+Flutter registra categorías técnicas y duración de consultas. No exporta todavía telemetría a Crashlytics o analítica. No hay un tablero nuevo ni alertas automáticas configuradas.
 
-## Procedimiento ante incidentes
+## Monitoreo previsto
 
-1. Identificar versión, plataforma, operación y referencia; conservar evidencia sin copiar información personal en logs o tickets.
-2. Consultar comprobante e históricos. Si existe confirmación, tratar el problema como recuperación de respuesta o presentación; no enviar de nuevo con otra referencia.
-3. Si no se puede determinar el resultado, conservar la autorización y volver a consultar con la misma referencia cuando el servidor responda.
-4. Revisar estado de Functions, índices, permisos y proveedor afectado. Limitar la investigación al dominio que falla; una caída de divisas no justifica alterar cuentas.
-5. Corregir y comprobar en emuladores; publicar una versión compatible y conciliar los registros involucrados. Documentar causa, alcance y prueba que evita regresión.
+Los siguientes umbrales son puntos de partida para producción y deben ajustarse con mediciones:
 
-No hay un interruptor bancario global de mantenimiento implementado. Si una operación debe suspenderse, se requiere una validación del servidor revisada; ocultar un botón del cliente no bloquea su endpoint.
+| Señal | Qué medir | Cuándo investigar |
+| --- | --- | --- |
+| Fallos móviles | Sesiones afectadas por versión, sistema y pantalla | Una regresión o aumento de errores no controlados |
+| Operaciones | Duración p50/p95 y errores técnicos | Más de 1 % de errores durante 10 min con 20 intentos; p95 superior a 3 s durante 10 min |
+| Integridad | Saldo, movimientos, recibos y copias globales | Cualquier diferencia confirmada |
+| Push | Fallos, dispositivos pendientes y antigüedad | Eventos pendientes más de 5 min |
+| Registro y transferencia | Inicio, finalización y abandono sin formularios | Cambios por versión o latencia |
+| Divisas | Duración, HTTP, uso y edad de caché | Caída del proveedor sin afectar cuentas |
+| Consumo | Lecturas, escrituras, archivos, invocaciones y tráfico | Desviación frente a cuotas y presupuesto |
 
-## Respaldos y continuidad
+Antes de activar telemetría, definir acceso y retención. Una alerta de presupuesto informa consumo; no impone un límite de gasto.
 
-El entorno local conserva exportaciones de Emulator Suite. No se atribuye al proyecto publicado un respaldo periódico o recuperación puntual que no se ha configurado.
+## Investigar un incidente
 
-Para producción se propone exportación o respaldo administrado de Firestore, protección y retención de Storage, inventario de configuración y procedimiento autorizado para identidades. Objetivos iniciales: RPO de 24 horas y RTO de 4 horas, pendientes de costos y de una prueba de restauración. Reducir el RPO requiere evaluar respaldos o recuperación puntual; no basta conservar Git. Una restauración debe probarse primero en otro ambiente, conciliar y verificar permisos antes de decidir una recuperación del ambiente principal. Las [exportaciones e importaciones de Firestore](https://firebase.google.com/docs/firestore/manage-data/export-import) son un mecanismo de datos, no una copia completa de Auth, archivos y configuración.
+1. Identificar versión, plataforma, operación y referencia sin publicar datos personales.
+2. Buscar comprobante e históricos. Si existe confirmación, recuperar el resultado y revisar la presentación.
+3. Si el resultado es incierto, conservar la autorización y consultar con la misma referencia cuando responda el servidor.
+4. Revisar Functions, índices, permisos y el proveedor afectado. Un fallo de divisas no requiere alterar cuentas.
+5. Reproducir y corregir en emuladores. Añadir una prueba de regresión, publicar una versión compatible y conciliar los registros afectados.
+
+No existe un interruptor global de mantenimiento. Suspender una operación exige una validación del servidor; ocultar el botón no bloquea el endpoint.
+
+## Respaldos
+
+El ambiente local conserva exportaciones de Emulator Suite. El proyecto publicado no tiene un respaldo periódico o una restauración de producción comprobados.
+
+Para producción se propone respaldo administrado de Firestore, retención de Storage, inventario de configuración y recuperación de identidades. Objetivos iniciales: RPO de 24 h, es decir, pérdida máxima de datos tolerada; RTO de 4 h, tiempo previsto para recuperar el servicio. Dependen de costo y un ensayo de restauración.
+
+Restaurar primero en un ambiente separado y comprobar fondos y permisos. Git no respalda datos. Una exportación de Firestore tampoco incluye por sí sola Auth, archivos y configuración. [Exportaciones de Firestore](https://firebase.google.com/docs/firestore/manage-data/export-import).
 
 ## Escalamiento y costos
 
-Antes de aumentar capacidad: medir consultas, tamaño de páginas, listeners, escrituras por operación y contención sobre cuentas frecuentes. Mantener transacciones pequeñas, revisar índices y evitar concentrar todo el tráfico en un único documento. Estos criterios se apoyan en las [prácticas de Firestore](https://firebase.google.com/docs/firestore/best-practices).
+Medir tamaño de páginas, listeners, lecturas, escrituras y operaciones concurrentes sobre la misma cuenta antes de aumentar capacidad. Mantener transacciones pequeñas, revisar índices y evitar un documento único para todo el tráfico. [Prácticas de Firestore](https://firebase.google.com/docs/firestore/best-practices).
 
-El límite de una instancia por función prioriza un consumo acotado para evaluación y puede limitar capacidad o elevar latencia. Incrementarlo requiere prueba de carga, validación de concurrencia y presupuesto. Después, extraer dominios conforme a los contratos descritos en [arquitectura](arquitectura.md), conservar idempotencia y separar procesos no monetarios de la confirmación de fondos.
+Una instancia máxima limita capacidad y puede aumentar latencia. Subir el límite requiere prueba de carga y presupuesto. Separar dominios después de definir interfaces y compatibilidad; si cambian de base, también cambia la estrategia de transacciones. [Arquitectura](arquitectura.md).
 
-Blaze permite cargos por Functions, Firestore, Storage, Hosting y otros recursos. Instancias mínimas en cero y ausencia de tareas periódicas reducen consumo recurrente, pero no garantizan costo cero. No se activaron nuevas alertas, planes ni servicios facturables como consecuencia de esta documentación.
+Blaze puede facturar Functions, Firestore, Storage, Hosting y recursos relacionados. Cero instancias mínimas y tareas periódicas desactivadas reducen consumo, pero no garantizan costo cero. Esta documentación no activa servicios o políticas nuevas.

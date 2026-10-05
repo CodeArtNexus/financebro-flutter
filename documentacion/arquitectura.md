@@ -1,57 +1,48 @@
-# Arquitectura de FinanceBro
+# Arquitectura
 
-FinanceBro integra un cliente Flutter, un panel de asesor y un servidor compartido. Su objetivo es que una operación tenga el mismo resultado para quien la realiza, su contraparte y administración, conservando el histórico aunque la conexión falle.
+FinanceBro tiene dos clientes, Flutter y un panel web, y un servidor común en Firebase. El servidor confirma las operaciones monetarias. Los clientes consultan el resultado y actualizan sus vistas mediante Firestore.
 
-## Componentes y dependencias
+## Componentes
 
 ```mermaid
 flowchart LR
-  subgraph Clientes
-    M[Flutter Android e iOS]
-    A[Panel web Vite]
-  end
-  I[Firebase Authentication]
-  B[Functions: banca]
-  D[(Firestore)]
-  S[(Storage privado)]
-  O[Functions: enviarAviso]
-  P[FCM Android]
-  X[Frankfurter: divisas]
-  M --> I
-  A --> I
-  M -->|Operaciones autenticadas| B
-  A -->|Operaciones con rol de asesor| B
-  B -->|Transacciones| D
-  M -->|Consultas y preferencias permitidas| D
-  A -->|Consultas y configuración permitidas| D
-  M -->|Expedientes e imágenes con reglas| S
+  M[Flutter Android e iOS] --> I[Firebase Authentication]
+  A[Panel web Vite] --> I
+  M -->|Operación autenticada| B[Functions: banca]
+  A -->|Operación con rol de asesor| B
+  B -->|Transacción| D[(Firestore)]
+  M -->|Lectura permitida| D
+  A -->|Lectura permitida| D
+  M -->|Documentos e imágenes| S[(Storage privado)]
   A -->|Revisión autorizada| S
-  B -->|Comprueba documentos| S
-  D -->|Bandeja de avisos| O
-  O --> P
+  B -->|Validación de archivos| S
+  D -->|Evento de aviso| O[Functions: enviarAviso]
+  O --> P[FCM Android]
   P --> M
-  M -->|HTTP y caché local| X
+  M -->|Consulta HTTP| X[Frankfurter: divisas]
 ```
 
-Las reglas niegan escrituras directas de saldos, movimientos, cupos, aprobaciones y comprobantes, incluso desde un navegador con rol de asesor. Functions utiliza identidad y permisos comprobados en servidor. Las preferencias y determinados contenidos tienen operaciones limitadas por sus reglas. Los SDK de servidor no dependen de esas reglas: por eso su validación y la protección de sus credenciales son parte de la frontera de confianza.
+Authentication identifica la sesión. Las reglas limitan las lecturas y escrituras de los clientes. Functions usa Admin SDK, que no está sujeto a esas reglas; por eso vuelve a comprobar identidad, rol y datos antes de modificar fondos.
 
-## Organización del cliente
+## Cliente Flutter
 
-| Área | Responsabilidad | Referencia |
-| --- | --- | --- |
-| `app/` | Composición de dependencias, Riverpod, navegación y temas | [Proveedores](../lib/app/proveedores.dart), [rutas](../lib/app/rutas.dart) |
-| `core/` | Conexión, errores, componentes visuales y acceso a Functions | [Red](../lib/core/red_banco.dart), [errores](../lib/core/errores.dart) |
-| `features/auth` | Identidad, contrato y acceso recordado | [Identidad](../lib/features/auth/firebase_identidad.dart) |
-| `features/accounts` | Resumen y consultas de cuentas | [Cuentas](../lib/features/accounts/firebase_cuentas.dart) |
-| `features/banking` | Productos, contactos, históricos, crédito y cheques | [Cola segura](../lib/features/banking/cola_transferencias.dart) |
-| `features/experience`, `savings` | Preferencias, contenido por segmento y metas | [Contrato remoto](../lib/features/experience/experiencia.dart) |
-| `features/exchange`, `notifications` | Adaptadores de divisas y avisos | [HTTP](../lib/features/exchange/http_divisas.dart), [avisos](../lib/features/notifications/firebase_notificaciones.dart) |
+| Directorio | Responsabilidad |
+| --- | --- |
+| `lib/app/` | Dependencias, proveedores Riverpod, rutas GoRouter y temas |
+| `lib/core/` | Conexión, errores, transporte de Functions y componentes comunes |
+| `features/auth` | Registro, contrato, sesión y saludo recordado |
+| `features/accounts` | Resumen de cuentas, saldos y movimientos |
+| `features/banking` | Transferencias, cola segura, contactos, tarjetas, crédito y cheques |
+| `features/experience`, `savings` | Contenido remoto, preferencias y metas |
+| `features/exchange`, `notifications` | Consulta externa de divisas y avisos |
 
-Históricos y conversaciones usan contratos tipados de [lectura](../lib/features/banking/historial.dart). Las pantallas dependen de esos contratos; [la composición](../lib/app/proveedores_historial.dart) conecta el [adaptador Firebase](../lib/features/banking/firebase_historial.dart). Los tests sustituyen el repositorio sin iniciar Firebase. El cursor conserva consulta, identificador y precisión de segundos/nanosegundos para no mezclar productos ni saltar registros de igual fecha. La primera página utiliza el stream: presenta caché identificada y recibe el servidor sin repetir una lectura inicial.
+Riverpod permite compartir estado y sustituir dependencias en las pruebas. GoRouter identifica cada cuenta, tarjeta y contacto en su ruta. La clave de página incluye la URI para renovar la consulta al cambiar de producto. Las pestañas cambian el contenido sin superponer la pantalla anterior; los detalles permiten regresar mediante navegación nativa.
 
-La migración se limita a históricos y detalle de contacto. Algunas pantallas de productos todavía consultan Firestore directamente. Mantener esta deuda visible permite continuar la extracción por caso de uso. [La comprobación de límites](../tooling/comprobar-limites.mjs) en CI protege la separación ya realizada.
+Los históricos y contactos utilizan las interfaces de [historial.dart](../lib/features/banking/historial.dart). [proveedores_historial.dart](../lib/app/proveedores_historial.dart) conecta esas interfaces con [firebase_historial.dart](../lib/features/banking/firebase_historial.dart). Así se prueban las pantallas sin iniciar Firebase.
 
-## Transferencia y recuperación
+Cada página conserva un cursor con consulta, fecha precisa e identificador. Esto evita mezclar cuentas y perder registros con la misma fecha. La primera página escucha cambios en vivo; las páginas anteriores se acumulan sin duplicar identificadores. Algunas pantallas de productos aún consultan Firestore directamente: la separación de repositorios no está completa.
+
+## Transferencia
 
 ```mermaid
 sequenceDiagram
@@ -60,86 +51,79 @@ sequenceDiagram
   participant Cola as Almacenamiento seguro
   participant Banco as Functions
   participant Datos as Firestore
-  participant Push as Bandeja de avisos
-  Persona->>App: Confirmar destinatario e importe
-  App->>App: Desbloqueo nativo y referencia única
-  App->>Cola: Conservar autorización antes del envío
-  App->>Banco: Enviar con identidad y misma referencia
-  Banco->>Datos: Leer recibo, cuentas y directorio
-  alt Ya existe el comprobante
-    Datos-->>Banco: Resultado registrado
-  else Primera confirmación válida
-    Banco->>Datos: Transacción: saldos, movimientos, recibo y avisos
-    Datos-->>Banco: Confirmación atómica
+  Persona->>App: Revisar y confirmar importe y destinatario
+  App->>App: Autorización nativa y referencia única
+  App->>Cola: Guardar autorización antes de enviar
+  App->>Banco: Enviar datos con la misma referencia
+  Banco->>Datos: Buscar comprobante anterior
+  alt La referencia ya fue confirmada
+    Datos-->>Banco: Comprobante guardado
+  else Operación nueva y válida
+    Banco->>Datos: Leer cuentas, directorio y fondos
+    Banco->>Datos: Guardar saldos, movimientos, comprobante y avisos
   end
   Banco-->>App: Comprobante
-  App->>Cola: Conservar resultado
-  Datos-->>Push: Evento de aviso tras confirmar
-  Note over App,Banco: Si se pierde la respuesta, se consulta con la misma referencia
+  App->>Cola: Guardar resultado
+  Note over App,Banco: Una respuesta perdida se consulta con la misma referencia
 ```
 
-Se emplean centavos enteros. La transferencia se rechaza si el importe no está entre USD 0,10 y USD 100, el destinatario no coincide con el directorio, hay datos incompatibles o faltan fondos. Las transacciones mantienen consistencia entre saldo y registros; la bandeja de avisos se confirma junto con la operación. La entrega de la push es posterior y puede fallar sin revertir un dinero ya confirmado. La referencia impide un segundo descuento por reintento; no promete entrega exactamente una vez del mensaje de notificación.
+Los importes se representan como centavos enteros. El servidor valida el rango USD 0,10 a USD 100, las cuentas, el destinatario y el saldo. Una transacción guarda todas las escrituras o ninguna. La referencia y la huella de los datos identifican el envío: repetirlo devuelve el comprobante; cambiar importe o destino con la misma referencia se rechaza.
 
-## Datos e históricos
+La transacción también crea el evento de notificación. FCM se ejecuta después: un fallo de entrega no revierte la transferencia. La implementación está en [transferencias.js](../functions/src/dominios/transferencias.js) y [base-banco.js](../functions/src/base-banco.js). [Referencia de transacciones de Firestore](https://firebase.google.com/docs/firestore/manage-data/transactions).
+
+## Datos
 
 ```mermaid
 flowchart TD
-  U[Usuario] --> C[Cuentas]
-  C --> MC[Movimientos por cuenta]
-  U --> MG[Movimientos globales]
-  U --> T[Tarjetas y sus movimientos]
-  U --> CO[Contactos e histórico de contraparte]
-  R[Comprobante con referencia] --> MC
-  R --> MG
-  B[Transacción bancaria] --> R
-  B --> C
-  B --> N[Notificación y bandeja de envío]
-  U --> E[Expediente de cuenta corriente]
-  E --> S[Documentos privados en Storage]
-  CH[Cheque y eventos] --> EM[Vista del emisor]
-  CH --> RE[Vista del receptor]
+  U[usuarios/uid] --> C[cuentas y movimientos]
+  U --> G[movimientosGlobales]
+  U --> T[tarjetas y movimientos]
+  U --> CO[contactos y conversación]
+  U --> R[operaciones: comprobantes]
+  U --> N[notificaciones y dispositivos]
+  U --> E[solicitudes y documentos privados]
+  B[Transacción del servidor] --> C
+  B --> G
+  B --> R
+  B --> N
+  B --> P[enviosPush]
+  CH[cheques y eventos] --> EM[Registros del emisor]
+  CH --> RE[Registros del receptor]
 ```
 
-Las proyecciones por cuenta y global facilitan consultas de la app y del panel; requieren comprobar que sus copias sigan correspondiendo al original. La conciliación compara fondos e históricos. La herramienta de reconstrucción solo crea copias globales ausentes desde originales verificados, conserva procedencia y aborta ante cambios concurrentes; no corrige un saldo por inferencia.
+Los movimientos por cuenta y sus copias globales se escriben juntos. El panel consulta estas copias para mostrar actividad de distintas personas. La conciliación comprueba que importe, fecha y referencia coincidan. La herramienta de reparación solo crea copias ausentes desde originales verificados; no modifica saldos ni sustituye movimientos existentes.
 
-## Dominios del servidor
+El directorio de cuentas se consulta a través del servidor para obtener titular y estado sin revelar saldo, UID o cédula. La identidad y el domicilio se guardan en `datosPersonales`; los archivos permanecen en Storage privado.
 
-`banca.js` es una fachada de compatibilidad. El catálogo de [operaciones](../functions/src/contratos.js) dirige las llamadas a casos de uso separados; [BancoBase](../functions/src/base-banco.js) reúne acceso a datos, identidad, cuentas y escritura de históricos. Las validaciones compartidas están en [compartido.js](../functions/src/compartido.js).
+## Servidor por dominios
 
-| Módulo | Responsabilidad |
+[banca.js](../functions/src/banca.js) mantiene los nombres de las operaciones. [contratos.js](../functions/src/contratos.js) dirige las llamadas y [BancoBase](../functions/src/base-banco.js) comparte validación de sesión, acceso a cuentas y escritura de movimientos.
+
+| Módulo | Casos de uso |
 | --- | --- |
-| [Onboarding](../functions/src/dominios/onboarding.js) | Identidad de cliente, consentimiento y apertura idempotente |
-| [Transferencias](../functions/src/dominios/transferencias.js) | Destinatarios, fondos, contactos, ajustes y pagos externos |
-| [Tarjetas](../functions/src/dominios/tarjetas.js) | Débito, crédito, cupos, consumos, abonos y corte |
-| [Expedientes](../functions/src/dominios/expedientes.js) | Corriente, documentos, aprobación y solicitudes físicas |
-| [Servicios](../functions/src/dominios/servicios.js) | Catálogo, planillas, pagos y configuración mensual |
-| [Experiencia](../functions/src/dominios/experiencia.js) | Metas, perfil y preferencias |
-| [Chequera](../functions/src/chequera.js) | Agrupaciones, estados, eventos y cobro expreso |
-| [Avisos](../functions/src/avisos.js) | Reserva de entrega, tokens pendientes y reintentos |
+| [Onboarding](../functions/src/dominios/onboarding.js) | Registro, consentimiento y ahorros |
+| [Transferencias](../functions/src/dominios/transferencias.js) | Destinatarios, transferencias, contactos, ajustes y pagos externos |
+| [Tarjetas](../functions/src/dominios/tarjetas.js) | Débito, cupos, consumos, abonos y corte |
+| [Expedientes](../functions/src/dominios/expedientes.js) | Corriente, documentos y solicitudes físicas |
+| [Servicios](../functions/src/dominios/servicios.js) | Catálogo, planillas, pagos y planes mensuales |
+| [Experiencia](../functions/src/dominios/experiencia.js) | Perfil, preferencias y metas |
+| [Chequera](../functions/src/chequera.js) | Lotes, estados, fechas, eventos y cobro |
+| [Avisos](../functions/src/avisos.js) | Dispositivos, entrega y reintentos |
 
-Esta separación permite revisar casos y ejecutar sus comprobaciones sin concentrar su implementación en la fachada. Conserva un mismo servidor, base y propietario de las escrituras monetarias: los dominios no tienen despliegues independientes. Los tests de integración verifican los resultados y permisos a través de la fachada pública.
+Los módulos comparten despliegue y base de datos. Esta estructura permite separar responsabilidades sin romper las transacciones actuales. Para asignar un dominio a otro equipo se deben extraer sus interfaces, versionar contratos y mantener pruebas de compatibilidad. Si utiliza otra base de datos, las escrituras dejan de compartir una transacción; habría que incorporar eventos, compensaciones y conciliación entre servicios.
 
-Antes de dividir infraestructura: versionar contratos de cliente, sustituir lecturas cruzadas por interfaces y diseñar compatibilidad. Si los dominios usan bases distintas, la transacción actual no se conserva automáticamente: se requieren eventos, compensaciones y conciliación. Mantener juntas las escrituras relacionadas evita introducir esa complejidad en esta entrega.
+## Notificaciones y diagnóstico
 
-## Entrega de avisos y diagnóstico
+`enviosPush` guarda los eventos confirmados. El proceso de entrega reserva un evento durante 90 segundos para evitar envíos simultáneos. Reintenta solo los dispositivos pendientes, hasta tres intentos de transporte, y retira un token inválido únicamente si no cambió desde su lectura. Un fallo tras la aceptación de FCM puede repetir un aviso; el comprobante financiero sigue siendo único.
 
-La bandeja de avisos reserva cada evento dentro de una transacción por 90 segundos. Las ejecuciones concurrentes no envían al mismo tiempo; una reserva abandonada permite recuperación posterior. Se intentan de nuevo solo los dispositivos pendientes, hasta tres intentos de transporte. Los tokens inválidos se retiran únicamente si no han cambiado desde la lectura, protegiendo la rotación.
+[observacion.js](../functions/src/observacion.js) registra operación, duración, resultado, categoría de error y un identificador derivado de la referencia. No registra formularios, saldos, tokens o documentos. [Operación](operacion.md) explica cómo buscar esos eventos.
 
-Un fallo después de que FCM acepte el mensaje todavía puede repetir una entrega. La referencia del evento y la etiqueta del aviso ayudan a agruparlo en Android; el comprobante financiero sigue siendo único. Las pruebas cubren transporte parcial, concurrencia y rotación con Firestore real emulado.
+## Contenido remoto
 
-[Observación de operaciones](../functions/src/observacion.js) registra versión del esquema, operación permitida, duración, resultado, categoría de error y correlación derivada de la referencia. Excluye formularios, saldos, tokens y contenidos privados. Un fallo del registrador no altera una operación confirmada. [Operación](operacion.md) describe consulta e investigación de estos eventos.
+Firestore entrega contenido con versión de esquema, segmento, orden y destino permitido. La app acepta componentes conocidos, ignora tipos desconocidos y conserva la última configuración válida. El panel puede cambiar servicios, mensajes y temporadas. Un componente nativo nuevo necesita una versión de la aplicación.
 
-## Personalización sin reinstalar
+## Límites de la arquitectura actual
 
-Firestore suministra tarjetas de contenido con versión de esquema, segmento, orden y destino permitido. El cliente admite tipos conocidos, ignora tipos desconocidos y conserva la última configuración válida si una publicación es incompatible. Servicios y temporadas se administran remotamente. Esto permite variar experiencia y contenido dentro de capacidades instaladas; añadir un componente nativo nuevo necesita una publicación móvil.
+El servidor es un único despliegue con módulos, no un conjunto de microservicios independientes. Algunas vistas siguen acopladas a Firestore. El límite de una instancia por función restringe capacidad y debe revisarse con pruebas de carga. La caché puede contener datos privados de una sesión; una operación financiera real necesitaría una política adicional de retención y protección del dispositivo.
 
-## Supuestos y riesgos
-
-- Prototipo con identidades, documentos y fondos ficticios; cédula por formato y unicidad, sin consulta a un registro oficial.
-- Consultas privadas y operaciones monetarias requieren autenticación; la caché no es una confirmación de fondos disponible en el servidor.
-- Firebase reduce infraestructura propia y aporta SDK móviles; concentra dependencia tecnológica y costos por consumo.
-- El servidor actual limita instancias por costo. El límite no asegura ausencia de contención ni sustituye pruebas de carga.
-- Firestore local puede conservar datos de la sesión en el dispositivo. Una operación bancaria real necesitaría política de retención, protección adicional y evaluación de dispositivos comprometidos.
-- FCM remoto está configurado en Android. APNs, Wallet, emisión física, proveedores reales y débitos periódicos quedan fuera del alcance conectado actual.
-
-Las [decisiones](decisiones.md) explican alternativas y compromisos; [operación](operacion.md) concreta evolución, despliegue y recuperación. La atomicidad utilizada se apoya en las [transacciones de Firestore](https://firebase.google.com/docs/firestore/manage-data/transactions).
+APNs, Wallet, proveedores bancarios, tareas periódicas y un libro contable certificado no forman parte de la integración actual. [Decisiones y alternativas](decisiones.md).

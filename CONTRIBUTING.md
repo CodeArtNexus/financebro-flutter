@@ -1,36 +1,36 @@
 # Colaborar en FinanceBro
 
-FinanceBro utiliza Trunk Based Development: cambios pequeños, integración frecuente en `main` y verificación antes de publicar. El historial por etapas permite revisar producto, implementación y comprobaciones. Una etapa no exige una rama permanente.
+El proyecto utiliza Trunk Based Development: `main` contiene la versión integrada y cada cambio debe poder revisarse y publicarse en poco tiempo. Las etiquetas identifican entregas; las etapas se registran en los mensajes de commit.
 
-## Preparar el entorno
+## Preparación
 
-Clonar el repositorio, utilizar las versiones del [README](README.md) e instalar dependencias con sus lockfiles. Para desarrollar usar Emulator Suite y datos ficticios. Un clon no concede rol de asesor ni permiso de desplegar en el proyecto publicado. Mantener claves, defines privados, firmas, expedientes y la guía personal fuera de Git.
+Instalar las versiones del [README](README.md) y resolver dependencias con los archivos de bloqueo. Desarrollar contra Emulator Suite con datos ficticios. Los scripts detectan herramientas instaladas; en Linux pueden requerirse `ANDROID_HOME` y `JAVA_HOME`. iOS necesita macOS y Xcode.
 
-Los scripts Bash detectan herramientas ya instaladas. En Linux indicar `ANDROID_HOME` y `JAVA_HOME` cuando no estén en el entorno; iOS requiere macOS y Xcode. `scripts/env.sh` permite `POSTULACION_TOOLCHAINS_DIR` para cambiar la ubicación de cachés. No se necesita reproducir el equipo del autor.
+No incorporar claves, firmas, archivos de acceso, documentos personales o la guía privada. Un clon del repositorio no concede permisos para administrar o desplegar el proyecto publicado.
 
-## Flujo de un cambio
+## Flujo de trabajo
 
-1. Actualizar `main` con `git pull --ff-only` y comprobar que no hay cambios locales que deban conservarse.
-2. Describir un problema concreto y su resultado esperado. Trabajar con un cambio que pueda integrarse pronto; evitar una rama por producto o una rama de entrega prolongada.
-3. Si la colaboración exige revisión previa, usar una rama breve y una solicitud de cambios dirigida a `main`. Integrarla cuando sus comprobaciones pasen y eliminarla después. Mantener funcionalidad incompleta fuera del flujo activo mediante una condición explícita y probada.
-4. Ejecutar las verificaciones aplicables. Actualizar contratos, documentación y capturas cuando cambie el resultado para el usuario.
-5. Revisar el diff antes de incorporar archivos. No regenerar lockfiles sin necesidad, ni modificar históricos publicados para ocultar una corrección.
-6. Integrar, comprobar CI en el commit exacto y publicar solo los componentes afectados. Si `main` falla, priorizar corrección o revertir el cambio compatible antes de añadir otra funcionalidad.
+1. Actualizar `main` con `git pull --ff-only` después de conservar cualquier cambio local.
+2. Definir el problema y el resultado esperado. Mantener el cambio pequeño; evitar ramas permanentes por producto.
+3. Si hace falta revisión previa, crear una rama breve y un pull request hacia `main`. Integrar cuando pasen sus comprobaciones y eliminar la rama después.
+4. Ejecutar las verificaciones del componente afectado y actualizar sus instrucciones o capturas.
+5. Revisar `git diff` y los archivos añadidos. Cambiar los archivos de bloqueo solo cuando cambien las dependencias.
+6. Integrar y revisar CI en ese commit. Corregir o revertir una regresión antes de continuar con otra función.
 
-## Verificación proporcional
+## Verificaciones por cambio
 
-| Cambio | Verificación mínima |
+| Componente | Comprobación |
 | --- | --- |
-| Cliente, estado o navegación | `./scripts/check.sh`; E2E nativo afectado si depende del dispositivo |
-| Operación bancaria | Validaciones y pruebas de integración de Functions; concurrencia e idempotencia cuando corresponda |
-| Permisos o documentos | Pruebas de reglas de Firestore y Storage y comprobación con propietario, contraparte y asesor |
-| Panel | Pruebas, compilación y recorrido de la acción afectada |
-| Documentación o galería | Enlaces locales, coherencia con código, diagramas, imágenes y navegación en web |
+| Flutter | `./scripts/check.sh`; recorrido nativo si afecta permisos o comportamiento del dispositivo |
+| Operaciones monetarias | Unitarias e integración de Functions; saldo, concurrencia, referencia y registros |
+| Firestore o Storage | Pruebas de reglas con propietario, otra identidad y asesor |
+| Panel | Pruebas, compilación e interacción modificada |
+| Documentación o galería | Enlaces, datos de versión, coherencia con el código y visualización |
 
-No ampliar pruebas sin un motivo ni añadir casos que solo reproduzcan el código. Las pruebas útiles deben detectar una regresión del resultado, un permiso indebido o una diferencia entre fondos y registros.
+Los nuevos casos deben detectar un fallo de comportamiento o permisos. Para cambios de interfaz sin lógica nueva, realizar una revisión visual y reutilizar las comprobaciones existentes.
 
-## Commits y revisión
+## Commits
 
-Los commits deben expresar el cambio en español. Ejemplo: `Etapa 49: documentar decisiones de arquitectura y límites de operación`. Un mensaje describe el resultado concreto; la revisión explica problema, cambio, comprobaciones y limitaciones relevantes. Las etiquetas señalan entregas revisables, no una rama nueva para cada etapa.
+Escribir mensajes en español que describan el resultado, por ejemplo: `Etapa 65: aclarar la documentación de entrega`. El texto de revisión debe explicar el problema, el cambio y cómo se verificó.
 
-Antes de integrar, revisar: identidad y rol en servidor; importes en centavos; referencia persistida antes de transferir; históricos completos; comportamiento de carga y error; retorno de navegación; texto ampliado y reducción de movimiento cuando proceda. Para el alcance completo consultar [evaluación](documentacion/evaluacion.md).
+En una transferencia, revisar siempre identidad, centavos, saldo, referencia guardada e históricos. En una pantalla, comprobar carga, error, retorno, texto ampliado y reducción de movimiento cuando corresponda. [Recorrido completo](documentacion/evaluacion.md).

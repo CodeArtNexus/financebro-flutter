@@ -1,25 +1,19 @@
-# Uso de IA y reducción de carga operativa
+# Uso de IA durante el desarrollo
 
-La IA se integró al flujo de desarrollo como herramienta de investigación y asistencia para reducir tareas repetitivas y acelerar las iteraciones. Su uso abarcó implementación, organización del código, documentación y preparación de pruebas.
+La IA se utilizó para investigar opciones técnicas, asistir en la implementación, ordenar el código, redactar documentación y preparar pruebas. La definición del producto fijó la marca FinanceBro, naranja y blanco, estilo de cristal, históricos por producto y una experiencia compartida entre cliente y asesor.
 
-La definición del producto estableció la marca FinanceBro, naranja y blanco, superficies de cristal, históricos como elemento central y una experiencia compartida entre cliente y asesor. Estos criterios orientaron la asistencia de Codex en componentes, flujos, configuración y revisión técnica.
+## Aplicación y resultados
 
-## Aplicación e impacto
-
-| Área | Asistencia utilizada | Resultado y verificación |
+| Área | Uso | Cómo se comprobó |
 | --- | --- | --- |
-| Productividad | Estructuras repetitivas, adaptación de componentes, scripts, configuración e iteraciones de implementación | Automatización de preparación, capturas y verificaciones; más iteraciones sobre productos, históricos y recuperación. El impacto se describe de forma cualitativa. |
-| Calidad y organización | Separación por funcionalidad, revisión de validaciones y diagnóstico de errores de navegación e integridad | Propuestas contrastadas con comportamiento en dispositivos, reglas y pruebas. Idempotencia, importes en centavos y persistencia previa al envío verificados mediante casos de fallo y concurrencia. |
-| Documentación | Organización, redacción técnica, diagramas e instrucciones reproducibles | Descripciones contrastadas con el código y la evidencia. Diferenciación entre capacidades implementadas, integraciones pendientes y medidas previstas para producción. |
-| Pruebas | Diseño y generación asistida de casos, datos ficticios, recorridos y capturas | Cobertura de límites, reintentos, concurrencia y estados degradados. Resultados respaldados por pruebas ejecutadas y evidencia nativa. |
-| Investigación del dominio | Exploración de flujos de cuentas, tarjetas, pagos y cheques | Reglas y estados explícitos para el prototipo. Los flujos bancarios reales requieren validación especializada e integración con proveedores autorizados. |
+| Productividad | Generación de estructuras repetidas, adaptación de componentes, scripts y configuración | Ejecución de los scripts, compilación y revisión de los recorridos |
+| Calidad | Revisión de validaciones, separación de módulos y diagnóstico de errores | Pruebas de permisos, concurrencia, reintentos, navegación y fondos |
+| Documentación | Organización de información, redacción, diagramas e instrucciones | Comparación con el código, las versiones publicadas y los comandos disponibles |
+| Pruebas | Propuesta y preparación de casos, datos ficticios y capturas | Resultados automáticos y recorridos nativos; los fallos detectados dieron lugar a correcciones |
+| Investigación | Consulta de documentación de plataforma y análisis de cuentas, tarjetas, pagos y cheques | Reglas explícitas para el prototipo y límites de las integraciones identificados |
 
-La preparación audiovisual también utilizó asistencia para organizar el guion, automatizar capturas de interfaz, construir composiciones editables en After Effects y sintetizar una música original. Los cortes se revisaron contra las operaciones y las notificaciones recibidas en el dispositivo.
+La asistencia redujo trabajo repetitivo y facilitó más iteraciones de implementación y revisión. No se midieron horas ahorradas ni una mejora porcentual atribuible a IA. El impacto se documenta mediante los resultados: pruebas ejecutadas, historial por etapas, correcciones de fallos y funciones comprobables.
 
-## Revisión de resultados
+Las propuestas se validaron con análisis estático, unitarias, widgets, reglas, integración con emuladores, recorridos nativos y conciliación. La investigación se contrastó con documentación oficial. Una propuesta no se consideró terminada por producir código: debía compilar, respetar permisos y producir el resultado esperado.
 
-Las iteraciones se contrastaron mediante recorridos de interfaz y resultados automáticos. Las propuestas se ajustaron ante errores de dispositivo, inconsistencias de navegación o diferencias con los criterios del producto.
-
-La verificación incluyó formato, análisis estático, pruebas unitarias y de widgets, transacciones en emuladores, reglas de seguridad, recorridos nativos y conciliación. El historial por etapas conserva la evolución técnica. Las [decisiones](decisiones.md), la [arquitectura](arquitectura.md) y el [recorrido reproducible](evaluacion.md) vinculan las propuestas con su implementación y evidencia.
-
-La investigación técnica se contrastó con las fuentes de plataforma enlazadas en la documentación. La entrega mantiene fondos ficticios, separa tarjeta de crédito de préstamo y conserva la programación mensual visual; el alcance de notificaciones se distingue por plataforma. Conversaciones privadas, claves y documentos personales permanecen fuera del repositorio.
+[Decisiones](decisiones.md), [calidad](calidad.md) y [evaluación](evaluacion.md) describen esas comprobaciones. Las conversaciones privadas, claves y documentos personales se conservan fuera del repositorio.

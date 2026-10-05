@@ -1,135 +1,135 @@
 # Decisiones técnicas
 
-Estas decisiones describen la solución construida y contrastan sus alternativas. Las alternativas se justifican como análisis arquitectónico; no se afirma haber desarrollado o comparado experimentalmente cada una. Las consecuencias futuras distinguen lo implementado de su evolución prevista.
+Cada decisión describe el problema, las opciones consideradas, la elección y sus consecuencias. Las alternativas corresponden al análisis de diseño; no todas se implementaron como prueba comparativa.
 
-## D01 · Flutter y organización por funcionalidad
+## D01 - Flutter y módulos por funcionalidad
 
-**Problema.** Compartir experiencia entre Android e iOS y permitir que los productos evolucionen sin mezclar toda la interfaz.
+**Problema.** Compartir la experiencia Android/iOS y mantener los productos separados.
 
-**Alternativas.** Dos aplicaciones nativas; una aplicación Flutter con carpetas por capa global; módulos por funcionalidad dentro de Flutter.
+**Alternativas.** Aplicaciones nativas; Flutter organizado por capas globales; Flutter con carpetas por funcionalidad.
 
-**Elección.** Flutter, requerido por la prueba, con módulos de autenticación, cuentas, experiencia, divisas y banca; históricos/contactos tienen contratos de lectura y adaptadores separados. Los productos comparten componentes visuales y composición de dependencias.
+**Elección.** Flutter, requerido por la prueba, con módulos de autenticación, cuentas, banca, experiencia, divisas y notificaciones. Comparten componentes de interfaz. Históricos y contactos tienen repositorios separados de sus pantallas.
 
-**Compromisos.** Se comparte código y consistencia, pero permisos, firma, push y navegación necesitan comprobación por plataforma. Algunas pantallas de productos conservan consultas directas a Firestore; el servidor separa casos por dominio dentro de una infraestructura compartida.
+**Costo y limitaciones.** Se comparte código, pero firma, permisos, notificaciones y navegación se verifican en cada sistema. Algunas pantallas aún consultan Firestore directamente.
 
-**Impacto futuro.** Extraer interfaces entre dominios antes de convertir cada carpeta en un paquete. Cada equipo debería poder ejecutar sus pruebas sin cargar todos los productos.
+**Evolución.** Completar las interfaces de cada producto antes de convertir los módulos en paquetes. Un equipo debe poder probar su dominio sin cargar el resto de la aplicación.
 
-## D02 · Riverpod para estado y GoRouter para navegación
+## D02 - Riverpod y GoRouter
 
-**Problema.** Coordinar sesión, streams, carga y errores; mantener rutas que identifican cada cuenta o contacto.
+**Problema.** Coordinar sesión, carga, errores y rutas que identifican una cuenta o contacto.
 
-**Alternativas.** Estado local exclusivamente; BLoC con eventos explícitos; Riverpod con proveedores e inyección.
+**Alternativas.** Estado local; BLoC; Riverpod con dependencias sustituibles.
 
-**Elección.** Riverpod para composición y estado asíncrono; GoRouter para redirecciones y rutas identificables. Las claves de página incluyen la URI para no reutilizar la consulta del producto anterior. Las pestañas reemplazan su contenido; los detalles conservan navegación nativa.
+**Elección.** Riverpod administra dependencias y estado asíncrono. GoRouter define rutas y redirecciones. La clave de página incluye la URI para renovar la consulta al cambiar de producto.
 
-**Compromisos.** Facilita sustituciones en pruebas, pero exige controlar ciclo de vida, invalidación y aislamiento por sesión. BLoC ofrecería transiciones más explícitas a cambio de más estructura inicial.
+**Costo y limitaciones.** Las pruebas pueden sustituir repositorios, pero hay que controlar el ciclo de vida y limpiar estado cuando cambia la sesión. BLoC permite transiciones más explícitas a cambio de más código inicial.
 
-**Impacto futuro.** Consolidar estados de negocio en casos de uso y contratos, evitando que un proveedor crezca como coordinador de todos los dominios.
+**Evolución.** Extraer casos de uso cuando un proveedor empiece a coordinar demasiadas responsabilidades.
 
-## D03 · Firebase y un servidor de operaciones compartido
+## D03 - Firebase y operaciones en Functions
 
-**Problema.** Ofrecer autenticación real, estado compartido y documentos privados sin depender del equipo local del evaluador.
+**Problema.** Tener autenticación, datos compartidos y documentos privados sin un servidor local permanente.
 
-**Alternativas.** Backend propio con API y SQL; escrituras directas desde móvil; Firebase con Functions como frontera bancaria.
+**Alternativas.** API propia con SQL; escrituras monetarias desde el móvil; Firebase con operaciones en Functions.
 
-**Elección.** Authentication, Firestore, Storage y Functions. Clientes leen registros autorizados; el servidor valida operaciones y rol de asesor.
+**Elección.** Authentication, Firestore, Storage y Functions. Los clientes leen datos autorizados; el servidor valida las operaciones monetarias y administrativas.
 
-**Compromisos.** Menor administración de infraestructura y actualizaciones en vivo, con dependencia del proveedor, consultas e índices específicos y consumo facturable. El Admin SDK elude las reglas de cliente: la seguridad del servidor debe validarse por separado.
+**Costo y limitaciones.** Reduce trabajo de infraestructura, pero depende de Firebase, sus consultas e índices y su facturación. Admin SDK no usa las reglas del cliente: Functions debe validar sus propios permisos.
 
-**Impacto futuro.** Mantener adaptadores, contratos y datos exportables. Comparar un libro contable en SQL u otra base transaccional antes de custodiar dinero real, según auditoría, volumen y requisitos del producto.
+**Evolución.** Mantener interfaces y contratos. Evaluar un libro contable formal y almacenamiento apropiado antes de custodiar dinero real.
 
-## D04 · Centavos, transacciones y referencias idempotentes
+## D04 - Centavos, transacciones y referencias
 
-**Problema.** Evitar redondeos, sobregiros concurrentes y registros incompletos o duplicados por una respuesta perdida.
+**Problema.** Evitar redondeos, sobregiros y descuentos duplicados cuando se pierde una respuesta.
 
-**Alternativas.** Importes decimales de punto flotante; escrituras sucesivas independientes; transacción con importes enteros y comprobante único.
+**Alternativas.** Punto flotante; escrituras separadas; centavos enteros y una transacción con comprobante.
 
-**Elección.** Centavos enteros, validaciones antes de mover fondos y transacción que incluye saldos, históricos, recibo y avisos. Repetir una referencia compatible recupera su resultado; no vuelve a mover fondos.
+**Elección.** Enteros en centavos y transacción para saldos, movimientos, comprobante y avisos. La misma referencia con los mismos datos devuelve el resultado anterior; datos distintos se rechazan.
 
-**Compromisos.** Las operaciones sobre la misma cuenta pueden competir y reintentarse. Crear proyecciones globales aumenta escrituras y requiere conciliación. Atomicidad no equivale a un libro contable certificado ni a entrega garantizada de notificaciones.
+**Costo y limitaciones.** Dos operaciones sobre la misma cuenta pueden competir. Los históricos globales añaden escrituras y deben conciliarse. Un comprobante único no garantiza que la push llegue una sola vez.
 
-**Impacto futuro.** Medir contención, conservar invariantes y añadir un modelo contable formal si se amplía el alcance. Los cambios de almacenamiento deben preservar la relación entre referencia, fondos y registros.
+**Evolución.** Medir concurrencia y mantener las mismas garantías si cambia la base de datos. Añadir un modelo contable formal según los requisitos de producción.
 
-## D05 · Autorización conservada antes del envío
+## D05 - Guardar la autorización antes de enviar
 
-**Problema.** Un usuario puede salir, perder conexión o no recibir la respuesta después de confirmar una transferencia.
+**Problema.** El usuario puede cerrar una pantalla o perder la respuesta después de confirmar.
 
-**Alternativas.** Mantener el envío solo en memoria; descontar localmente y reconciliar después; conservar autorización y consultar al servidor.
+**Alternativas.** Guardar en memoria; descontar localmente; persistir la autorización y consultar al servidor.
 
-**Elección.** Cola en almacenamiento seguro, separada por proyecto e identidad. Se guarda antes de llamar al servidor, aun con internet. Solo se confirma el movimiento cuando existe comprobante del servidor.
+**Elección.** Cola en almacenamiento seguro, separada por proyecto e identidad. Se guarda antes del envío, también con internet. El comprobante del servidor confirma el movimiento.
 
-**Compromisos.** Requiere manejar archivo dañado, cambios de sesión y estados inciertos. Sin internet solo se prepara una transferencia a un destinatario ya verificado. Una autorización no intentada puede cancelarse; una ya intentada requiere comprobar el resultado antes de presentarla como cancelable. El plazo de 24 horas no invalida un comprobante que ya existe.
+**Costo y limitaciones.** Hay que manejar datos dañados, cambios de sesión y resultado incierto. Una autorización sin intentar puede cancelarse; después de un intento debe consultarse el resultado. Las 24 h limitan autorizaciones nuevas, no comprobantes ya confirmados.
 
-**Impacto futuro.** El E2E Android recrea la composición, identidad y cola conservando FlutterSecureStorage nativo; verifica comprobante único y ambos extremos. Un cierre del proceso por el sistema y las migraciones de formato necesitan ensayos adicionales. Añadir soporte operativo por referencia; no usar el saldo en caché para autorizar definitivamente una transferencia.
+**Evolución.** El E2E actual reconstruye sesión y cola dentro del mismo proceso. Añadir cierre forzado del sistema, migración de formato y diagnóstico por referencia.
 
-## D06 · Contenido remoto con esquema limitado
+## D06 - Contenido remoto validado
 
-**Problema.** Cambiar recomendaciones, servicios y campañas sin una publicación móvil para cada mensaje.
+**Problema.** Cambiar mensajes, recomendaciones y servicios sin publicar la app por cada cambio.
 
-**Alternativas.** Contenido fijo; código remoto arbitrario; contenido declarativo con componentes instalados.
+**Alternativas.** Contenido fijo; código remoto; configuración con componentes conocidos.
 
-**Elección.** Esquema versionado, tipos y destinos permitidos, segmentos y respaldo del último contenido válido. Administración controla catálogo y temporadas.
+**Elección.** Esquema versionado, tipos y destinos permitidos y última configuración válida como respaldo. El panel administra catálogo y temporadas.
 
-**Compromisos.** Menor libertad que descargar cualquier interfaz, pero permite validar compatibilidad y proteger navegación. Una experiencia nativa que no existe en el cliente requiere una versión nueva.
+**Costo y limitaciones.** Solo se pueden activar componentes que el cliente conoce. Un nuevo componente nativo requiere una versión móvil.
 
-**Impacto futuro.** Versionar compatibilidad por cliente y probar una publicación antes de activarla. Añadir segmentos sin exponer datos privados en la configuración compartida.
+**Evolución.** Probar compatibilidad por versión antes de publicar y ampliar segmentos sin exponer datos personales.
 
-## D07 · Bandeja de avisos y degradación por plataforma
+## D07 - Eventos persistidos para push
 
-**Problema.** Comunicar un cambio bancario sin perder el registro si FCM falla y permitir navegar al producto relacionado.
+**Problema.** Avisar de una operación sin depender de FCM para confirmar los fondos.
 
-**Alternativas.** Enviar push dentro de la operación antes de confirmar; registrar solo una notificación local; persistir el evento y entregarlo después.
+**Alternativas.** Enviar antes de confirmar; aviso local; guardar el evento y entregarlo después.
 
-**Elección.** Evento persistente, reserva transaccional de entrega y Functions de envío con reintentos acotados por dispositivo. Android utiliza FCM; iOS conserva avisos nativos al recibir cambios con la app conectada hasta configurar APNs.
+**Elección.** Evento en `enviosPush`, reserva transaccional y reintentos por dispositivo. Android usa FCM real. iOS recibe avisos nativos con la app conectada hasta habilitar APNs.
 
-**Compromisos.** La operación financiera puede completarse y la push no llegar. El histórico de avisos conserva el hecho; un reintento del transporte puede producir duplicación visible si hay fallo tras la entrega. APNs es una habilitación pendiente, no una capacidad que se simula como remota.
+**Costo y limitaciones.** La transferencia puede completarse aunque falle el aviso. Un fallo después de la aceptación del transporte puede repetir la notificación. El histórico de la operación permanece disponible.
 
-**Impacto futuro.** Medir antigüedad y fallos de la bandeja, configurar APNs y revisar contenido sensible antes de mostrarlo en una pantalla bloqueada.
+**Evolución.** Configurar APNs, medir pendientes y revisar cuánto detalle mostrar en una pantalla bloqueada.
 
-## D08 · Proveedores sintéticos y programación mensual visual
+## D08 - Servicios ficticios y planes mensuales
 
-**Problema.** Demostrar consulta de planillas, consentimientos y estados sin integraciones bancarias o contratos con empresas de servicios.
+**Problema.** Demostrar consulta, pago y consentimiento sin acuerdos con bancos o empresas de servicios.
 
-**Alternativas.** Respuestas fijas en la pantalla; integraciones comerciales reales; proveedor sintético procesado por el servidor y una integración externa real de divisas.
+**Alternativas.** Respuestas fijas; proveedores comerciales; proveedor ficticio en servidor y divisas externas reales.
 
-**Elección.** Planillas dinámicas sintéticas, pagos confirmados por el titular y persistencia compartida. La programación mensual es visual; no se exportan tareas periódicas. Los cheques se procesan expresamente desde administración.
+**Elección.** Planillas calculadas por servidor, pagos confirmados por el titular y datos persistidos. Los planes mensuales no cobran; los cheques se procesan desde administración.
 
-**Compromisos.** Permite verificar lógica e históricos; no prueba disponibilidad ni liquidación de un proveedor real. Reduce tareas activas, pero no garantiza costo cero de Firebase.
+**Costo y limitaciones.** Comprueba lógica e históricos, pero no la liquidación o disponibilidad de un proveedor comercial. Desactivar tareas no elimina todos los cargos de Firebase.
 
-**Impacto futuro.** Incorporar contratos de proveedor, límites, conciliación y consentimiento de débitos antes de activar cobros programados. La experiencia ya separa consulta, confirmación y resultado.
+**Evolución.** Incorporar acuerdos, validación de proveedores, conciliación y consentimiento antes de activar débitos periódicos.
 
-## D09 · Pruebas aisladas y verificación por etapas en main
+## D09 - Trunk Based Development y CI
 
-**Problema.** Mantener una versión revisable mientras cambian productos, reglas y datos.
+**Problema.** Conservar una versión integrada mientras cambian productos, permisos y datos.
 
-**Alternativas.** Rama de entrega prolongada; validación exclusivamente manual; trunk con pruebas automáticas y recorridos nativos separados.
+**Alternativas.** Rama de entrega larga; revisión solo manual; cambios pequeños en `main` con pruebas.
 
-**Elección.** Integración frecuente en `main`, commits por etapas, lockfiles y cinco tareas de CI, incluida una ejecución Android con Emulator Suite. Los emuladores aíslan reglas y operaciones; los dispositivos cubren navegación, SDK y presentación.
+**Elección.** Commits por etapas, archivos de bloqueo y cinco trabajos de CI. Emulator Suite aísla las pruebas; Android ejecuta registro interrumpido y recuperación de transferencia.
 
-**Compromisos.** CI ejecuta alta interrumpida y recuperación de transferencia en Android, con datos y servicios locales. No acredita una push remota real; esa integración se comprueba en un recorrido adicional contra el servidor publicado, con accesos privados. Un historial lineal no sustituye explicar y revisar los cambios.
+**Costo y limitaciones.** CI no comprueba FCM remoto: ese caso usa el servidor publicado en un recorrido separado con accesos privados. Un historial lineal por sí solo no demuestra colaboración entre varios equipos.
 
-**Impacto futuro.** Ampliar el recorrido automatizado a otros dispositivos y dominios según el riesgo, conservando revisiones pequeñas y tiempos de ejecución razonables.
+**Evolución.** Añadir recorridos según el riesgo y mantener el tiempo de verificación compatible con cambios frecuentes.
 
-## D10 · Extracción gradual y compatibilidad
+## D10 - Separación gradual del código
 
-**Problema.** El crecimiento de productos concentraba operaciones en una clase y consultas de históricos en pantallas.
+**Problema.** Las operaciones crecían en una clase y las pantallas mezclaban consultas y presentación.
 
-**Alternativas.** Dividir inmediatamente infraestructura; migrar todos los módulos a paquetes; extraer casos y contratos dentro del despliegue compartido.
+**Alternativas.** Microservicios inmediatos; migración completa a paquetes; extracción gradual dentro del servidor actual.
 
-**Elección.** Fachada bancaria compatible, casos separados por dominio y repositorios tipados de históricos/contactos. CI comprueba métodos del catálogo y evita consultas de almacenamiento en esas dos pantallas.
+**Elección.** Casos de uso por dominio, fachada compatible y repositorios de históricos/contactos. CI protege los límites extraídos.
 
-**Compromisos.** Mejora mantenimiento sin romper transacciones entre fondos y registros. Sigue existiendo una base compartida y quedan otras pantallas por migrar.
+**Costo y limitaciones.** Mejora mantenimiento sin romper transacciones, pero conserva una base compartida y vistas pendientes de migrar.
 
-**Impacto futuro.** Introducir interfaces en los puntos de lectura cruzada antes de asignar infraestructuras distintas. Conservar pruebas de compatibilidad del cliente anterior.
+**Evolución.** Extraer interfaces de lecturas cruzadas antes de separar infraestructura y mantener contratos compatibles con clientes instalados.
 
-## D11 · Cristal compartido y accesibilidad verificable
+## D11 - Cristal y accesibilidad
 
-**Problema.** El desenfoque por fila aumenta trabajo gráfico; controles pequeños y texto ampliado pueden dificultar comprobar importes.
+**Problema.** El desenfoque repetido cuesta tiempo gráfico y el texto grande puede ocultar importes o acciones.
 
-**Alternativas.** Retirar el estilo de cristal; mantener cada filtro independiente; compartir el fondo entre filas que no se superponen y ofrecer superficies opacas cuando se solicita alto contraste.
+**Alternativas.** Retirar cristal; filtros por fila; compartir filtros y ofrecer fondos opacos en alto contraste.
 
-**Elección.** BackdropGroup para filas de históricos y conversación. Alto contraste elimina el desenfoque. Los importes pasan a una columna en pantallas estrechas o con letra ampliada; copiar referencias usa un botón con etiqueta y tamaño táctil.
+**Elección.** BackdropGroup en filas independientes. Los importes cambian de distribución según el espacio. Alto contraste elimina desenfoque y reducir movimiento desactiva animaciones.
 
-**Compromisos.** Los elementos superpuestos no comparten la misma clave. El emulador permite comparar una intervención, pero no acredita fluidez en dispositivos físicos. Las pruebas automáticas de semántica complementan, sin sustituir, una revisión completa con lectores nativos.
+**Costo y limitaciones.** Los elementos superpuestos no pueden compartir la misma clave de filtro. La medición en emulador tiene cuadros lentos y no garantiza fluidez física. Las pruebas de etiquetas no sustituyen TalkBack o VoiceOver.
 
-**Impacto futuro.** Repetir perfiles en equipos físicos de distinta capacidad y extender las comprobaciones a todos los productos. El informe de [calidad](calidad.md) identifica entorno, muestra y límites de las medidas.
+**Evolución.** Medir equipos físicos y revisar todos los productos con lectores de pantalla. [Resultados de calidad](calidad.md).

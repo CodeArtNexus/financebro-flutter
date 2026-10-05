@@ -38,7 +38,9 @@ Future<void> llenarRegistro(WidgetTester tester, {String? correo}) async {
   await tester.pump(const Duration(milliseconds: 700));
   await tester.ensureVisible(find.byKey(const Key('enviar-acceso')));
   await tester.tap(find.byKey(const Key('enviar-acceso')));
-  await tester.pump(const Duration(milliseconds: 700));
+  await esperar(tester, find.byKey(const Key('direccion')));
+  await tester.ensureVisible(find.byKey(const Key('enviar-acceso')));
+  await tester.pump(const Duration(milliseconds: 350));
   expect(
     tester
         .widget<FilledButton>(find.byKey(const Key('enviar-acceso')))

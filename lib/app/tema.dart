@@ -11,6 +11,8 @@ bool oscuroBro(BuildContext context) =>
 Color textoBro(BuildContext context) => Theme.of(context).colorScheme.onSurface;
 Color secundarioBro(BuildContext context) =>
     Theme.of(context).colorScheme.onSurfaceVariant;
+Color ingresoBro(BuildContext context) =>
+    oscuroBro(context) ? const Color(0xFF9CD8B8) : const Color(0xFF356B53);
 Color acentoBro(BuildContext context) => Theme.of(context).colorScheme.primary;
 Color bordeBro(BuildContext context) => oscuroBro(context)
     ? Colors.white.withValues(alpha: .13)
@@ -128,13 +130,19 @@ ThemeData crearTema({Brightness brillo = Brightness.light}) {
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: acento,
-        minimumSize: const Size(44, 44),
+        minimumSize: const Size(48, 48),
         shape: forma,
         textStyle: const TextStyle(
           fontFamily: 'Poppins',
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
+      ),
+    ),
+    iconButtonTheme: IconButtonThemeData(
+      style: IconButton.styleFrom(
+        minimumSize: const Size(48, 48),
+        tapTargetSize: MaterialTapTargetSize.padded,
       ),
     ),
     cardTheme: CardThemeData(

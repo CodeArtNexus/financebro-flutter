@@ -40,7 +40,14 @@ class TarjetaVisualBro extends StatelessWidget {
         fondo = tarjeta['fondoRuta'] as String?,
         oscuro = tarjeta['color'] == 'noche' || tarjeta['fondoRuta'] != null;
     return Semantics(
-      label: 'Tarjeta ${tarjeta['banco']} terminada en ${tarjeta['ultimos4']}',
+      label:
+          'Tarjeta ${tarjeta['tipo'] != 'propia'
+              ? 'asociada'
+              : tarjeta['clase'] == 'credito'
+              ? 'de crédito'
+              : 'de débito'} ${tarjeta['banco']} terminada en ${tarjeta['ultimos4']}. ${tarjeta['nombre'] ?? 'Mi tarjeta'}. Titular $titular',
+      excludeSemantics: true,
+      onTap: onTap,
       button: onTap != null,
       child: InkWell(
         onTap: onTap,

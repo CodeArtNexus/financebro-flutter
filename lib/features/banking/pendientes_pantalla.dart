@@ -93,21 +93,42 @@ class PendientesPantalla extends ConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: Icon(
-                                v['estado'] == 'confirmada'
-                                    ? Icons.check_circle_outline
-                                    : Icons.schedule_send,
-                              ),
-                              title: Text(v['titular'] as String),
-                              subtitle: Text(
-                                '${v['datos']['numero']}\n${v['mensaje']}',
-                              ),
-                              isThreeLine: true,
-                              trailing: Text(
-                                'USD ${((v['datos']['centavos'] as int) / 100).toStringAsFixed(2)}',
-                              ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: [
+                                    Icon(
+                                      v['estado'] == 'confirmada'
+                                          ? Icons.check_circle_outline
+                                          : Icons.schedule_send,
+                                    ),
+                                    Text(
+                                      v['titular'] as String,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(v['datos']['numero'] as String),
+                                const SizedBox(height: 8),
+                                Semantics(
+                                  liveRegion: true,
+                                  child: Text(v['mensaje'] as String),
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'USD ${((v['datos']['centavos'] as int) / 100).toStringAsFixed(2)}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
                             if (v['estado'] == 'pendiente' &&
                                 v['intentada'] != true)

@@ -2,7 +2,9 @@ import 'package:go_router/go_router.dart';
 
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'historial.dart';
+import '../../app/proveedores_historial.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -12,6 +14,8 @@ import '../../core/componentes.dart';
 import '../../core/diseno_bro.dart';
 import '../../core/errores.dart';
 import 'componentes_banca.dart';
+import '../../core/fila_importe.dart';
+import '../../app/tema.dart';
 
 class HistorialPantalla extends ConsumerStatefulWidget {
   const HistorialPantalla({super.key, this.cuenta, this.tipo, this.destino});
@@ -21,25 +25,23 @@ class HistorialPantalla extends ConsumerStatefulWidget {
 }
 
 class _HistorialEstado extends EstadoBanco<HistorialPantalla> {
-  final items = <QueryDocumentSnapshot<Map<String, dynamic>>>[];
+  final items = <MovimientoBanco>[];
+  CursorHistorial? cursor;
+  bool paginada = false;
   bool mas = true, cache = false;
-  StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? suscripcion;
+  StreamSubscription<PaginaHistorial>? suscripcion;
   String filtro = 'Todos';
-  Query<Map<String, dynamic>> consulta() {
-    final uid = ref.read(identidadProvider).actual!.uid;
-    final ruta = widget.cuenta != null
-        ? 'usuarios/$uid/cuentas/${widget.cuenta}/movimientos'
+  ConsultaHistorial consulta() => ConsultaHistorial(
+    ref.read(identidadProvider).actual!.uid,
+    ambito: widget.cuenta != null
+        ? AmbitoHistorial.cuenta
         : widget.tipo == 'tarjeta'
-        ? 'usuarios/$uid/tarjetas/${widget.destino}/movimientos'
+        ? AmbitoHistorial.tarjeta
         : widget.tipo == 'contacto'
-        ? 'usuarios/$uid/contactos/${widget.destino}/movimientos'
-        : 'usuarios/$uid/movimientosGlobales';
-    return ref
-        .read(datosProvider)
-        .collection(ruta)
-        .orderBy('fecha', descending: true)
-        .orderBy(FieldPath.documentId, descending: true);
-  }
+        ? AmbitoHistorial.contacto
+        : AmbitoHistorial.global,
+    destino: widget.cuenta ?? widget.destino,
+  );
 
   @override
   void initState() {
@@ -48,58 +50,69 @@ class _HistorialEstado extends EstadoBanco<HistorialPantalla> {
   }
 
   Future<void> cargar({bool inicial = false}) => trabajar(() async {
-    var q = consulta().limit(30);
-    if (!inicial && items.isNotEmpty) q = q.startAfterDocument(items.last);
-    QuerySnapshot<Map<String, dynamic>> s;
-    try {
-      s = await q
-          .get(const GetOptions(source: Source.server))
-          .timeout(const Duration(seconds: 8));
-    } on TimeoutException {
-      s = await q.get(const GetOptions(source: Source.cache));
-    } on FirebaseException catch (e) {
-      if (e.code != 'unavailable') rethrow;
-      s = await q.get(const GetOptions(source: Source.cache));
+    final repositorio = ref.read(historialRepositorioProvider);
+    if (inicial) {
+      await suscripcion?.cancel();
+      items.clear();
+      cursor = null;
+      paginada = false;
+      final primera = Completer<void>();
+      suscripcion = repositorio
+          .observar(consulta())
+          .listen(
+            (n) {
+              if (!mounted) return;
+              setState(() {
+                error = null;
+                cache = n.desdeCache;
+                final documentos = {
+                  for (final d in items) d.id: d,
+                  for (final d in n.movimientos) d.id: d,
+                };
+                items
+                  ..clear()
+                  ..addAll(documentos.values)
+                  ..sort(MovimientoBanco.ordenar);
+                if (!paginada) {
+                  cursor = n.cursor;
+                  mas = n.mas;
+                }
+              });
+              if (!primera.isCompleted &&
+                  (!n.desdeCache || n.movimientos.isNotEmpty)) {
+                primera.complete();
+              }
+            },
+            onError: (Object e) {
+              if (!primera.isCompleted) {
+                primera.completeError(e);
+              } else if (mounted) {
+                setState(() => error = mensajeError(e));
+              }
+            },
+          );
+      await primera.future.timeout(
+        const Duration(seconds: 8),
+        onTimeout: () {
+          throw const FalloApp(
+            'La consulta está tardando. Conservamos tu histórico; vuelve a intentar.',
+            transitorio: true,
+          );
+        },
+      );
+      return;
     }
-    if (mounted) {
-      setState(() {
-        cache = s.metadata.isFromCache;
-        if (inicial) items.clear();
-        final existentes = items.map((d) => d.id).toSet();
-        items.addAll(s.docs.where((d) => !existentes.contains(d.id)));
-        mas = s.docs.length == 30;
-      });
-      if (inicial) {
-        await suscripcion?.cancel();
-        suscripcion = consulta()
-            .limit(30)
-            .snapshots(includeMetadataChanges: true)
-            .listen(
-              (n) {
-                if (!mounted) return;
-                setState(() {
-                  cache = n.metadata.isFromCache;
-                  final documentos = {
-                    for (final d in items) d.id: d,
-                    for (final d in n.docs) d.id: d,
-                  };
-                  items
-                    ..clear()
-                    ..addAll(documentos.values);
-                  items.sort((a, b) {
-                    final c = (b.data()['fecha'] as Timestamp).compareTo(
-                      a.data()['fecha'] as Timestamp,
-                    );
-                    return c == 0 ? b.id.compareTo(a.id) : c;
-                  });
-                });
-              },
-              onError: (Object e) {
-                if (mounted) setState(() => error = mensajeError(e));
-              },
-            );
-      }
-    }
+    final n = await repositorio.pagina(consulta(), despues: cursor);
+    if (!mounted) return;
+    setState(() {
+      cache = n.desdeCache;
+      final existentes = items.map((d) => d.id).toSet();
+      items.addAll(n.movimientos.where((d) => !existentes.contains(d.id)));
+      items.sort(MovimientoBanco.ordenar);
+      cursor = n.cursor ?? cursor;
+      mas = n.mas;
+      paginada = true;
+    });
   });
   @override
   void dispose() {
@@ -113,6 +126,8 @@ class _HistorialEstado extends EstadoBanco<HistorialPantalla> {
         ? 'Movimientos de tu cuenta'
         : widget.tipo != null
         ? 'Movimientos asociados'
+        : MediaQuery.textScalerOf(context).scale(12) > 16
+        ? 'Movimientos'
         : 'Todos tus movimientos',
     [
       if (widget.cuenta == 'corriente')
@@ -160,71 +175,59 @@ class _HistorialEstado extends EstadoBanco<HistorialPantalla> {
             ],
           ),
         ),
-      if (items.isEmpty && !ocupado)
+      if (items.isEmpty && !ocupado && error == null)
         const CristalBro(child: Text('Todavía no hay movimientos.')),
       for (final doc in items.where(
         (d) =>
             filtro == 'Todos' ||
-            (filtro == 'Ingresos'
-                ? (d.data()['centavos'] as num) > 0
-                : (d.data()['centavos'] as num) < 0),
+            (filtro == 'Ingresos' ? d.centavos > 0 : d.centavos < 0),
       ))
         Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: CristalBro(
             padding: const EdgeInsets.all(16),
+            agrupar: true,
             child: Builder(
               builder: (context) {
-                final d = doc.data(),
-                    centavos = (d['centavos'] as num).toInt(),
-                    fecha = d['fecha'] as Timestamp?;
+                final d = doc, centavos = d.centavos, fecha = d.fecha;
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            d['descripcion'] as String,
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                    FilaImporteBro(
+                      titulo: Text(
+                        d.descripcion,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                         ),
-                        const SizedBox(width: 12),
-                        Text(
-                          '${centavos > 0 ? '+' : ''}${dinero(centavos)}',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: centavos > 0
-                                ? const Color(0xFF356B53)
-                                : Theme.of(context).colorScheme.primary,
-                          ),
+                      ),
+                      importe: Text(
+                        '${centavos > 0 ? '+' : ''}${dinero(centavos)}',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: centavos > 0
+                              ? ingresoBro(context)
+                              : Theme.of(context).colorScheme.primary,
                         ),
-                      ],
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '${fecha == null ? 'Pendiente' : DateFormat('dd MMM yyyy · HH:mm', 'es').format(fecha.toDate())} · ${d['categoria']}',
+                      '${DateFormat('dd MMM yyyy · HH:mm', 'es').format(fecha)} · ${d.categoria}',
                       style: const TextStyle(fontSize: 10),
                     ),
                     if (widget.cuenta == null && widget.tipo == null)
                       Text(
-                        'Cuenta: ${d['cuenta']}',
+                        'Cuenta: ${d.cuenta}',
                         style: const TextStyle(fontSize: 10),
                       ),
-                    if (d['automatico'] == true)
+                    if (d.automatico)
                       const Text(
                         'Pago mensual autorizado',
                         style: TextStyle(fontSize: 10),
                       ),
-                    SelectableText(
-                      'Referencia: ${d['referencia'] ?? doc.id}',
-                      style: const TextStyle(fontSize: 9),
-                    ),
+                    ReferenciaBro(d.referencia),
                   ],
                 );
               },
@@ -245,5 +248,6 @@ class _HistorialEstado extends EstadoBanco<HistorialPantalla> {
           textAlign: TextAlign.center,
         ),
     ],
+    agruparCristal: true,
   );
 }

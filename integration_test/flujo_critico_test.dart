@@ -18,9 +18,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
 Future<void> esperar(WidgetTester tester, Finder finder) async {
-  for (var i = 0; i < 150; i++) {
-    await tester.pump(const Duration(milliseconds: 200));
+  final reloj = Stopwatch()..start();
+  while (reloj.elapsed < const Duration(seconds: 60)) {
+    await tester.pump();
     if (finder.evaluate().isNotEmpty) return;
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 150)),
+    );
   }
   final textos = find
       .byType(Text)

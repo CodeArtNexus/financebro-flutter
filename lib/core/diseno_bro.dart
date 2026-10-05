@@ -60,11 +60,13 @@ class CristalBro extends StatelessWidget {
     this.padding = const EdgeInsets.all(20),
     this.color,
     this.radio = 24,
+    this.agrupar = false,
   });
   final Widget child;
   final EdgeInsetsGeometry padding;
   final Color? color;
   final double radio;
+  final bool agrupar;
   @override
   Widget build(BuildContext context) => Container(
     decoration: BoxDecoration(
@@ -82,6 +84,10 @@ class CristalBro extends StatelessWidget {
     child: ClipRRect(
       borderRadius: BorderRadius.circular(radio),
       child: BackdropFilter(
+        backdropGroupKey: agrupar
+            ? BackdropGroup.of(context)?.backdropKey
+            : null,
+        enabled: !MediaQuery.highContrastOf(context),
         filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
         child: Container(
           padding: padding,
@@ -101,40 +107,51 @@ class MarcaBro extends StatelessWidget {
   const MarcaBro({super.key, this.compacta = false});
   final bool compacta;
   @override
-  Widget build(BuildContext context) => Row(
-    mainAxisSize: MainAxisSize.min,
-    children: [
-      Container(
-        width: compacta ? 36 : 46,
-        height: compacta ? 36 : 46,
-        decoration: BoxDecoration(
-          color: naranjaFinanceBro,
-          borderRadius: BorderRadius.circular(15),
-        ),
-        child: Center(
-          child: Text(
-            'fb.',
-            style: TextStyle(
-              fontSize: compacta ? 20 : 25,
-              fontWeight: FontWeight.w700,
-              letterSpacing: -2,
-              color: tintaBro,
+  Widget build(BuildContext context) => Semantics(
+    label: 'FinanceBro',
+    excludeSemantics: true,
+    child: FittedBox(
+      fit: BoxFit.scaleDown,
+      alignment: Alignment.centerLeft,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: compacta ? 36 : 46,
+            height: compacta ? 36 : 46,
+            decoration: BoxDecoration(
+              color: naranjaFinanceBro,
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Center(
+              child: Text(
+                'fb.',
+                style: TextStyle(
+                  fontSize: compacta ? 20 : 25,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -2,
+                  color: tintaBro,
+                ),
+              ),
             ),
           ),
-        ),
+          const SizedBox(width: 10),
+          Text(
+            'financebro',
+            style: TextStyle(
+              fontSize: compacta ? 19 : 23,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -.9,
+              color: textoBro(context),
+            ),
+          ),
+          const Text(
+            ' •',
+            style: TextStyle(color: naranjaTextoBro, fontSize: 24),
+          ),
+        ],
       ),
-      const SizedBox(width: 10),
-      Text(
-        'financebro',
-        style: TextStyle(
-          fontSize: compacta ? 19 : 23,
-          fontWeight: FontWeight.w700,
-          letterSpacing: -.9,
-          color: textoBro(context),
-        ),
-      ),
-      const Text(' •', style: TextStyle(color: naranjaTextoBro, fontSize: 24)),
-    ],
+    ),
   );
 }
 

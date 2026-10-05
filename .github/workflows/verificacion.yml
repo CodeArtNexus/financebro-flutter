@@ -90,6 +90,8 @@ jobs:
         run: npm ci --prefix functions && npm ci --prefix tooling && npm ci --prefix admin
       - name: Probar reconstrucción segura de históricos
         run: node --test tooling/reconciliar-historicos.test.mjs
+      - name: Comprobar contratos y límites de módulos
+        run: node tooling/comprobar-limites.mjs
       - name: Probar validaciones
         run: npm --prefix functions test
       - name: Probar operaciones con los emuladores

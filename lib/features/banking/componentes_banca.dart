@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -51,13 +52,21 @@ abstract class EstadoBanco<T extends ConsumerStatefulWidget>
         ),
     ],
   );
-  Widget pagina(String titulo, List<Widget> contenido) => Scaffold(
-    appBar: AppBar(leading: const VolverBro(), title: Text(titulo)),
-    body: ListView(
+  Widget pagina(
+    String titulo,
+    List<Widget> contenido, {
+    bool agruparCristal = false,
+  }) {
+    final lista = ListView(
       padding: const EdgeInsets.fromLTRB(22, 8, 22, 32),
       children: [...contenido, estado()],
-    ),
-  );
+    );
+    return Scaffold(
+      appBar: AppBar(leading: const VolverBro(), title: Text(titulo)),
+      body: agruparCristal ? BackdropGroup(child: lista) : lista,
+    );
+  }
+
   Widget campo(
     TextEditingController controller,
     String etiqueta, {
@@ -165,10 +174,7 @@ class ReciboBro extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           const Divider(),
-          SelectableText(
-            'Referencia: ${recibo['referencia']}',
-            style: TextStyle(fontSize: 10),
-          ),
+          ReferenciaBro(recibo['referencia'] as String),
           if (recibo['periodo'] != null)
             Text('Planilla: ${recibo['periodo']} · ${recibo['contrato']}'),
           const SizedBox(height: 16),
@@ -273,5 +279,23 @@ class _DineroViajandoEstado extends State<DineroViajandoBro>
         },
       ),
     ),
+  );
+}
+
+class ReferenciaBro extends StatelessWidget {
+  const ReferenciaBro(this.valor, {super.key});
+  final String valor;
+  @override
+  Widget build(BuildContext context) => TextButton.icon(
+    onPressed: () async {
+      await Clipboard.setData(ClipboardData(text: valor));
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text('Referencia copiada')));
+      }
+    },
+    icon: const Icon(Icons.copy_outlined, size: 18),
+    label: Text('Referencia: $valor'),
+    style: TextButton.styleFrom(alignment: Alignment.centerLeft),
   );
 }

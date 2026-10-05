@@ -106,7 +106,7 @@ Cada decisión describe el problema, las opciones consideradas, la elección y s
 
 **Elección.** Commits por etapas, archivos de bloqueo y cinco trabajos de CI. Emulator Suite aísla las pruebas; Android ejecuta registro interrumpido y recuperación de transferencia.
 
-**Costo y limitaciones.** CI no comprueba FCM remoto: ese caso usa el servidor publicado en un recorrido separado con accesos privados. Un historial lineal por sí solo no demuestra colaboración entre varios equipos.
+**Costo y limitaciones.** CI no comprueba FCM remoto: ese caso usa el servidor publicado en un recorrido separado con accesos de prueba. Un historial lineal por sí solo no demuestra colaboración entre varios equipos.
 
 **Evolución.** Añadir recorridos según el riesgo y mantener el tiempo de verificación compatible con cambios frecuentes.
 

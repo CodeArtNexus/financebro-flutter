@@ -1,6 +1,6 @@
 # Recorrido de evaluación
 
-Utilizar el [APK Android 1.7.0](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.7.0-calidad), la app ejecutada con Flutter y el [panel publicado](https://financebro-sb-20261003.web.app/). Los accesos de cliente, contraparte y asesor se entregan por separado. Los datos de registro, fondos y documentos deben ser ficticios.
+Utilizar el [APK Android 1.7.0](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.7.0-calidad), la app ejecutada con Flutter y el [panel publicado](https://financebro-sb-20261003.web.app/). Los correos, contraseñas y funciones de cliente, contraparte y asesor están en la [Guía de evaluación y accesos](guia-evaluacion.md). Los datos de registro, fondos y documentos deben ser ficticios.
 
 ## Preparar el dispositivo
 
@@ -56,7 +56,7 @@ La app guarda la autorización antes del envío. Si el servidor confirmó y se p
 ./scripts/prueba-integral.sh
 ```
 
-El segundo comando necesita dispositivo y los cuatro emuladores en ejecución. El desglose de [calidad](calidad.md) suma 149 pruebas automáticas. CI también ejecuta el E2E de recuperación Android. Los recorridos conectados con credenciales privadas y las mediciones de rendimiento se registran por separado.
+El segundo comando necesita dispositivo y los cuatro emuladores en ejecución. El desglose de [calidad](calidad.md) suma 149 pruebas automáticas. CI también ejecuta el E2E de recuperación Android. Los recorridos contra el servidor publicado y las mediciones de rendimiento se registran por separado.
 
 Para capturar los escenarios de conexión contra el servidor publicado, utilizar un archivo privado con `EVAL_CORREO` y `EVAL_CLAVE`:
 

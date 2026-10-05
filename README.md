@@ -12,13 +12,14 @@ La versión **1.7.0** utiliza Firebase Authentication, Firestore, Storage y Func
 | [Panel de administración](https://financebro-sb-20261003.web.app/) | Cuentas, fondos, solicitudes, movimientos y configuración |
 | [Presentación y recorrido técnico](https://financebro-sb-20261003.web.app/presentacion/) | Video comercial de 1:45 y recorrido de 22:30, con procesos completos y capítulos |
 | [Galería de interfaz](https://financebro-sb-20261003.web.app/revision/) | 214 capturas: 100 Android, 96 iOS y 18 del panel |
+| [Guía de evaluación y accesos](documentacion/guia-evaluacion.md) | Correos, contraseñas y recorrido por perfil en el servidor publicado |
 | [Pasos de evaluación](documentacion/evaluacion.md) | Recorrido conectado y demostración de errores, caché y recuperación |
 
 ### Accesos y perfiles del servidor publicado
 
 Los tres perfiles de cliente y el asesor están creados en el servidor en línea. La app Android, la app iOS y el [panel web](https://financebro-sb-20261003.web.app/) utilizan el mismo proyecto de Firebase y comparten cuentas, solicitudes, fondos e históricos. No hace falta iniciar un servidor local ni los emuladores de Firebase.
 
-Los correos y contraseñas se entregan por separado en **Accesos-evaluacion-FinanceBro.md**; no se publican en Git. Ingresar con esos accesos mediante «Ya tengo una cuenta» / «Ingresar», sin volver a registrar los perfiles preparados.
+Los correos, contraseñas y pasos para utilizar cada perfil están en la [Guía de evaluación y accesos](documentacion/guia-evaluacion.md). Ingresar mediante «Ya tengo una cuenta» / «Ingresar», sin volver a registrar los perfiles preparados.
 
 | Perfil | Funciones disponibles al iniciar la revisión |
 | --- | --- |
@@ -170,6 +171,7 @@ El proyecto publicado exporta `banca` y `enviarAviso`, con cero instancias míni
 | [Arquitectura](documentacion/arquitectura.md) | Componentes, datos y flujo de transferencia |
 | [Decisiones](documentacion/decisiones.md) | Problema, alternativas, elección, costo y evolución |
 | [Operación](documentacion/operacion.md) | Despliegue, diagnóstico, recuperación, escalamiento y costos |
+| [Guía de evaluación y accesos](documentacion/guia-evaluacion.md) | Perfiles, contraseñas y recorrido funcional |
 | [Evaluación](documentacion/evaluacion.md) | Acciones y resultados que se pueden reproducir |
 | [Calidad](documentacion/calidad.md) | Pruebas, accesibilidad, rendimiento y límites |
 | [Requisitos](documentacion/requisitos.md) | Correspondencia con el documento de la prueba |
@@ -177,4 +179,4 @@ El proyecto publicado exporta `banca` y `enviarAviso`, con cero instancias míni
 | [Videos](documentacion/audiovisual.md) | Procesos grabados, capítulos y verificaciones |
 | [Colaboración](CONTRIBUTING.md) | Trunk Based Development y revisión de cambios |
 
-Las credenciales, firmas y guías personales se conservan fuera de Git.
+Los accesos ficticios de evaluación están publicados en su guía. Las credenciales de infraestructura, cuentas personales, firmas y guías privadas se conservan fuera de Git.

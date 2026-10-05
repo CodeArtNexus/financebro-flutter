@@ -2,7 +2,7 @@
 
 El [panel publicado](https://financebro-sb-20261003.web.app/) comparte Firebase con la app. Permite consultar personas y cuentas, ajustar fondos ficticios con un motivo, revisar solicitudes, consultar movimientos y administrar servicios, temporadas y cheques.
 
-El acceso exige el claim `financebroAdmin`. Functions comprueba ese rol en cada operación administrativa. Las reglas impiden modificar saldos o aprobaciones directamente desde el navegador. Los accesos publicados se entregan por separado.
+El acceso exige el claim `financebroAdmin`. Functions comprueba ese rol en cada operación administrativa. Las reglas impiden modificar saldos o aprobaciones directamente desde el navegador. El correo y la contraseña del asesor están en la [Guía de evaluación y accesos](../documentacion/guia-evaluacion.md#panel-de-administración).
 
 ## Ejecutar
 

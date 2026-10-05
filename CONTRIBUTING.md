@@ -6,7 +6,7 @@ El proyecto utiliza Trunk Based Development: `main` contiene la versión integra
 
 Instalar las versiones del [README](README.md) y resolver dependencias con los archivos de bloqueo. Desarrollar contra Emulator Suite con datos ficticios. Los scripts detectan herramientas instaladas; en Linux pueden requerirse `ANDROID_HOME` y `JAVA_HOME`. iOS necesita macOS y Xcode.
 
-No incorporar claves, firmas, archivos de acceso, documentos personales o la guía privada. Un clon del repositorio no concede permisos para administrar o desplegar el proyecto publicado.
+No incorporar claves de infraestructura, credenciales personales, firmas, archivos privados de acceso, documentos personales o la guía de defensa. La [guía de evaluación](documentacion/guia-evaluacion.md) contiene únicamente los accesos ficticios publicados para revisar la app y el panel; no conceden acceso a Firebase Console ni al despliegue.
 
 ## Flujo de trabajo
 

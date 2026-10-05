@@ -14,7 +14,26 @@ La versión **1.7.0** utiliza Firebase Authentication, Firestore, Storage y Func
 | [Galería de interfaz](https://financebro-sb-20261003.web.app/revision/) | 214 capturas: 100 Android, 96 iOS y 18 del panel |
 | [Pasos de evaluación](documentacion/evaluacion.md) | Recorrido conectado y demostración de errores, caché y recuperación |
 
-Los accesos de cliente, contraparte y asesor se entregan por separado. Los perfiles preparados incluyen productos, fondos e históricos. La compilación normal conecta al servidor publicado y no necesita un servidor local. La distribución iOS utiliza firma de desarrollo; no hay una versión de TestFlight.
+### Accesos y perfiles del servidor publicado
+
+Los tres perfiles de cliente y el asesor están creados en el servidor en línea. La app Android, la app iOS y el [panel web](https://financebro-sb-20261003.web.app/) utilizan el mismo proyecto de Firebase y comparten cuentas, solicitudes, fondos e históricos. No hace falta iniciar un servidor local ni los emuladores de Firebase.
+
+Los correos y contraseñas se entregan por separado en **Accesos-evaluacion-FinanceBro.md**; no se publican en Git. Ingresar con esos accesos mediante «Ya tengo una cuenta» / «Ingresar», sin volver a registrar los perfiles preparados.
+
+| Perfil | Funciones disponibles al iniciar la revisión |
+| --- | --- |
+| Sebastián Torres | Ahorros y corriente activas, débito personalizable, crédito activo con corte y pagos, tarjeta externa, servicios, metas, contactos y movimientos. Emite y recibe cheques. |
+| Valeria Andrade | Segunda cuenta para transferencias, QR y cheques. Ahorros y corriente activas, débito, tarjeta externa y crédito aprobado pendiente de elegir corte. |
+| Mateo Rivera | Ahorros y débito activos. Expedientes de cuenta corriente y tarjeta de crédito pendientes de revisión, para completar su aprobación desde el panel. |
+| Asesor | Acceso al panel web para revisar cuentas y movimientos, ajustar fondos ficticios, aprobar solicitudes y gestionar tarjetas, servicios, cheques y temporadas. El servidor comprueba su rol administrativo; una cuenta de cliente no tiene esos permisos. |
+
+1. **Android:** instalar el APK enlazado arriba o ejecutar la app desde este repositorio. La compilación normal conecta al servidor publicado.
+2. **iOS:** ejecutar la app con Flutter y Xcode en un simulador o firmarla con una cuenta de Apple para instalarla en un iPhone físico. Usa los mismos accesos y datos que Android. No hay distribución de TestFlight ni un instalador iOS universal.
+3. **Panel:** abrir el enlace publicado en un navegador e ingresar con el acceso de asesor. Un ajuste o aprobación se refleja en la app conectada del cliente correspondiente.
+
+Para esta revisión **no activar `USE_EMULATORS` ni `VITE_USE_EMULATORS`**. Las claves indicadas en «Entorno aislado» solo sirven para los emuladores y no permiten entrar al servidor publicado. Los perfiles conservan los cambios entre sesiones; las operaciones de revisión modifican sus saldos, estados e históricos.
+
+Se verificaron el 5 de octubre de 2026 los cuatro accesos en línea, los productos e históricos de cada cliente, el rol del asesor y la conexión del panel al mismo proyecto. La comprobación consultó datos sin cambiar fondos ni aprobar solicitudes.
 
 ## Funciones y reglas principales
 

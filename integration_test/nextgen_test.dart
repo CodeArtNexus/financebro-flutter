@@ -179,12 +179,12 @@ void main() {
             .get(),
       ))!.docs;
       var cheque = cheques.first;
-      for (final registroCheque in cheques) {
-        if ((registroCheque.data()['creado'] as Timestamp).compareTo(
+      for (final chequeRegistrado in cheques) {
+        if ((chequeRegistrado.data()['creado'] as Timestamp).compareTo(
               cheque.data()['creado'] as Timestamp,
             ) >
             0) {
-          cheque = registroCheque;
+          cheque = chequeRegistrado;
         }
       }
       await abrir('/chequera/cheques/${cheque.id}', '09-detalle-cheque');

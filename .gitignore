@@ -45,7 +45,7 @@ node_modules/
 
 # Versionar pubspec.lock, reglas, índices y configuración pública del cliente Firebase.
 
-# Guía personal fuera de Git
+# Guía personal y evidencias locales fuera de Git
 /README.personal.md
 /evidencia-local/
 

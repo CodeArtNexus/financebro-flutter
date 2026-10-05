@@ -46,6 +46,6 @@ Los pagos mensuales conservan programación y consentimiento, pero no ejecutan c
 
 ## Publicación y conservación
 
-La página, capítulos, carátulas y verificaciones se versionan. Los MP4 se publican en Hosting y quedan excluidos de Git para conservar un historial manejable. Antes de publicar el panel, colocar los dos archivos finales en `admin/public/presentacion/videos/` y ejecutar la compilación habitual; sin esos archivos la página no dispone de video.
+La página, capítulos, carátulas y verificaciones se versionan. Los MP4 se publican en Hosting y quedan excluidos de Git para conservar un historial manejable. `node tooling/preparar-videos.mjs` descarga los dos MP4 de la entrega y verifica sus huellas SHA-256 contra el manifiesto versionado. Si ya están disponibles, comprueba las copias existentes; si difieren, se detiene sin sustituirlas. `scripts/preparar-publicacion.sh` incluye este paso antes de compilar el panel para evitar una publicación sin videos. No se descargan medios durante la comprobación de compilación en CI.
 
 El paquete editable conserva el proyecto `.aep`, capturas originales, música, guion y licencias. El proyecto audiovisual se entrega por separado y no contiene archivos de acceso. La versión móvil permanece en 1.6.3; esta etapa actualiza evidencia, documentación y reproducibilidad del recorrido remoto.

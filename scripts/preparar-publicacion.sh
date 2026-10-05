@@ -6,6 +6,7 @@ cd "$script_dir/.."
 ./scripts/check.sh
 npm --prefix functions test
 npm --prefix admin test
+node tooling/preparar-videos.mjs
 VITE_USE_EMULATORS=false npm --prefix admin run build
 node --check functions/src/index.js
 node --check functions/src/chequera.js

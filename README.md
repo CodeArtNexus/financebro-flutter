@@ -109,6 +109,8 @@ Los clientes no pueden escribir saldos, movimientos, aprobaciones o tarjetas dir
 
 El rol de administración se asigna desde una herramienta de confianza y se comprueba también en el servidor. Cambiar el perfil o el navegador no concede permisos. Las reglas e índices de Firestore y Storage forman parte del repositorio; deben desplegarse junto con Functions. Las imágenes de tarjetas no utilizan enlaces públicos permanentes.
 
+La [preparación audiovisual](documentacion/audiovisual.md) descarga y comprueba los videos de la entrega antes de publicar Hosting; los medios se distribuyen como archivos de release y no como binarios del historial.
+
 ## Comprobaciones de integridad
 
 La versión 1.6.3 completa la documentación de evaluación y añade dos pruebas de contraste del aviso de conexión en temas claro y oscuro. Las 123 verificaciones automáticas se acompañan de recorridos nativos separados; el aviso ahora utiliza los colores de cada tema para conservar legibilidad.

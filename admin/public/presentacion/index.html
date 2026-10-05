@@ -1,7 +1,161 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>FinanceBro · Presentación y recorrido</title><meta name="description" content="Presentación de FinanceBro y recorrido funcional conectado de Android: apertura, transferencia, tarjetas, chequera, administración, divisas y notificaciones remotas."><link rel="stylesheet" href="presentacion.css"><script src="presentacion.js" defer></script></head>
-<body><header><a class="marca" href="/revision/" aria-label="FinanceBro, revisión funcional">fb.</a><span>financebro<small>Tu financebro de confianza</small></span><nav aria-label="Navegación"><a href="/revision/">▦ Pantallas</a><a href="/">◇ Panel</a><a href="https://github.com/CodeArtNexus/financebro-flutter">↗ Repositorio</a></nav></header>
-<main><section class="intro"><span class="etiqueta">ANDROID · iOS · WEB</span><h1>Tu dinero. Tus planes.<br>Tu FinanceBro.</h1><p>Conoce el producto en una presentación breve y explora después el recorrido conectado, con operaciones y estados visibles.</p></section>
-<section class="pieza" aria-labelledby="titulo-comercial"><div class="cabecera"><div><span class="etiqueta">01 · PRESENTACIÓN</span><h2 id="titulo-comercial">Claridad en cada movimiento.</h2></div><span class="duracion">1 min 44 s · Full HD</span></div><video id="comercial" controls playsinline preload="none" poster="comercial.webp" aria-label="Presentación comercial de FinanceBro"><source src="videos/FinanceBro-Comercial.mp4" type="video/mp4"><track kind="chapters" src="comercial.vtt" srclang="es" label="Capítulos">Tu navegador no puede reproducir este formato. Utiliza el enlace de descarga.</video><div class="pie"><p>Cuentas, transferencias, tarjetas, ahorro y chequera digital con una identidad visual común.</p><a class="boton" href="videos/FinanceBro-Comercial.mp4" download>↓ Descargar presentación</a></div></section>
-<section class="pieza" aria-labelledby="titulo-recorrido"><div class="cabecera"><div><span class="etiqueta">02 · RECORRIDO FUNCIONAL</span><h2 id="titulo-recorrido">Mira cómo funciona.</h2></div><span class="duracion">5 min 10 s · Full HD</span></div><video id="recorrido" controls playsinline preload="none" poster="recorrido.webp" aria-label="Recorrido funcional conectado de FinanceBro"><source src="videos/FinanceBro-Recorrido-funcional.mp4" type="video/mp4"><track kind="chapters" src="recorrido.vtt" srclang="es" label="Capítulos">Tu navegador no puede reproducir este formato. Utiliza el enlace de descarga.</video><div class="pie"><p>Alta de ahorros y débito, envío conciliado, histórico, crédito, servicios, chequera, apariencia y avisos FCM recibidos y abiertos en Android.</p><a class="boton" href="videos/FinanceBro-Recorrido-funcional.mp4" download>↓ Descargar recorrido</a></div><div class="capitulos" aria-label="Capítulos del recorrido" id="capitulos"></div></section>
-<section class="alcance"><h2>La evidencia y su alcance.</h2><p>La app usa el servidor publicado y un proveedor externo real de divisas. Las identidades, fondos, tarjetas y planillas son ficticios. La transferencia de USD 0,10 conserva el total entre ambos extremos. La notificación remota se recibe en primer plano y Android abre el perfil al tocar el aviso en segundo plano.</p><p>Las escenas de latencia, caída parcial y desconexión se inducen de forma controlada. La captura automatiza la autorización del dispositivo únicamente en el recorrido; el APK distribuido solicita autorización nativa. El panel se presenta mediante una secuencia de capturas del sitio publicado. La programación mensual no ejecuta cargos automáticos y las push remotas iOS continúan pendientes de APNs.</p><div class="enlaces"><a href="/revision/">▦ Explorar 210 capturas</a><a href="https://github.com/CodeArtNexus/financebro-flutter/blob/main/documentacion/evaluacion.md">◇ Reproducir la evaluación</a><a href="https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.6.3-audiovisual">↓ Instalar Android</a></div></section></main><footer>FinanceBro · Prototipo financiero · Música original creada para esta presentación · <a href="https://github.com/CodeArtNexus/financebro-flutter/blob/main/documentacion/audiovisual.md">Producción y evidencia</a></footer></body></html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>FinanceBro · Presentación y recorrido</title>
+    <meta
+      name="description"
+      content="Presentación de FinanceBro y recorrido funcional conectado de Android: apertura, transferencia, tarjetas, chequera, administración, divisas y notificaciones remotas."
+    />
+    <link rel="stylesheet" href="presentacion.css" />
+    <script src="presentacion.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <a
+        class="marca"
+        href="/revision/"
+        aria-label="FinanceBro, revisión funcional"
+        >fb.</a
+      ><span>financebro<small>Tu financebro de confianza</small></span>
+      <nav aria-label="Navegación">
+        <a href="/revision/">▦ Pantallas</a><a href="/">◇ Panel</a
+        ><a href="https://github.com/CodeArtNexus/financebro-flutter"
+          >↗ Repositorio</a
+        >
+      </nav>
+    </header>
+    <main>
+      <section class="intro">
+        <span class="etiqueta">ANDROID · iOS · WEB</span>
+        <h1>Tu dinero. Tus planes.<br />Tu FinanceBro.</h1>
+        <p>
+          Conoce el producto en una presentación breve y explora después el
+          recorrido conectado, con operaciones y estados visibles.
+        </p>
+      </section>
+      <section class="pieza" aria-labelledby="titulo-comercial">
+        <div class="cabecera">
+          <div>
+            <span class="etiqueta">01 · PRESENTACIÓN</span>
+            <h2 id="titulo-comercial">Claridad en cada movimiento.</h2>
+          </div>
+          <span class="duracion">1 min 44 s · Full HD</span>
+        </div>
+        <video
+          id="comercial"
+          controls
+          playsinline
+          preload="none"
+          poster="comercial.webp"
+          aria-label="Presentación comercial de FinanceBro"
+        >
+          <source src="videos/FinanceBro-Comercial.mp4" type="video/mp4" />
+          <track
+            kind="chapters"
+            src="comercial.vtt"
+            srclang="es"
+            label="Capítulos"
+          />
+          Tu navegador no puede reproducir este formato. Utiliza el enlace de
+          descarga.
+        </video>
+        <div class="pie">
+          <p>
+            Cuentas, transferencias, tarjetas, ahorro y chequera digital con una
+            identidad visual común.
+          </p>
+          <a class="boton" href="videos/FinanceBro-Comercial.mp4" download
+            >↓ Descargar presentación</a
+          >
+        </div>
+      </section>
+      <section class="pieza" aria-labelledby="titulo-recorrido">
+        <div class="cabecera">
+          <div>
+            <span class="etiqueta">02 · RECORRIDO FUNCIONAL</span>
+            <h2 id="titulo-recorrido">Mira cómo funciona.</h2>
+          </div>
+          <span class="duracion">5 min 10 s · Full HD</span>
+        </div>
+        <video
+          id="recorrido"
+          controls
+          playsinline
+          preload="none"
+          poster="recorrido.webp"
+          aria-label="Recorrido funcional conectado de FinanceBro"
+        >
+          <source
+            src="videos/FinanceBro-Recorrido-funcional.mp4"
+            type="video/mp4"
+          />
+          <track
+            kind="chapters"
+            src="recorrido.vtt"
+            srclang="es"
+            label="Capítulos"
+          />
+          Tu navegador no puede reproducir este formato. Utiliza el enlace de
+          descarga.
+        </video>
+        <div class="pie">
+          <p>
+            Alta de ahorros y débito, envío conciliado, histórico, crédito,
+            servicios, chequera, apariencia y avisos FCM recibidos y abiertos en
+            Android.
+          </p>
+          <a
+            class="boton"
+            href="videos/FinanceBro-Recorrido-funcional.mp4"
+            download
+            >↓ Descargar recorrido</a
+          >
+        </div>
+        <div
+          class="capitulos"
+          aria-label="Capítulos del recorrido"
+          id="capitulos"
+        ></div>
+      </section>
+      <section class="alcance">
+        <h2>La evidencia y su alcance.</h2>
+        <p>
+          La app usa el servidor publicado y un proveedor externo real de
+          divisas. Las identidades, fondos, tarjetas y planillas son ficticios.
+          La transferencia de USD 0,10 conserva el total entre ambos extremos.
+          La notificación remota se recibe en primer plano y Android abre el
+          perfil al tocar el aviso en segundo plano.
+        </p>
+        <p>
+          Las escenas de latencia, caída parcial y desconexión se inducen de
+          forma controlada. La captura automatiza la autorización del
+          dispositivo únicamente en el recorrido; el APK distribuido solicita
+          autorización nativa. El panel se presenta mediante una secuencia de
+          capturas del sitio publicado. La programación mensual no ejecuta
+          cargos automáticos y las push remotas iOS continúan pendientes de
+          APNs.
+        </p>
+        <div class="enlaces">
+          <a href="/revision/">▦ Explorar 210 capturas</a
+          ><a
+            href="https://github.com/CodeArtNexus/financebro-flutter/blob/main/documentacion/evaluacion.md"
+            >◇ Reproducir la evaluación</a
+          ><a
+            href="https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.6.3-audiovisual"
+            >↓ Instalar Android</a
+          >
+        </div>
+      </section>
+    </main>
+    <footer>
+      FinanceBro · Prototipo financiero · Música original creada para esta
+      presentación ·
+      <a
+        href="https://github.com/CodeArtNexus/financebro-flutter/blob/main/documentacion/audiovisual.md"
+        >Producción y evidencia</a
+      >
+    </footer>
+  </body>
+</html>

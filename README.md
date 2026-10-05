@@ -18,6 +18,20 @@ La galería pública reúne capturas nativas de Android e iOS en temas claro y o
 
 Las operaciones se ejecutan desde la aplicación y el panel con los accesos entregados por separado. La galería permite revisar la interfaz sin iniciar sesión y no contiene contraseñas ni documentación personal. [Descargar la versión Android](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.6.2-integridad).
 
+## Documentación para la evaluación
+
+| Documento | Qué permite revisar |
+| --- | --- |
+| [Arquitectura y diagramas](documentacion/arquitectura.md) | Componentes, dependencias, flujo de transferencia y evolución por dominios |
+| [Decisiones técnicas](documentacion/decisiones.md) | Problemas, alternativas, elecciones, compromisos e impacto futuro |
+| [Despliegue, operación y monitoreo](documentacion/operacion.md) | Ambientes, publicación, recuperación, señales operativas, riesgos y escalamiento |
+| [Recorrido y conectividad](documentacion/evaluacion.md) | Pasos reproducibles, latencia, caída parcial, caché, reintentos y recuperación |
+| [Uso de IA](documentacion/uso-ia.md) | Reducción de carga operativa, implementación asistida y verificación de sus resultados |
+| [Correspondencia con la prueba](documentacion/requisitos.md) | Localización de cada requisito y límites actuales |
+| [Colaborar](CONTRIBUTING.md) | Trunk Based Development, cambios pequeños, revisión y verificaciones |
+
+Los documentos distinguen la implementación conectada de las medidas previstas para producción. La demostración remota de push se realiza en Android; APNs para iOS y el video de presentación permanecen pendientes.
+
 ## Recorrido funcional
 
 - **Registro:** nombres, apellidos, correo, cédula, contraseña, teléfono y domicilio. Se presenta el contrato antes de confirmar y se exige aceptación expresa. El servidor crea perfil, consentimiento versionado, cuenta de ahorros con USD 0 y tarjeta de débito en una transacción. El reintento conserva la misma cuenta, tarjeta y saldo.
@@ -34,9 +48,11 @@ Las operaciones se ejecutan desde la aplicación y el panel con los accesos entr
 
 ## Ejecutar con el servidor publicado
 
-Requisitos: Flutter 3.47.5 / Dart 3.13.4, Node 22, npm 11.18.0 y Java 21. Android requiere SDK 36; iOS requiere Xcode y firma de desarrollo para dispositivos físicos. Los lockfiles fijan las dependencias y Poppins incluye su licencia OFL.
+Requisitos: Flutter 3.47.5 / Dart 3.13.4, Node 22.20.0 o compatible (mínimo 22.12.0 para el panel), npm 11.18.0 y Java 21. Android requiere SDK 36; iOS requiere Xcode y firma de desarrollo para dispositivos físicos. Los lockfiles fijan las dependencias y Poppins incluye su licencia OFL.
 
 ```sh
+git clone https://github.com/CodeArtNexus/financebro-flutter.git
+cd financebro-flutter
 flutter pub get --enforce-lockfile
 flutter devices
 flutter run -d <identificador-del-dispositivo>
@@ -83,6 +99,8 @@ Para emuladores desde un iPhone físico, `scripts/preparar-iphone-local.py` y `s
 
 ## Arquitectura y protección de datos
 
+[Diagramas, límites de dominio y evolución](documentacion/arquitectura.md) · [Justificación de las decisiones](documentacion/decisiones.md).
+
 La aplicación se organiza por funcionalidades, con Riverpod para estado y GoRouter para navegación. Authentication identifica al usuario; Firestore conserva perfiles y registros; Storage protege los expedientes e imágenes. Functions ejecuta las operaciones en transacciones, comprueba identidad y rol y mantiene una bandeja de avisos. Los importes son centavos enteros y los reintentos conservan su referencia.
 
 Los clientes no pueden escribir saldos, movimientos, aprobaciones o tarjetas directamente. Identidad y domicilio solo son legibles por su propietario; una solicitud física comparte con el asesor el domicilio consentido. El registro de cédulas y el directorio interno no son públicos. La cédula se comprueba por formato y unicidad; la mayoría de edad es una declaración, sin validación contra servicios oficiales. El contrato requiere revisión jurídica antes de cualquier uso real.
@@ -109,6 +127,8 @@ node tooling/reconciliar-historicos.mjs --proyecto financebro-sb-20261003
 ```
 
 ## Publicación
+
+[Procedimiento, recuperación, monitoreo y escalamiento](documentacion/operacion.md).
 
 `./scripts/preparar-publicacion.sh` valida y compila el panel remoto. `./scripts/publicar-banca.sh --proyecto <proyecto>` presenta los componentes; `--ejecutar` despliega servidor, reglas, índices y clientes cuando Blaze y Storage estén habilitados. Se deben esperar los índices y comprobar dos identidades antes de distribuir la compilación móvil.
 

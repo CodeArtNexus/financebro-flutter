@@ -14,7 +14,7 @@ Esta revisión comprueba resultados financieros, recuperación, límites de mód
 | Conciliación de históricos | 5 | Plan de lectura, copias ausentes, idempotencia y rechazo de conflictos |
 | **Total** | **149** | Las ejecuciones móviles se informan aparte |
 
-[CI](https://github.com/CodeArtNexus/financebro-flutter/actions) ejecuta cinco trabajos: Flutter, reglas, panel, servidor y recuperación Android. El quinto construye y ejecuta una app real en Android con Emulator Suite, sin accesos de nube. Conserva el resultado durante siete días. La comprobación de contratos evita perder operaciones de la fachada o volver a introducir consultas de almacenamiento en las dos pantallas migradas.
+[CI](https://github.com/CodeArtNexus/financebro-flutter/actions) ejecuta cinco trabajos: Flutter, reglas, panel, servidor y recuperación Android. El quinto construye y ejecuta una app real en Android 35 con perfil Pixel 5 y Emulator Suite, sin accesos de nube. El recorrido financiero abre el enlace de transferencia que utilizan los contactos y valida el destinatario en el servidor; los escenarios de lectura manual del QR se comprueban por separado. Conserva el resultado durante siete días. La comprobación de contratos evita perder operaciones de la fachada o volver a introducir consultas de almacenamiento en las dos pantallas migradas.
 
 El ingreso espera la comprobación de conexión en curso antes de decidir si puede continuar. Dos regresiones de pantalla verifican que no se autentica antes del resultado ni pierde el formulario si se confirma una desconexión.
 

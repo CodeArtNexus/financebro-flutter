@@ -188,22 +188,8 @@ void main() {
       ))!.data()!;
       const numero = String.fromEnvironment('NUMERO_DESTINO');
       expect(numero.length, 14);
-      c.read(rutasProvider).go('/qr');
-      await esperarReal(t, find.text('Tengo un código o número'));
-      await t.ensureVisible(find.text('Tengo un código o número'));
-      await t.pump(const Duration(milliseconds: 350));
-      await t.tap(find.text('Tengo un código o número'));
-      await esperarReal(t, find.byKey(const Key('codigo-qr')));
-      await t.enterText(
-        find.byKey(const Key('codigo-qr')),
-        'financebro://transferir?cuenta=$numero&v=1',
-      );
-      FocusManager.instance.primaryFocus?.unfocus();
-      await t.drag(find.byType(ListView).first, const Offset(0, -350));
-      await t.pump(const Duration(milliseconds: 400));
-      await t.ensureVisible(find.text('Revisar cuenta'));
-      await t.pump(const Duration(milliseconds: 350));
-      await t.tap(find.text('Revisar cuenta'));
+      // Mismo enlace usado por contactos: el servidor valida el destinatario.
+      c.read(rutasProvider).go('/transferir?numero=$numero');
       await esperarReal(t, find.text('Valeria Demo'));
       await t.ensureVisible(find.byKey(const Key('monto-transferencia')));
       await t.pump(const Duration(milliseconds: 350));
@@ -211,13 +197,18 @@ void main() {
       FocusManager.instance.primaryFocus?.unfocus();
       await t.ensureVisible(find.byKey(const Key('cuenta-pago')));
       await t.pump(const Duration(milliseconds: 350));
-      await t.tap(find.byKey(const Key('cuenta-pago')));
+      await t.tap(find.byKey(const Key('cuenta-pago')).hitTestable());
       await t.pump(const Duration(milliseconds: 400));
       await t.tap(find.text('Ahorros · ${antes['numero']}').last);
       await t.pump(const Duration(milliseconds: 300));
       await t.ensureVisible(find.byKey(const Key('confirmar-pago')));
       await t.pump(const Duration(milliseconds: 350));
-      await t.tap(find.byKey(const Key('confirmar-pago')));
+      await Scrollable.ensureVisible(
+        t.element(find.byKey(const Key('confirmar-pago'))),
+        alignment: .35,
+      );
+      await t.pump(const Duration(milliseconds: 350));
+      await t.tap(find.byKey(const Key('confirmar-pago')).hitTestable());
       await t.pump(const Duration(milliseconds: 300));
       await t.tap(find.widgetWithText(FilledButton, 'Confirmar'));
       await esperarReal(

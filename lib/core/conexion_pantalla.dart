@@ -77,12 +77,17 @@ class AvisoConexion extends ConsumerWidget {
     final estado =
         ref.watch(conexionBancoProvider).value ?? EstadoConexion.revisando;
     if (estado == EstadoConexion.conectado) return const SizedBox.shrink();
+    final colores = Theme.of(context).colorScheme;
     return Material(
-      color: const Color(0xFFFFF0DE),
+      color: colores.primaryContainer,
       child: SafeArea(
         bottom: false,
         child: ListTile(
           dense: true,
+          textColor: colores.onPrimaryContainer,
+          iconColor: colores.primary,
+          subtitleTextStyle: Theme.of(context).textTheme.bodySmall
+              ?.copyWith(color: colores.onSurfaceVariant),
           leading: Icon(
             estado == EstadoConexion.revisando ? Icons.sync : Icons.wifi_off,
           ),
@@ -96,6 +101,7 @@ class AvisoConexion extends ConsumerWidget {
           ),
           trailing: IconButton(
             tooltip: 'Revisar conexión',
+            color: colores.primary,
             onPressed: () => ref.read(redBancoProvider).revisar(),
             icon: const Icon(Icons.refresh),
           ),

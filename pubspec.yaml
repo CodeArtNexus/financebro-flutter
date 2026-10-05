@@ -2,7 +2,7 @@ name: financebro
 description: "FinanceBro: plataforma financiera digital modular"
 publish_to: 'none'
 
-version: 1.6.2+9
+version: 1.6.3+10
 
 environment:
   sdk: ^3.13.4

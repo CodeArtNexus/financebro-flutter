@@ -112,13 +112,18 @@ void main() {
         await actualizar(EscenarioRed.sinConexion);
         await esperar(find.textContaining('puede estar desactualizada'));
         await foto('$prefijo-55-divisas-sin-conexion');
+        router.go('/inicio');
+        await esperar(find.text('Tu dinero, a tu manera'));
+        await foto('$prefijo-34-sin-conexion');
+        router.go('/divisas');
+        await t.pump(const Duration(milliseconds: 500));
 
         await actualizar(EscenarioRed.normal);
         await esperar(find.byKey(const Key('resultado-divisas')));
         expect(find.textContaining('puede estar desactualizada'), findsNothing);
         await foto('$prefijo-56-divisas-recuperacion');
       }
-      expect(capturas.length, 12);
+      expect(capturas.length, 14);
       binding.reportData ??= {};
       binding.reportData!['capturasConectividad'] = capturas;
     } finally {

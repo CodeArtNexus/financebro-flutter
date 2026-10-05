@@ -15,8 +15,8 @@ Future<void> main() async {
     onScreenshot: (nombre, bytes, [argumentos]) async => true,
     responseDataCallback: (datos) async {
       final nombres = datos?['capturasConectividad'] as List<dynamic>? ?? [];
-      if (nombres.length != 12) {
-        throw StateError('El recorrido no completó sus 12 estados.');
+      if (nombres.length != 14) {
+        throw StateError('El recorrido no completó sus 14 estados.');
       }
       String? contenedor;
       if (ios) {
@@ -56,7 +56,7 @@ Future<void> main() async {
         }
       }
       await File('${destino.path}/verificacion.txt').writeAsString(
-        '12 capturas verificadas: proveedor real, latencia y caída parcial controladas, caché, error, cuentas disponibles y recuperación. Sin operaciones de fondos.\n',
+        '14 capturas verificadas: proveedor real, latencia y caída parcial controladas, caché, error, cuentas disponibles y recuperación. Sin operaciones de fondos.\n',
       );
     },
   );

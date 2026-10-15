@@ -1,6 +1,6 @@
 # Correspondencia con la prueba técnica
 
-Esta matriz indica dónde está implementado cada requisito y cómo revisarlo. El alcance corresponde a la versión 1.7.0.
+Esta matriz indica dónde está implementado cada requisito y cómo revisarlo. El alcance corresponde a la versión 1.7.1.
 
 | Requisito | Implementación | Comprobación |
 | --- | --- | --- |

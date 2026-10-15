@@ -1,6 +1,6 @@
 # Guía de evaluación y accesos
 
-FinanceBro 1.7.0 · Perfiles verificados en el servidor publicado el 5 de octubre de 2026.
+FinanceBro 1.7.1 · APK actualizado el 14 de octubre de 2026. Los perfiles conservan los datos del servidor compartido.
 
 Esta guía permite revisar la aplicación y el panel web con cuentas preparadas. Android, iOS y el panel comparten el mismo servidor y los mismos datos. No se necesita iniciar un servidor local ni los emuladores de Firebase. Las identidades, fondos, documentos, tarjetas y planillas de este entorno son ficticios.
 
@@ -32,9 +32,11 @@ Los accesos publicados pertenecen al entorno de evaluación. No conceden acceso 
 
 ## 2. Instalar o ejecutar
 
-- **Android:** instalar el [APK 1.7.0](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.7.0-calidad) o ejecutar el código con Flutter siguiendo el [README](../README.md#servidor-publicado). Para recibir push remotas, utilizar un dispositivo con Google Play Services y permitir las notificaciones.
+- **Android:** instalar el [APK 1.7.1](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.7.1-sesion) o ejecutar el código con Flutter siguiendo el [README](../README.md#servidor-publicado). Para recibir push remotas, utilizar un dispositivo con Google Play Services y permitir las notificaciones.
 - **iOS:** ejecutar el código con Flutter y Xcode en un simulador o firmarlo con una cuenta de Apple para instalarlo en un iPhone físico. Utiliza los mismos perfiles y datos. No hay distribución por TestFlight ni un instalador iOS universal.
 - **Panel:** utilizar directamente el enlace web anterior; no necesita instalación.
+
+Para actualizar desde 1.7.0, instalar el nuevo APK sobre la app existente, sin desinstalar. La versión 1.7.1 corrige la recuperación del nombre y del saludo después del primer ingreso y al reabrir la sesión.
 
 La compilación normal conecta al servidor publicado. **No activar `USE_EMULATORS` ni `VITE_USE_EMULATORS`** para este recorrido. Los accesos de «Entorno aislado» en el README corresponden a otra base de datos.
 

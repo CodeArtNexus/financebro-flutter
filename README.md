@@ -2,18 +2,20 @@
 
 Aplicación financiera en Flutter para Android e iOS, con un panel web de administración. Permite abrir una cuenta de ahorros, consultar saldos, transferir por QR o número de cuenta y revisar movimientos por cuenta, tarjeta y contacto. También incluye crédito, servicios, metas de ahorro y chequera digital.
 
-La versión **1.7.0** utiliza Firebase Authentication, Firestore, Storage y Functions. La app y el panel comparten datos: un ajuste del asesor o una transferencia se refleja en los históricos correspondientes. Los fondos, identidades, tarjetas, documentos y planillas del entorno de evaluación son ficticios. No se realizan pagos a bancos o proveedores reales.
+La versión **1.7.1** utiliza Firebase Authentication, Firestore, Storage y Functions. La app y el panel comparten datos: un ajuste del asesor o una transferencia se refleja en los históricos correspondientes. Los fondos, identidades, tarjetas, documentos y planillas del entorno de evaluación son ficticios. No se realizan pagos a bancos o proveedores reales.
 
 ## Revisar la aplicación
 
 | Recurso | Contenido |
 | --- | --- |
-| [APK Android 1.7.0](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.7.0-calidad) | Aplicación conectada al servidor publicado |
+| [APK Android 1.7.1](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.7.1-sesion) | Aplicación conectada al servidor publicado |
 | [Panel de administración](https://financebro-sb-20261003.web.app/) | Cuentas, fondos, solicitudes, movimientos y configuración |
 | [Presentación y recorrido técnico](https://financebro-sb-20261003.web.app/presentacion/) | Video comercial de 1:45 y recorrido de 22:30, con procesos completos y capítulos |
 | [Galería de interfaz](https://financebro-sb-20261003.web.app/revision/) | 214 capturas: 100 Android, 96 iOS y 18 del panel |
 | [Guía de evaluación y accesos](documentacion/guia-evaluacion.md) | Correos, contraseñas y recorrido por perfil en el servidor publicado |
 | [Pasos de evaluación](documentacion/evaluacion.md) | Recorrido conectado y demostración de errores, caché y recuperación |
+
+El APK vigente es **1.7.1 (12)** e incluye la corrección del nombre al ingresar y reabrir la sesión. Si ya está instalada la versión 1.7.0, descargar e instalar la actualización sobre ella, sin desinstalar: conserva los datos de la app. Las cuentas y los movimientos siguen en el mismo servidor.
 
 ### Accesos y perfiles del servidor publicado
 
@@ -29,7 +31,7 @@ Los correos, contraseñas y pasos para utilizar cada perfil están en la [Guía 
 | Asesor | Acceso al panel web para revisar cuentas y movimientos, ajustar fondos ficticios, aprobar solicitudes y gestionar tarjetas, servicios, cheques y temporadas. El servidor comprueba su rol administrativo; una cuenta de cliente no tiene esos permisos. |
 
 1. **Android:** instalar el APK enlazado arriba o ejecutar la app desde este repositorio. La compilación normal conecta al servidor publicado.
-2. **iOS:** ejecutar la app con Flutter y Xcode en un simulador o firmarla con una cuenta de Apple para instalarla en un iPhone físico. Usa los mismos accesos y datos que Android. No hay distribución de TestFlight ni un instalador iOS universal.
+2. **iOS:** ejecutar la app con Flutter y Xcode en un simulador o firmarla con una cuenta de Apple para instalarla en un iPhone físico. Para abrirla desde su icono sin mantener una sesión de depuración, instalarla con `flutter run --release -d <identificador-del-iPhone>`. Usa los mismos accesos y datos que Android. No hay distribución de TestFlight ni un instalador iOS universal.
 3. **Panel:** abrir el enlace publicado en un navegador e ingresar con el acceso de asesor. Un ajuste o aprobación se refleja en la app conectada del cliente correspondiente.
 
 Para esta revisión **no activar `USE_EMULATORS` ni `VITE_USE_EMULATORS`**. Las claves indicadas en «Entorno aislado» solo sirven para los emuladores y no permiten entrar al servidor publicado. Los perfiles conservan los cambios entre sesiones; las operaciones de revisión modifican sus saldos, estados e históricos.

@@ -1,4 +1,4 @@
-# Calidad y verificaciones - 1.7.0
+# Calidad y verificaciones - 1.7.1
 
 Las pruebas comprueban operaciones, permisos, recuperación, navegación y presentación. Usan datos ficticios. Los resultados de rendimiento corresponden al entorno indicado; no son una medición de producción.
 
@@ -6,17 +6,19 @@ Las pruebas comprueban operaciones, permisos, recuperación, navegación y prese
 
 | Grupo | Casos | Comprobación |
 | --- | ---: | --- |
-| Flutter | 66 | Validaciones, estado, widgets, cola, identidad, históricos, contactos y accesibilidad |
+| Flutter | 75 | Validaciones, estado, widgets, cola, identidad, históricos, contactos y accesibilidad |
 | Servidor: unitarias | 14 | Validaciones, avisos y logs sin datos privados |
 | Servidor: integración | 38 | Fondos, transacciones, concurrencia, productos, permisos y reservas de avisos |
 | Reglas de Firestore y Storage | 23 | Lecturas privadas y rechazo de escrituras financieras directas |
 | Panel | 3 | Importes y ajuste recibido en vivo con paginación |
 | Conciliación | 5 | Plan, copias ausentes, repetición y rechazo de conflictos |
-| **Total** | **149** | Los recorridos móviles se registran por separado |
+| **Total** | **158** | Los recorridos móviles se registran por separado |
 
 [CI](https://github.com/CodeArtNexus/financebro-flutter/actions) ejecuta cinco trabajos: Flutter, servidor, reglas, panel y recuperación Android. El E2E utiliza Android 35, perfil Pixel 5 y Emulator Suite. No contiene accesos del proyecto publicado. Su resultado se conserva como artefacto durante siete días.
 
 `tooling/comprobar-limites.mjs` comprueba que las operaciones del catálogo tengan implementación y que las pantallas de históricos y contacto no vuelvan a consultar Firestore directamente. Dos pruebas de ingreso comprueban que el formulario espere el primer resultado de conexión y conserve sus datos cuando no hay red.
+
+El 14 de octubre de 2026 se añadieron nueve pruebas de sesión: nombres de Authentication nulos, vacíos o con espacios; nombre anterior en Authentication; reapertura con biometría; actualización del saludo; uso sin conexión; cambio de usuario; y respaldo ante un nombre de perfil vacío. Las 75 pruebas Flutter, el análisis y el formato pasaron en la revisión local. Los demás grupos conservan el alcance de la entrega 1.7.0.
 
 ## Integridad financiera
 
@@ -80,6 +82,6 @@ Este comando prepara datos únicamente en emuladores. La compilación de perfil 
 
 ## Evidencia conectada
 
-El APK y los [videos publicados](https://financebro-sb-20261003.web.app/presentacion/) corresponden a 1.7.0. La galería conserva estados de Android, iOS y panel, incluidas cuatro capturas nuevas de accesibilidad. [Videos](audiovisual.md) identifica los procesos y las pruebas remotas.
+El APK vigente corresponde a 1.7.1; los [videos publicados](https://financebro-sb-20261003.web.app/presentacion/) muestran 1.7.0. La actualización corrige el nombre de la sesión y conserva los recorridos funcionales mostrados. Se comprobó en Android 36 la actualización de 1.7.0 a 1.7.1 sin desinstalar, el ingreso con un perfil del servidor publicado, sus cuentas y saldos, el nombre en Mi perfil y el saludo después de forzar el cierre y abrir de nuevo. La galería conserva estados de Android, iOS y panel, incluidas cuatro capturas nuevas de accesibilidad. [Videos](audiovisual.md) identifica los procesos y las pruebas remotas.
 
 Android tiene FCM remoto comprobado. El servidor registra diagnóstico y estados de entrega. No se han configurado nuevas alertas automáticas, un respaldo periódico probado ni APNs iOS. [Operación](operacion.md) describe esos pendientes y el procedimiento de diagnóstico.

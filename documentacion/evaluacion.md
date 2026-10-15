@@ -1,6 +1,6 @@
 # Recorrido de evaluación
 
-Utilizar el [APK Android 1.7.0](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.7.0-calidad), la app ejecutada con Flutter y el [panel publicado](https://financebro-sb-20261003.web.app/). Los correos, contraseñas y funciones de cliente, contraparte y asesor están en la [Guía de evaluación y accesos](guia-evaluacion.md). Los datos de registro, fondos y documentos deben ser ficticios.
+Utilizar el [APK Android 1.7.1](https://github.com/CodeArtNexus/financebro-flutter/releases/tag/v1.7.1-sesion), la app ejecutada con Flutter y el [panel publicado](https://financebro-sb-20261003.web.app/). Los correos, contraseñas y funciones de cliente, contraparte y asesor están en la [Guía de evaluación y accesos](guia-evaluacion.md). Los datos de registro, fondos y documentos deben ser ficticios.
 
 ## Preparar el dispositivo
 

@@ -40,6 +40,7 @@ class FirebaseIdentidad implements RepositorioIdentidad {
   final Future<bool> Function() autenticarDispositivo;
   bool _requiereRegistro = false;
   String? _nombreSesion;
+  String? _uidNombreSesion;
   @override
   bool get requiereRegistro => _requiereRegistro;
   final FirebaseAuth auth;
@@ -48,9 +49,42 @@ class FirebaseIdentidad implements RepositorioIdentidad {
   bool _desbloqueada = false;
   bool _preparando = false;
   final _preparada = StreamController<void>.broadcast();
-  Identidad? _identidad(User? u) => u == null
+  static String? _nombreValido(Object? valor) {
+    if (valor is! String) return null;
+    final nombre = valor.trim().replaceAll(RegExp(r'\s+'), ' ');
+    return nombre.isEmpty ? null : nombre;
+  }
+
+  String? _resolverNombre(User usuario, {Object? nombrePerfil}) {
+    final recuerdo = RecuerdoAcceso.leer(preferencias);
+    return _nombreValido(nombrePerfil) ??
+        (recuerdo?.uid == usuario.uid
+            ? _nombreValido(recuerdo!.nombre)
+            : null) ??
+        _nombreValido(usuario.displayName);
+  }
+
+  Future<void> _recordarNombre(User usuario, {Object? nombrePerfil}) async {
+    _nombreSesion = _resolverNombre(usuario, nombrePerfil: nombrePerfil);
+    _uidNombreSesion = usuario.uid;
+    if (_nombreSesion != null) {
+      await RecuerdoAcceso(usuario.uid, _nombreSesion!).guardar(preferencias);
+    }
+  }
+
+  void _limpiarNombreSesion() {
+    _nombreSesion = null;
+    _uidNombreSesion = null;
+  }
+
+  Identidad? _identidad(User? usuario) => usuario == null
       ? null
-      : Identidad(u.uid, _nombreSesion ?? u.displayName ?? 'Tu espacio');
+      : Identidad(
+          usuario.uid,
+          (_uidNombreSesion == usuario.uid ? _nombreSesion : null) ??
+              _resolverNombre(usuario) ??
+              'Tu espacio',
+        );
   @override
   Identidad? get actual =>
       _preparando || !_desbloqueada ? null : _identidad(auth.currentUser);
@@ -77,8 +111,7 @@ class FirebaseIdentidad implements RepositorioIdentidad {
           'Conéctate una vez para guardar tu cuenta en este dispositivo.',
         );
       }
-      final recuerdo = RecuerdoAcceso.leer(preferencias);
-      if (recuerdo?.uid == usuario.uid) _nombreSesion = recuerdo!.nombre;
+      await _recordarNombre(usuario);
       _requiereRegistro = false;
       _desbloqueada = true;
       _preparada.add(null);
@@ -93,6 +126,11 @@ class FirebaseIdentidad implements RepositorioIdentidad {
         .limit(1)
         .get(const GetOptions(source: Source.server))
         .timeout(const Duration(seconds: 12));
+    final perfil = await datos
+        .doc('usuarios/${usuario.uid}')
+        .get(const GetOptions(source: Source.server))
+        .timeout(const Duration(seconds: 10));
+    await _recordarNombre(usuario, nombrePerfil: perfil.data()?['nombre']);
     _requiereRegistro = cuentas.docs.isEmpty;
     _desbloqueada = true;
     _preparada.add(null);
@@ -118,19 +156,25 @@ class FirebaseIdentidad implements RepositorioIdentidad {
     String? nombre,
   }) async {
     _preparando = true;
+    _desbloqueada = false;
+    _limpiarNombreSesion();
     try {
       final credencial = await autenticar().timeout(
         const Duration(seconds: 15),
       );
       final usuario = credencial.user!;
       final documento = datos.doc('usuarios/${usuario.uid}');
-      final perfil = await documento.get().timeout(const Duration(seconds: 10));
-      _nombreSesion =
-          perfil.data()?['nombre'] as String? ?? usuario.displayName;
+      final perfil = await documento
+          .get(const GetOptions(source: Source.server))
+          .timeout(const Duration(seconds: 10));
+      final nombrePerfil =
+          _nombreValido(perfil.data()?['nombre']) ?? _nombreValido(nombre);
       if (!perfil.exists) {
         await documento
             .set({
-              'nombre': nombre?.trim() ?? usuario.displayName ?? 'Mi perfil',
+              'nombre':
+                  _resolverNombre(usuario, nombrePerfil: nombrePerfil) ??
+                  'Mi perfil',
               'segmento': 'equilibrio',
               'mostrarSaldo': true,
               'actualizado': FieldValue.serverTimestamp(),
@@ -138,15 +182,12 @@ class FirebaseIdentidad implements RepositorioIdentidad {
             .timeout(const Duration(seconds: 10));
       }
       if (nombre != null) await usuario.updateDisplayName(nombre.trim());
-      await RecuerdoAcceso(
-        usuario.uid,
-        nombre?.trim() ?? usuario.displayName ?? 'Bro',
-      ).guardar(preferencias);
       final cuentas = await datos
           .collection('usuarios/${usuario.uid}/cuentas')
           .limit(1)
           .get(const GetOptions(source: Source.server))
           .timeout(const Duration(seconds: 12));
+      await _recordarNombre(usuario, nombrePerfil: nombrePerfil);
       _requiereRegistro = cuentas.docs.isEmpty;
       _desbloqueada = true;
     } catch (_) {
@@ -174,6 +215,7 @@ class FirebaseIdentidad implements RepositorioIdentidad {
     await exigirConexion();
     _preparando = true;
     _desbloqueada = false;
+    _limpiarNombreSesion();
     try {
       registrarEvento('registro_acceso_iniciado', servicio: 'identidad');
       UserCredential credencial;
@@ -198,7 +240,6 @@ class FirebaseIdentidad implements RepositorioIdentidad {
           ? await completarApertura!(registro)
           : await llamarBanca(functions, 'registrarCliente', registro.apertura);
       final nombre = resultado['nombre'] as String;
-      _nombreSesion = nombre;
       registrarEvento('registro_apertura_completada', servicio: 'banca');
       try {
         await credencial.user!
@@ -207,7 +248,7 @@ class FirebaseIdentidad implements RepositorioIdentidad {
       } catch (_) {
         registrarEvento('nombre_sdk_pendiente', servicio: 'identidad');
       }
-      await RecuerdoAcceso(credencial.user!.uid, nombre).guardar(preferencias);
+      await _recordarNombre(credencial.user!, nombrePerfil: nombre);
       _requiereRegistro = false;
       _desbloqueada = true;
     } on ErrorFuncionBanca catch (e) {
@@ -229,6 +270,7 @@ class FirebaseIdentidad implements RepositorioIdentidad {
   @override
   Future<void> salir() async {
     _desbloqueada = false;
+    _limpiarNombreSesion();
     await auth.signOut();
   }
 }
